@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+
+
+
+
+
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.4.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.4.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.4.0">
+  <link rel="mask-icon" href="/images/logo.svg?v=7.4.0" color="#222">
+
+<link rel="stylesheet" href="/css/main.css?v=7.4.0">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '7.4.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: 'Copy',
+      copy_success: 'Copied',
+      copy_failure: 'Copy failed'
+    },
+    sidebarPadding: 40
+  };
+</script>
+
+  <meta name="description" content="第11章 Python虚拟机中的函数机制 keyword  11.1 PyFunctionObject对象 函数这种抽象机制，是通过一个Python对象——PyFunctionObject来实现的  123456789101112typedef struct &amp;#123;    PyObject_HEAD    PyObject *func_code;    //编译后的PyCodeObject对">
+<meta name="keywords" content="源码,python">
+<meta property="og:type" content="article">
+<meta property="og:title" content=" 第11章 Python虚拟机中的函数机制">
+<meta property="og:url" content="https://ztzheng100.github.io.git/2019/09/08/python源码剖析/第11章-Python虚拟机中的函数机制/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="第11章 Python虚拟机中的函数机制 keyword  11.1 PyFunctionObject对象 函数这种抽象机制，是通过一个Python对象——PyFunctionObject来实现的  123456789101112typedef struct &amp;#123;    PyObject_HEAD    PyObject *func_code;    //编译后的PyCodeObject对">
+<meta property="og:locale" content="en">
+<meta property="og:image" content="https://images2018.cnblogs.com/blog/1334023/201808/1334023-20180822181407352-1000678095.png">
+<meta property="og:image" content="https://images2018.cnblogs.com/blog/1334023/201808/1334023-20180824213115322-1814505168.png">
+<meta property="og:updated_time" content="2019-09-08T12:16:31.193Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content=" 第11章 Python虚拟机中的函数机制">
+<meta name="twitter:description" content="第11章 Python虚拟机中的函数机制 keyword  11.1 PyFunctionObject对象 函数这种抽象机制，是通过一个Python对象——PyFunctionObject来实现的  123456789101112typedef struct &amp;#123;    PyObject_HEAD    PyObject *func_code;    //编译后的PyCodeObject对">
+<meta name="twitter:image" content="https://images2018.cnblogs.com/blog/1334023/201808/1334023-20180822181407352-1000678095.png">
+  <link rel="canonical" href="https://ztzheng100.github.io.git/2019/09/08/python源码剖析/第11章-Python虚拟机中的函数机制/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title> 第11章 Python虚拟机中的函数机制 | Hexo</title>
+  <meta name="generator" content="Hexo 3.9.0">
+  
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="en">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Hexo</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+      
+      
+      
+        
+        <li class="menu-item menu-item-home">
+      
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Home</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-tags">
+      
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>Tags</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-categories">
+      
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>Categories</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-archives">
+      
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archives</a>
+
+  </li>
+  </ul>
+
+    
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+      <article itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block post">
+    <link itemprop="mainEntityOfPage" href="https://ztzheng100.github.io.git/2019/09/08/python源码剖析/第11章-Python虚拟机中的函数机制/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zzt">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Hexo">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline"> 第11章 Python虚拟机中的函数机制
+
+          
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              
+                
+              
+
+              <time title="Created: 2019-09-08 20:16:13 / Modified: 20:16:31" itemprop="dateCreated datePublished" datetime="2019-09-08T20:16:13+08:00">2019-09-08</time>
+            </span>
+          
+            
+
+            
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/python源码剖析/" itemprop="url" rel="index"><span itemprop="name">python源码剖析</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="第11章-Python虚拟机中的函数机制"><a href="#第11章-Python虚拟机中的函数机制" class="headerlink" title="第11章 Python虚拟机中的函数机制"></a>第11章 Python虚拟机中的函数机制</h1><ul>
+<li>keyword</li>
+</ul>
+<h2 id="11-1-PyFunctionObject对象"><a href="#11-1-PyFunctionObject对象" class="headerlink" title="11.1 PyFunctionObject对象"></a>11.1 PyFunctionObject对象</h2><ul>
+<li>函数这种抽象机制，是通过一个Python对象——PyFunctionObject来实现的</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">typedef struct &#123;</span><br><span class="line">    PyObject_HEAD</span><br><span class="line">    PyObject *func_code;    //编译后的PyCodeObject对象</span><br><span class="line">    PyObject *func_globals; //函数运行时的global名字空间</span><br><span class="line">    PyObject *func_defaults;    //默认参数（tupple或NULL）</span><br><span class="line">    PyObject *func_closure; //NULL or a tuple of cell objects，用于实现closure(闭包)</span><br><span class="line">    PyObject *func_doc;     //函数的文档（PyStringObject）</span><br><span class="line">    PyObject *func_name;    //函数名称，函数的__name__属性，（PyStringObject）</span><br><span class="line">    PyObject *func_dict;    //函数的__dict__属性（PyDictObject或NULL）</span><br><span class="line">    PyObject *func_weakreflist;</span><br><span class="line">    PyObject *func_module;  //函数的__module__，可以是任何对象</span><br><span class="line">&#125; PyFunctionObject;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>在Python中，有两个对象和函数有关，PyCodeObject和PyFunctionObject<ul>
+<li>PyCodeObject对象是对一段Python源代码的静态表示，如Code Block有a = 1这样的表达式，那么符号a和值1，以及它们之间的联系就是一种静态信息，这些信息会分别存储在PyCodeObject的常量表<code>co_consts、符号表co_names以及字节码co_code</code>中</li>
+<li>PyFunctionObject对象是Python代码在运行时动态产生的,</li>
+</ul>
+</li>
+<li>++对于一段Python代码，其对应的PyCodeObject对象只有一个，而代码所对应的PyFunctionObject对象却可能有多个++，比如一个函数多次调用   </li>
+</ul>
+<p><img src="https://images2018.cnblogs.com/blog/1334023/201808/1334023-20180822181407352-1000678095.png" alt="PyFunctionObject与PyCodeObject对象之间的关系"><br>？？？</p>
+<h2 id="11-2-无参函数调用"><a href="#11-2-无参函数调用" class="headerlink" title="11.2 无参函数调用"></a>11.2 无参函数调用</h2><ul>
+<li>12   CALL_FUNCTION   0  函数调用</li>
+</ul>
+<h3 id="11-2-1-函数对象的创建"><a href="#11-2-1-函数对象的创建" class="headerlink" title="11.2.1 函数对象的创建"></a>11.2.1 函数对象的创建</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"># cat demo.py</span><br><span class="line">def f():</span><br><span class="line">    print(&quot;Function&quot;)</span><br><span class="line"> </span><br><span class="line"> </span><br><span class="line">f()</span><br><span class="line"> </span><br><span class="line"># python2.5</span><br><span class="line">……</span><br><span class="line">&gt;&gt;&gt; source = open(&quot;demo.py&quot;).read()</span><br><span class="line">&gt;&gt;&gt; co = compile(source, &quot;demo.py&quot;, &quot;exec&quot;)</span><br><span class="line">&gt;&gt;&gt; import dis</span><br><span class="line">&gt;&gt;&gt; dis.dis(co)</span><br><span class="line">  1           0 LOAD_CONST               0 (&lt;code object f at 0x7fd9831c3648, file &quot;demo.py&quot;, line 1&gt;)</span><br><span class="line">              3 MAKE_FUNCTION            0</span><br><span class="line">              6 STORE_NAME               0 (f)</span><br><span class="line"> </span><br><span class="line">  5           9 LOAD_NAME                0 (f)</span><br><span class="line">             12 CALL_FUNCTION            0</span><br><span class="line">             15 POP_TOP            </span><br><span class="line">             16 LOAD_CONST               1 (None)</span><br><span class="line">             19 RETURN_VALUE       </span><br><span class="line">&gt;&gt;&gt; from demo import f</span><br><span class="line">Function</span><br><span class="line">&gt;&gt;&gt; dis.dis(f)</span><br><span class="line">  2           0 LOAD_CONST               1 (&apos;Function&apos;)</span><br><span class="line">              3 PRINT_ITEM         </span><br><span class="line">              4 PRINT_NEWLINE      </span><br><span class="line">              5 LOAD_CONST               0 (None)</span><br><span class="line">              8 RETURN_VALUE</span><br></pre></td></tr></table></figure>
+
+<h3 id="11-2-2-函数的调用"><a href="#11-2-2-函数的调用" class="headerlink" title="11.2.2 函数的调用"></a>11.2.2 函数的调用</h3><h2 id="11-3-函数执行时的名字空间"><a href="#11-3-函数执行时的名字空间" class="headerlink" title="11.3 函数执行时的名字空间"></a>11.3 函数执行时的名字空间</h2><h2 id="11-4-函数参数的实现"><a href="#11-4-函数参数的实现" class="headerlink" title="11.4 函数参数的实现"></a>11.4 函数参数的实现</h2><h3 id="11-4-1-参数类别"><a href="#11-4-1-参数类别" class="headerlink" title="11.4.1 参数类别"></a>11.4.1 参数类别</h3><ul>
+<li>++函数参数在内存中时连续存放的++。</li>
+<li>参数类别<ul>
+<li>位置参数：如f(a, b)，a和b称为位置参数</li>
+<li>键参数：f(a, b, name=”Python”)，其中的name=”Python”被称为键参数</li>
+<li>扩展位置参数：<code>f(a, b, *args)</code>，其中*args被称为扩展位置参数</li>
+<li>扩展键参数：<code>f(a, b, **kwargs</code>)，其中**kwargs被称为扩展键参数</li>
+</ul>
+</li>
+</ul>
+<ul>
+<li>call_function函数</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">static PyObject * call_function(PyObject ***pp_stack, int oparg)</span><br><span class="line">&#123;</span><br><span class="line">    //[1]:处理函数参数信息</span><br><span class="line">    int na = oparg &amp; 0xff;  //取位置参数个数</span><br><span class="line">    int nk = (oparg &gt;&gt; 8) &amp; 0xff;   //取键参数个数</span><br><span class="line">    int n = na + 2 * nk;</span><br><span class="line">    //[2]：获得PyFunctionObject对象</span><br><span class="line">    PyObject **pfunc = (*pp_stack) - n - 1;</span><br><span class="line">    PyObject *func = *pfunc;</span><br><span class="line">    ……</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>CALL_FUNCTION指令参数的长度是两个字节，++在低字节，记录着位置参数的个数，在高字节，记录键参数的个数++。因此，在理论上，Python中的函数只能有256个位置参数和256个键参数</p>
+</li>
+<li><p>co_nlocals包含局部变量的个数，和函数位置参数的个数</p>
+</li>
+<li><p>co_argcount告诉Python函数一共有多少个参数</p>
+</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">static PyObject * call_function(PyObject ***pp_stack, int oparg)</span><br><span class="line">&#123;</span><br><span class="line">    int na = oparg &amp; 0xff;</span><br><span class="line">    int nk = (oparg&gt;&gt;8) &amp; 0xff;</span><br><span class="line">    int n = na + 2 * nk;</span><br><span class="line">    PyObject **pfunc = (*pp_stack) - n - 1;</span><br><span class="line">    PyObject *func = *pfunc;</span><br><span class="line">    PyObject *x, *w;</span><br><span class="line"> </span><br><span class="line">     </span><br><span class="line">    char *func_name = PyEval_GetFuncName(func);</span><br><span class="line">     </span><br><span class="line">    if (strcmp(func_name, &quot;Py_Func&quot;) == 0)</span><br><span class="line">    &#123;</span><br><span class="line">        printf(&quot;[call_function]:na=%d, nk=%d, n=%d\n&quot;, na, nk, n);</span><br><span class="line">        PyCodeObject *co = (PyCodeObject *)PyFunction_GET_CODE(func);</span><br><span class="line">        printf(&quot;[call_function]:co-&gt;co_argcount=%d, co-&gt;co_nlocals=%d\n&quot;, co-&gt;co_argcount, co-&gt;co_nlocals);</span><br><span class="line">    &#125;</span><br><span class="line">     </span><br><span class="line">    ……</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ol>
+<li>位置参数</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">Py_Func(1, 2)</span><br><span class="line">//字节码指令</span><br><span class="line">9   LOAD_NAME                0 (Py_Func)</span><br><span class="line">12  LOAD_CONST               1 (1)</span><br><span class="line">15  LOAD_CONST               2 (2)</span><br><span class="line">18  CALL_FUNCTION            2</span><br><span class="line"> </span><br><span class="line">&gt;&gt;&gt; Py_Func(1, 2)</span><br><span class="line">[call_function]:na=2, nk=0, n=2</span><br><span class="line">[call_function]:co-&gt;co_argcount=2, co-&gt;co_nlocals=2</span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>位置参数+键参数</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">Py_Func(1, b=2)</span><br><span class="line">//字节码指令</span><br><span class="line">9   LOAD_NAME                0 (Py_Func)</span><br><span class="line">12  LOAD_CONST               1 (1)</span><br><span class="line">15  LOAD_CONST               2 (&apos;b&apos;)</span><br><span class="line">18  LOAD_CONST               3 (2)</span><br><span class="line">21  CALL_FUNCTION            257</span><br><span class="line"> </span><br><span class="line">&gt;&gt;&gt; Py_Func(1, b=2)</span><br><span class="line">[call_function]:na=1, nk=1, n=3</span><br><span class="line">[call_function]:co-&gt;co_argcount=2, co-&gt;co_nlocals=2</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>在例1时n为2，在例2时n为3。这个起源于计算n的公式，n = na + 2 * nk。</li>
+</ul>
+<ol start="3">
+<li>位置参数+扩展位置参数</li>
+</ol>
+<ul>
+<li>在Python函数的参数表中，非键参数的位置必须在键参数之前，所以Py_Func(1, b=2, 3, 4)这样的函数调用是非法的。原因是函数参数在内存中时连续的，取参数时，依据参数数量在起始参数的地址开始取n个参数。<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">def Py_Func(a, b, *args):</span><br><span class="line">    pass</span><br><span class="line"></span><br><span class="line">Py_Func(1, 2, 3, 4)</span><br><span class="line">//字节码指令</span><br><span class="line">9   LOAD_NAME                0 (Py_Func)</span><br><span class="line">12  LOAD_CONST               1 (1)</span><br><span class="line">15  LOAD_CONST               2 (2)</span><br><span class="line">18  LOAD_CONST               3 (3)</span><br><span class="line">21  LOAD_CONST               4 (4)</span><br><span class="line">24  CALL_FUNCTION            4</span><br><span class="line"> </span><br><span class="line">&gt;&gt;&gt; Py_Func(1, 2, 3, 4)</span><br><span class="line">[call_function]:na=4, nk=0, n=4</span><br><span class="line">[call_function]:co-&gt;co_argcount=2, co-&gt;co_nlocals=3</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<ol start="4">
+<li>位置参数+扩展键参数 </li>
+</ol>
+<ul>
+<li>从co_argcount和co_nlocals的值上来看，扩展键参数在Python内部也是被当做一个局部变量来看<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">def Py_Func(a, b, **kwargs):</span><br><span class="line">    pass</span><br><span class="line">    </span><br><span class="line">Py_Func(1, 2, name=&quot;Python&quot;, author=&quot;Guido&quot;)</span><br><span class="line">//字节码指令</span><br><span class="line">9   LOAD_NAME                0 (Py_Func)</span><br><span class="line">12  LOAD_CONST               1 (1)</span><br><span class="line">15  LOAD_CONST               2 (2)</span><br><span class="line">18  LOAD_CONST               3 (&apos;name&apos;)</span><br><span class="line">21  LOAD_CONST               4 (&apos;Python&apos;)</span><br><span class="line">24  LOAD_CONST               5 (&apos;author&apos;)</span><br><span class="line">27  LOAD_CONST               6 (&apos;Guido&apos;)</span><br><span class="line">30  CALL_FUNCTION            514</span><br><span class="line"> </span><br><span class="line">&gt;&gt;&gt; Py_Func(1, 2, name=&quot;Python&quot;, author=&quot;Guido&quot;)</span><br><span class="line">[call_function]:na=2, nk=2, n=6</span><br><span class="line">[call_function]:co-&gt;co_argcount=2, co-&gt;co_nlocals=3</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<ol start="5">
+<li>位置参数+局部变量</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">def Py_Func(a, b):</span><br><span class="line">    c = 1</span><br><span class="line"></span><br><span class="line">Py_Func(1, 2, name=&quot;Python&quot;, author=&quot;Guido&quot;)</span><br><span class="line">//字节码指令</span><br><span class="line">9   LOAD_NAME                0 (Py_Func)</span><br><span class="line">12  LOAD_CONST               1 (1)</span><br><span class="line">15  LOAD_CONST               2 (2)</span><br><span class="line">18  LOAD_CONST               3 (&apos;name&apos;)</span><br><span class="line">21  LOAD_CONST               4 (&apos;Python&apos;)</span><br><span class="line">24  LOAD_CONST               5 (&apos;author&apos;)</span><br><span class="line">27  LOAD_CONST               6 (&apos;Guido&apos;)</span><br><span class="line">30  CALL_FUNCTION            514</span><br><span class="line"> </span><br><span class="line">&gt;&gt;&gt; Py_Func(1, 2, name=&quot;Python&quot;, author=&quot;Guido&quot;)</span><br><span class="line">[call_function]:na=2, nk=2, n=6</span><br><span class="line">[call_function]:co-&gt;co_argcount=2, co-&gt;co_nlocals=3</span><br></pre></td></tr></table></figure>
+
+<h3 id="11-4-2-位置参数的传递"><a href="#11-4-2-位置参数的传递" class="headerlink" title="11.4.2 位置参数的传递"></a>11.4.2 位置参数的传递</h3><ul>
+<li><p>demo2.py</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"># cat demo2.py</span><br><span class="line">def f(name, age):</span><br><span class="line">    age += 5</span><br><span class="line">    print(&quot;[&quot;, name, age, &quot;]&quot;)</span><br><span class="line"> </span><br><span class="line"> </span><br><span class="line">age = 5</span><br><span class="line">f(&quot;Robert&quot;, age)</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>编译demo2.py </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"># python2.5</span><br><span class="line">……</span><br><span class="line">&gt;&gt;&gt; source = open(&quot;demo2.py&quot;).read()</span><br><span class="line">&gt;&gt;&gt; co = compile(source, &quot;demo2.py&quot;, &quot;exec&quot;)</span><br><span class="line">&gt;&gt;&gt; import dis</span><br><span class="line">&gt;&gt;&gt; dis.dis(co)</span><br><span class="line">  1           0 LOAD_CONST               0 (&lt;code object f at 0x7ff044b1c648, file &quot;demo2.py&quot;, line 1&gt;)</span><br><span class="line">              3 MAKE_FUNCTION            0</span><br><span class="line">              6 STORE_NAME               0 (f)</span><br><span class="line"> </span><br><span class="line">  6           9 LOAD_CONST               1 (5)</span><br><span class="line">             12 STORE_NAME               1 (age)</span><br><span class="line"> </span><br><span class="line">  7          15 LOAD_NAME                0 (f)</span><br><span class="line">             18 LOAD_CONST               2 (&apos;Robert&apos;)   //函数参数name</span><br><span class="line">             21 LOAD_NAME                1 (age)        //函数参数age</span><br><span class="line">             24 CALL_FUNCTION            2</span><br><span class="line">             27 POP_TOP            </span><br><span class="line">             28 LOAD_CONST               3 (None)</span><br><span class="line">             31 RETURN_VALUE</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>用dis模块编译下函数f对应的字节码</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; from demo2 import f</span><br><span class="line">&gt;&gt;&gt; dis.dis(f)</span><br><span class="line">  2           0 LOAD_FAST                1 (age)    //变量age</span><br><span class="line">              3 LOAD_CONST               1 (5)      //age对应的常量5</span><br><span class="line">              6 INPLACE_ADD        </span><br><span class="line">              7 STORE_FAST               1 (age)</span><br><span class="line"> </span><br><span class="line">  3          10 LOAD_CONST               2 (&apos;[&apos;)</span><br><span class="line">             13 LOAD_FAST                0 (name)</span><br><span class="line">             16 LOAD_FAST                1 (age)</span><br><span class="line">             19 LOAD_CONST               3 (&apos;]&apos;)</span><br><span class="line">             22 BUILD_TUPLE              4</span><br><span class="line">             25 PRINT_ITEM         </span><br><span class="line">             26 PRINT_NEWLINE      </span><br><span class="line">             27 LOAD_CONST               0 (None)</span><br><span class="line">             30 RETURN_VALUE</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>CALL_FUNCTION指令之前，有三条LOAD指令，这三条LOAD指令执行完成后的运行时栈如图1-1所示<br><img src="https://images2018.cnblogs.com/blog/1334023/201808/1334023-20180824213115322-1814505168.png" alt="运行时栈"></p>
+</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">static PyObject * call_function(PyObject ***pp_stack, int oparg)</span><br><span class="line">&#123;</span><br><span class="line">    int na = oparg &amp; 0xff;</span><br><span class="line">    int nk = (oparg &gt;&gt; 8) &amp; 0xff;</span><br><span class="line">    int n = na + 2 * nk;</span><br><span class="line">    PyObject **pfunc = (*pp_stack) - n - 1;</span><br><span class="line">    PyObject *func = *pfunc;</span><br><span class="line">    ……</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="11-5-函数中局部变量的访问"><a href="#11-5-函数中局部变量的访问" class="headerlink" title="11.5 函数中局部变量的访问"></a>11.5 函数中局部变量的访问</h2><h2 id="11-6-嵌套函数、闭包与decorator"><a href="#11-6-嵌套函数、闭包与decorator" class="headerlink" title="11.6 嵌套函数、闭包与decorator"></a>11.6 嵌套函数、闭包与decorator</h2><h2 id="参考文件"><a href="#参考文件" class="headerlink" title="参考文件"></a>参考文件</h2><p><a href="https://www.cnblogs.com/beiluowuzheng/p/9515473.html" target="_blank" rel="noopener">Python虚拟机函数机制之无参调用（一）</a></p>
+<p><a href="https://www.cnblogs.com/beiluowuzheng/p/9526359.html" target="_blank" rel="noopener">Python虚拟机函数机制之参数类别（三）</a></p>
+
+    </div>
+
+    
+    
+    
+        
+      
+
+      <footer class="post-footer">
+          
+            
+          
+          <div class="post-tags">
+            
+              <a href="/tags/源码/" rel="tag"># 源码</a>
+            
+              <a href="/tags/python/" rel="tag"># python</a>
+            
+          </div>
+        
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+              
+                <a href="/2019/09/08/第8章-Python虚拟机框架/" rel="next" title=" 第8章 Python虚拟机框架">
+                  <i class="fa fa-chevron-left"></i>  第8章 Python虚拟机框架
+                </a>
+              
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+              
+                <a href="/2019/09/08/第11章-Python虚拟机中的函数机制/" rel="prev" title=" 第11章 Python虚拟机中的函数机制">
+                   第11章 Python虚拟机中的函数机制 <i class="fa fa-chevron-right"></i>
+                </a>
+              
+            </div>
+          </div>
+        
+      </footer>
+    
+  </div>
+  
+  
+  
+  </article>
+
+  </div>
+
+
+          </div>
+          
+
+        </div>
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+        
+        
+        
+        
+      
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#第11章-Python虚拟机中的函数机制"><span class="nav-number">1.</span> <span class="nav-text">第11章 Python虚拟机中的函数机制</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#11-1-PyFunctionObject对象"><span class="nav-number">1.1.</span> <span class="nav-text">11.1 PyFunctionObject对象</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#11-2-无参函数调用"><span class="nav-number">1.2.</span> <span class="nav-text">11.2 无参函数调用</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#11-2-1-函数对象的创建"><span class="nav-number">1.2.1.</span> <span class="nav-text">11.2.1 函数对象的创建</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#11-2-2-函数的调用"><span class="nav-number">1.2.2.</span> <span class="nav-text">11.2.2 函数的调用</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#11-3-函数执行时的名字空间"><span class="nav-number">1.3.</span> <span class="nav-text">11.3 函数执行时的名字空间</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#11-4-函数参数的实现"><span class="nav-number">1.4.</span> <span class="nav-text">11.4 函数参数的实现</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#11-4-1-参数类别"><span class="nav-number">1.4.1.</span> <span class="nav-text">11.4.1 参数类别</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#11-4-2-位置参数的传递"><span class="nav-number">1.4.2.</span> <span class="nav-text">11.4.2 位置参数的传递</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#11-5-函数中局部变量的访问"><span class="nav-number">1.5.</span> <span class="nav-text">11.5 函数中局部变量的访问</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#11-6-嵌套函数、闭包与decorator"><span class="nav-number">1.6.</span> <span class="nav-text">11.6 嵌套函数、闭包与decorator</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文件"><span class="nav-number">1.7.</span> <span class="nav-text">参考文件</span></a></li></ol></li></ol></div>
+        
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">zzt</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+  <nav class="site-state motion-element">
+      <div class="site-state-item site-state-posts">
+        
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">40</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-categories">
+        
+          
+            <a href="/categories/">
+          
+        
+        
+        
+          
+        
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-tags">
+        
+          
+            <a href="/tags/">
+          
+        
+        
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">tags</span>
+        </a>
+      </div>
+    
+  </nav>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zzt</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.9.0</div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">Theme – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v7.4.0</div>
+
+        
+
+
+
+
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+
+
+  <script src="/lib/anime.min.js?v=3.1.0"></script>
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+<script src="/js/utils.js?v=7.4.0"></script><script src="/js/motion.js?v=7.4.0"></script>
+<script src="/js/schemes/muse.js?v=7.4.0"></script>
+<script src="/js/next-boot.js?v=7.4.0"></script>
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+</body>
+</html>

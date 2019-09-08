@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+
+
+
+
+
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.4.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.4.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.4.0">
+  <link rel="mask-icon" href="/images/logo.svg?v=7.4.0" color="#222">
+
+<link rel="stylesheet" href="/css/main.css?v=7.4.0">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '7.4.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: 'Copy',
+      copy_success: 'Copied',
+      copy_failure: 'Copy failed'
+    },
+    sidebarPadding: 40
+  };
+</script>
+
+  <meta name="description" content="第7章 Python的编译结果——Code对象与pyc文件 keyword  虚拟机、字节码  7.1 Python程序的执行过程 一组python 的 byte code（字节码），然后将编译的结果交给python 的虚拟机，由虚拟机按照顺序一条一条的执行字节码。 编译过程不仅生成字节码，还要包含常量、变量、占用栈的空间等，Pyton中编译过程生成code对象PyCodeObject。将PyCo">
+<meta name="keywords" content="源码,python">
+<meta property="og:type" content="article">
+<meta property="og:title" content="第7章 Python的编译结果——Code对象与pyc文件">
+<meta property="og:url" content="https://ztzheng100.github.io.git/2019/09/08/python源码剖析/第7章-Python的编译结果——Code对象与pyc文件/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="第7章 Python的编译结果——Code对象与pyc文件 keyword  虚拟机、字节码  7.1 Python程序的执行过程 一组python 的 byte code（字节码），然后将编译的结果交给python 的虚拟机，由虚拟机按照顺序一条一条的执行字节码。 编译过程不仅生成字节码，还要包含常量、变量、占用栈的空间等，Pyton中编译过程生成code对象PyCodeObject。将PyCo">
+<meta property="og:locale" content="en">
+<meta property="og:image" content="https://img-blog.csdn.net/20130705202522734">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/413992-b2a985f0a79cbb47.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1000/format/webp">
+<meta property="og:image" content="http://res.cloudinary.com/kdr2/image/upload/img-kdr2-com/2010/12/pyc_format_example_0.png">
+<meta property="og:image" content="https://img-blog.csdn.net/20140617174258796?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvemhlbmdzZW5saWU=/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast">
+<meta property="og:updated_time" content="2019-09-08T12:12:57.947Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="第7章 Python的编译结果——Code对象与pyc文件">
+<meta name="twitter:description" content="第7章 Python的编译结果——Code对象与pyc文件 keyword  虚拟机、字节码  7.1 Python程序的执行过程 一组python 的 byte code（字节码），然后将编译的结果交给python 的虚拟机，由虚拟机按照顺序一条一条的执行字节码。 编译过程不仅生成字节码，还要包含常量、变量、占用栈的空间等，Pyton中编译过程生成code对象PyCodeObject。将PyCo">
+<meta name="twitter:image" content="https://img-blog.csdn.net/20130705202522734">
+  <link rel="canonical" href="https://ztzheng100.github.io.git/2019/09/08/python源码剖析/第7章-Python的编译结果——Code对象与pyc文件/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>第7章 Python的编译结果——Code对象与pyc文件 | Hexo</title>
+  <meta name="generator" content="Hexo 3.9.0">
+  
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="en">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Hexo</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+      
+      
+      
+        
+        <li class="menu-item menu-item-home">
+      
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Home</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-tags">
+      
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>Tags</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-categories">
+      
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>Categories</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-archives">
+      
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archives</a>
+
+  </li>
+  </ul>
+
+    
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+      <article itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block post">
+    <link itemprop="mainEntityOfPage" href="https://ztzheng100.github.io.git/2019/09/08/python源码剖析/第7章-Python的编译结果——Code对象与pyc文件/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zzt">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Hexo">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">第7章 Python的编译结果——Code对象与pyc文件
+
+          
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              
+                
+              
+
+              <time title="Created: 2019-09-08 20:12:34 / Modified: 20:12:57" itemprop="dateCreated datePublished" datetime="2019-09-08T20:12:34+08:00">2019-09-08</time>
+            </span>
+          
+            
+
+            
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/python源码剖析/" itemprop="url" rel="index"><span itemprop="name">python源码剖析</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="第7章-Python的编译结果——Code对象与pyc文件"><a href="#第7章-Python的编译结果——Code对象与pyc文件" class="headerlink" title="第7章 Python的编译结果——Code对象与pyc文件"></a>第7章 Python的编译结果——Code对象与pyc文件</h1><ul>
+<li>keyword<br>  <em>虚拟机、字节码</em></li>
+</ul>
+<h2 id="7-1-Python程序的执行过程"><a href="#7-1-Python程序的执行过程" class="headerlink" title="7.1 Python程序的执行过程"></a>7.1 Python程序的执行过程</h2><ul>
+<li>一组python 的 byte code（字节码），然后将编译的结果交给python 的虚拟机，由虚拟机按照顺序一条一条的执行字节码。</li>
+<li>编译过程不仅生成字节码，还要包含常量、变量、占用栈的空间等，Pyton中编译过程生成code对象PyCodeObject。将PyCodeObject写入二进制文件，即.pyc。</li>
+<li>编译过程与虚拟机执行过程均在python25.dll中。<br><img src="https://img-blog.csdn.net/20130705202522734" alt="Python程序执行过程"></li>
+</ul>
+<h2 id="7-2-Python编译器的编译结果——PyCodeObject对象"><a href="#7-2-Python编译器的编译结果——PyCodeObject对象" class="headerlink" title="7.2 Python编译器的编译结果——PyCodeObject对象"></a>7.2 Python编译器的编译结果——PyCodeObject对象</h2><h3 id="7-2-1-PyCodeObject-对象与pyc文件"><a href="#7-2-1-PyCodeObject-对象与pyc文件" class="headerlink" title="7.2.1 PyCodeObject 对象与pyc文件"></a>7.2.1 PyCodeObject 对象与pyc文件</h3><ul>
+<li>运行<code>python demo.py</code> ,<ul>
+<li>在python 运行期间，这些源文件的静态信息存储在PyCodeObject 对象，</li>
+<li>在运行结束后，将PyCodeObject 对象的信息存储在pyc对象中。</li>
+<li>下次执行时，python就会重新根据pyc的文件直接建立内存中的 PyCodeObject 对象，不用再次对源文件进行编译。</li>
+</ul>
+</li>
+</ul>
+<h3 id="7-2-2-python源码源码中PyCodeObject"><a href="#7-2-2-python源码源码中PyCodeObject" class="headerlink" title="7.2.2 python源码源码中PyCodeObject"></a>7.2.2 python源码源码中PyCodeObject</h3><ul>
+<li>PyCodeObject对象<ul>
+<li>在编译过程中，一个Code Block对应生产一个PyCodeObject对象。</li>
+<li>新的Code Block: 进入一个新的命名空间，或者作用域</li>
+<li>在python中，类、函数、module都对应着一个独立的名字空间，因此，都会与一个PyCodeObject对象</li>
+</ul>
+</li>
+</ul>
+<h3 id="7-2-3-pyc对象？"><a href="#7-2-3-pyc对象？" class="headerlink" title="7.2.3 pyc对象？"></a>7.2.3 pyc对象？</h3><ul>
+<li>每一个PyCodeObject对象都包含了每一个Code Block 中所有Python 源代码经过编译后得到的byte code序列。</li>
+<li>当执行import module 操作时，生产pyc文件</li>
+<li></li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">/* Bytecode object */</span><br><span class="line">typedef struct &#123;</span><br><span class="line">    PyObject_HEAD</span><br><span class="line">    int co_argcount;		/* #arguments, except *args */</span><br><span class="line">    int co_nlocals;		/* #local variables */</span><br><span class="line">    int co_stacksize;		/* #entries needed for evaluation stack */</span><br><span class="line">    int co_flags;		/* CO_..., see below */</span><br><span class="line">    PyObject *co_code;		/* instruction opcodes */</span><br><span class="line">    PyObject *co_consts;	/* list (constants used) */</span><br><span class="line">    PyObject *co_names;		/* list of strings (names used) */</span><br><span class="line">    PyObject *co_varnames;	/* tuple of strings (local variable names) */</span><br><span class="line">    PyObject *co_freevars;	/* tuple of strings (free variable names) */</span><br><span class="line">    PyObject *co_cellvars;      /* tuple of strings (cell variable names) */</span><br><span class="line">    /* The rest doesn&apos;t count for hash/cmp */</span><br><span class="line">    PyObject *co_filename;	/* string (where it was loaded from) */</span><br><span class="line">    PyObject *co_name;		/* string (name, for reference) */</span><br><span class="line">    int co_firstlineno;		/* first source line number */</span><br><span class="line">    PyObject *co_lnotab;	/* string (encoding addr&lt;-&gt;lineno mapping) See</span><br><span class="line">				   Objects/lnotab_notes.txt for details. */</span><br><span class="line">    void *co_zombieframe;     /* for optimization only (see frameobject.c) */</span><br><span class="line">    PyObject *co_weakreflist;   /* to support weakrefs to code objects */</span><br><span class="line">&#125; PyCodeObject;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">[generate_pyc.pyc]</span><br><span class="line">import imp</span><br><span class="line">import sys</span><br><span class="line"> </span><br><span class="line">def generate_pyc(name):</span><br><span class="line">    fp, pathname, description = imp.find_module(name)</span><br><span class="line">    try:</span><br><span class="line">        imp.load_module(name, fp, pathname, description)    </span><br><span class="line">    finally:</span><br><span class="line">        if fp:</span><br><span class="line">            fp.close()</span><br><span class="line"> </span><br><span class="line">if __name__ == &apos;__main__&apos;:</span><br><span class="line">    generate_pyc(sys.argv[1])</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://upload-images.jianshu.io/upload_images/413992-b2a985f0a79cbb47.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1000/format/webp" alt="PyCodeObject 中各个域的作用"><br><img src="http://res.cloudinary.com/kdr2/image/upload/img-kdr2-com/2010/12/pyc_format_example_0.png" alt="结构"></p>
+<h3 id="7-2-4-在Python中访问PyCodeObject对象"><a href="#7-2-4-在Python中访问PyCodeObject对象" class="headerlink" title="7.2.4 在Python中访问PyCodeObject对象"></a>7.2.4 在Python中访问PyCodeObject对象</h3><ul>
+<li>Python 标准库提供了用来生成代码对应字节码的工具 dis。dis 提供一个名为 dis 的方法，这个方法接收一个 code 对象，然后会输出 code 对象里的字节码指令信息。</li>
+<li>通过complice 内建函数得到一个PyCodeObject对象</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">s = open(&apos;demo.py&apos;).read()</span><br><span class="line">co = compile(s, &apos;demo.py&apos;, &apos;exec&apos;)</span><br><span class="line"> dir(co)</span><br><span class="line"> print co.co_nlocals</span><br><span class="line">import dis</span><br><span class="line">dis.dis(co)</span><br></pre></td></tr></table></figure>
+
+<h2 id="7-3-Pyc文件的生成"><a href="#7-3-Pyc文件的生成" class="headerlink" title="7.3 Pyc文件的生成"></a>7.3 Pyc文件的生成</h2><h3 id="7-3-1-创建pyc文件的具体过程"><a href="#7-3-1-创建pyc文件的具体过程" class="headerlink" title="7.3.1 创建pyc文件的具体过程"></a>7.3.1 创建pyc文件的具体过程</h3><ul>
+<li><code>write_compiled_module</code> 函数将PyCodeObject对象写入文件中<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line">static void</span><br><span class="line">write_compiled_module(PyCodeObject *co, char *cpathname, struct stat *srcstat)</span><br><span class="line">&#123;</span><br><span class="line">    FILE *fp;</span><br><span class="line">    time_t mtime = srcstat-&gt;st_mtime;</span><br><span class="line">#ifdef MS_WINDOWS   /* since Windows uses different permissions  */</span><br><span class="line">    mode_t mode = srcstat-&gt;st_mode &amp; ~S_IEXEC;</span><br><span class="line">#else</span><br><span class="line">    mode_t mode = srcstat-&gt;st_mode &amp; ~S_IXUSR &amp; ~S_IXGRP &amp; ~S_IXOTH;</span><br><span class="line">#endif</span><br><span class="line"> </span><br><span class="line">    fp = open_exclusive(cpathname, mode);</span><br><span class="line">    if (fp == NULL) &#123;</span><br><span class="line">        if (Py_VerboseFlag)</span><br><span class="line">            PySys_WriteStderr(</span><br><span class="line">                &quot;# can&apos;t create %s\n&quot;, cpathname);</span><br><span class="line">        return;</span><br><span class="line">    &#125;</span><br><span class="line">    PyMarshal_WriteLongToFile(pyc_magic, fp, Py_MARSHAL_VERSION);     # [1]写入`magic number`</span><br><span class="line">    /* First write a 0 for mtime */</span><br><span class="line">    PyMarshal_WriteLongToFile(0L, fp, Py_MARSHAL_VERSION);</span><br><span class="line">    PyMarshal_WriteObjectToFile((PyObject *)co, fp, Py_MARSHAL_VERSION);  # 写入`PyCodeObject`</span><br><span class="line">    if (fflush(fp) != 0 || ferror(fp)) &#123;</span><br><span class="line">        if (Py_VerboseFlag)</span><br><span class="line">            PySys_WriteStderr(&quot;# can&apos;t write %s\n&quot;, cpathname);</span><br><span class="line">        /* Don&apos;t keep partial file */</span><br><span class="line">        fclose(fp);</span><br><span class="line">        (void) unlink(cpathname);</span><br><span class="line">        return;</span><br><span class="line">    &#125;</span><br><span class="line">    /* Now write the true mtime */</span><br><span class="line">    fseek(fp, 4L, 0);</span><br><span class="line">    assert(mtime &lt; LONG_MAX);</span><br><span class="line">    PyMarshal_WriteLongToFile((long)mtime, fp, Py_MARSHAL_VERSION);   # 写入 pyc 创建时间</span><br><span class="line">    fflush(fp);</span><br><span class="line">    fclose(fp);</span><br><span class="line">    if (Py_VerboseFlag)</span><br><span class="line">        PySys_WriteStderr(&quot;# wrote %s\n&quot;, cpathname);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+<ol>
+<li>magic number<br>是 Python 定义的一个整数值，不同版本定义不同，用来确保 Python 的兼容性。Python 在加载 pyc 时首先检查 magic number ，如果与 Python 自身的 magic number 不同，说明创建 pyc 的 Python 版本 与 当前版本不兼容，会拒绝加载。代码[1]</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">#define MAGIC (62211 | ((long)&apos;\r&apos;&lt;&lt;16) | ((long)&apos;\n&apos;&lt;&lt;24))</span><br><span class="line">static long pyc_magic = MAGIC;</span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>pyc 创建时间<br>使得 Python 自动将 pyc 文件与最新的 Python 文件同步。当对 Python 程序进行编译产生 pyc 后，如果后来进行了修改，此时 Python 在尝试加载 pyc 时，会发现 pyc 创建时间早于 Python 程序，于是将重新编译，生成新的 pyc 文件。</li>
+<li>PyCodeObject<br>编译器会遍历 PyCodeObject 中的所有域，并依次写入 pyc。对于 PyCodeObject 中的每一个对象，同样会进行遍历，并写入类型标志和数据（数值/字符串）</li>
+</ol>
+<ul>
+<li>生产pyc文件<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">import py_compile</span><br><span class="line">py_compile.compile(&apos;/path/to/foo.py&apos;)</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<p><a href="http://note.youdao.com/noteshare?id=94bcafc9ab0ac0c11d36fcfee5ef493d&sub=BBD6E31BB5A64B78A615922A3EF36DA2" target="_blank" rel="noopener">附件-解析过程</a></p>
+<h3 id="7-3-2-向pyc文件写入字符串"><a href="#7-3-2-向pyc文件写入字符串" class="headerlink" title="7.3.2 向pyc文件写入字符串"></a>7.3.2 向pyc文件写入字符串</h3><ul>
+<li><p>WFILE 结构体</p>
+<ul>
+<li>strings：当写入pyc文件时，string指向一个PyDictObject，当读取pyc文件时，string指向一个PyListObject。<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">typedef struct &#123;</span><br><span class="line">    FILE *fp;</span><br><span class="line">    int error;  /* see WFERR_* values */</span><br><span class="line">    int depth;</span><br><span class="line">    /* If fp == NULL, the following are valid: */</span><br><span class="line">    PyObject *str;</span><br><span class="line">    char *ptr;</span><br><span class="line">    char *end;</span><br><span class="line">    PyObject *strings; /* dict on marshal, list on unmarshal */</span><br><span class="line">    int version;</span><br><span class="line">&#125; WFILE;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+<li><p>python 将字符串写入pyc文件的过程</p>
+<ul>
+<li>普通字符串：写入字符串类型标识<code>TYPE_STRING</code>,然后调用<code>w_long</code>写入字符串的长度，最后通过<code>w_string</code>写入字符串本身。（代码[4]）</li>
+<li>python 进入intern字符串首次写入（代码[3]）<ol>
+<li>将（字符串，序号）添加到string</li>
+<li>将类型标识TYPE_INTERND和字符串本身写入到pyc文件中</li>
+</ol>
+</li>
+<li>python 进入intern字符串非首次写入（代码[2]）<ol>
+<li>将类型标识TYPE_STRINGREF和p-&gt;string中查找到序号写入pyc文件中。</li>
+</ol>
+</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line">//w_object对于字符串的处理</span><br><span class="line">else if (PyString_CheckExact(v)) &#123;</span><br><span class="line">        if (p-&gt;strings &amp;&amp; PyString_CHECK_INTERNED(v)) &#123;</span><br><span class="line">			//[1]：获得 PyStringObject对象在strings中的序号</span><br><span class="line">            PyObject *o = PyDict_GetItem(p-&gt;strings, v);</span><br><span class="line">			//[2]：intern字符串的非首次写入</span><br><span class="line">            if (o) &#123;</span><br><span class="line">                long w = PyInt_AsLong(o);</span><br><span class="line">                w_byte(TYPE_STRINGREF, p);</span><br><span class="line">                w_long(w, p);</span><br><span class="line">                goto exit;</span><br><span class="line">            &#125;</span><br><span class="line">			//[3]：intern字符串的首次写入</span><br><span class="line">            else &#123;</span><br><span class="line">                int ok;</span><br><span class="line">                o = PyInt_FromSsize_t(PyDict_Size(p-&gt;strings));</span><br><span class="line">                ok = o &amp;&amp;</span><br><span class="line">                     PyDict_SetItem(p-&gt;strings, v, o) &gt;= 0;</span><br><span class="line">                Py_XDECREF(o);</span><br><span class="line">                if (!ok) &#123;</span><br><span class="line">                    p-&gt;depth--;</span><br><span class="line">                    p-&gt;error = WFERR_UNMARSHALLABLE;</span><br><span class="line">                    return;</span><br><span class="line">                &#125;</span><br><span class="line">                w_byte(TYPE_INTERNED, p);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">		//[4]：写入普通字符串</span><br><span class="line">        else &#123;</span><br><span class="line">            w_byte(TYPE_STRING, p);</span><br><span class="line">        &#125;</span><br><span class="line">		//写入字符串</span><br><span class="line">        w_pstring(PyBytes_AS_STRING(v), PyString_GET_SIZE(v), p);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>读取pyc文件<ul>
+<li>读取pyc文件时，WFILE.strings是一个PyListObject对象<br><img src="https://img-blog.csdn.net/20140617174258796?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvemhlbmdzZW5saWU=/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" alt="读取"><blockquote>
+<p>需要说明一下的是<code>co_lnotab域。在Python2.3以前，有一个byte code，唤做SET_LINENO</code>，这个byte code会记录.py文件中source code的位置信息，这个信息对于调试和显示异常信息都有用。但是，从Python2.3之后，Python在编译时不会再产生这个byte code，相应的，Python在编译时，将这个信息记录到了co_lnotab中。</p>
+</blockquote>
+</li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p><code>co_lnotab</code>中的byte code和source code的对应信息是以unsigned bytes的数组形式存在的，数组的形式可以看作（byte code在co_code中位置增量，代码行数增量）形式的一个list。比如对于下面的例子：  </p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>Byte code在co_code中的偏移</th>
+<th>.py文件中源代码的行数</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>0</td>
+<td>1</td>
+</tr>
+<tr>
+<td>6</td>
+<td>2</td>
+</tr>
+<tr>
+<td>50</td>
+<td>7</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>这里有一个小小的技巧，Python不会直接记录这些信息，相反，它会记录这些信息间的增量值，所以，对应的co_lnotab就应该是：0，1， 6，1， 44，5。</p>
+</blockquote>
+<pre><code>* [pyc文件格式解析](https://www.jianshu.com/p/03d81eb9ac9b)</code></pre><h3 id="7-3-3-一个PyCodeObject，多个PyCodeObject"><a href="#7-3-3-一个PyCodeObject，多个PyCodeObject" class="headerlink" title="7.3.3 一个PyCodeObject，多个PyCodeObject"></a>7.3.3 一个PyCodeObject，多个PyCodeObject</h3><ul>
+<li>co_consts域写入其他的pyCodeObject对象？</li>
+<li></li>
+</ul>
+<h2 id="7-4-Python的字节码"><a href="#7-4-Python的字节码" class="headerlink" title="7.4 Python的字节码"></a>7.4 Python的字节码</h2><ul>
+<li>简单粗略解析</li>
+<li>104条字节码指令，在官网中可查询</li>
+<li>可通过<code>HAS_ARG</code>宏判断一个字节码是否需要参数</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">#define HAVE_ARGUMENT	90	/* Opcodes from here have an argument: */</span><br><span class="line">#define HAS_ARG(op) ((op) &gt;= HAVE_ARGUMENT)</span><br></pre></td></tr></table></figure>
+
+<h2 id="7-5-解析pyc文件"><a href="#7-5-解析pyc文件" class="headerlink" title="7.5 解析pyc文件"></a>7.5 解析pyc文件</h2><h2 id="待解决问题"><a href="#待解决问题" class="headerlink" title="待解决问题"></a>待解决问题</h2><ul>
+<li>co_lnotab的含义？和反编译过程</li>
+<li><h2 id="参考文件"><a href="#参考文件" class="headerlink" title="参考文件"></a>参考文件</h2></li>
+</ul>
+<p><a href="http://python.jobbole.com/84057/" target="_blank" rel="noopener">Python 编译：code对象 与 pyc文件</a><br><a href="https://blog.csdn.net/zhengsenlie/article/details/31015635" target="_blank" rel="noopener">link</a><br><a href="https://kdr2.com/tech/main/1012-pyc-format.html" target="_blank" rel="noopener">pyc文件解析</a><br><a href="https://blog.csdn.net/yu132563/article/details/40921923" target="_blank" rel="noopener">Python源码剖析[16] —— Pyc文件解析</a></p>
+
+    </div>
+
+    
+    
+    
+        
+      
+
+      <footer class="post-footer">
+          
+            
+          
+          <div class="post-tags">
+            
+              <a href="/tags/源码/" rel="tag"># 源码</a>
+            
+              <a href="/tags/python/" rel="tag"># python</a>
+            
+          </div>
+        
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+              
+                <a href="/2019/09/08/第6章-最简单的Python模拟——Small-Python/" rel="next" title="第6章 最简单的Python模拟——Small Python">
+                  <i class="fa fa-chevron-left"></i> 第6章 最简单的Python模拟——Small Python
+                </a>
+              
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+              
+                <a href="/2019/09/08/第7章-Python的编译结果——Code对象与pyc文件/" rel="prev" title="第7章 Python的编译结果——Code对象与pyc文件">
+                  第7章 Python的编译结果——Code对象与pyc文件 <i class="fa fa-chevron-right"></i>
+                </a>
+              
+            </div>
+          </div>
+        
+      </footer>
+    
+  </div>
+  
+  
+  
+  </article>
+
+  </div>
+
+
+          </div>
+          
+
+        </div>
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+        
+        
+        
+        
+      
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#第7章-Python的编译结果——Code对象与pyc文件"><span class="nav-number">1.</span> <span class="nav-text">第7章 Python的编译结果——Code对象与pyc文件</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#7-1-Python程序的执行过程"><span class="nav-number">1.1.</span> <span class="nav-text">7.1 Python程序的执行过程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7-2-Python编译器的编译结果——PyCodeObject对象"><span class="nav-number">1.2.</span> <span class="nav-text">7.2 Python编译器的编译结果——PyCodeObject对象</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#7-2-1-PyCodeObject-对象与pyc文件"><span class="nav-number">1.2.1.</span> <span class="nav-text">7.2.1 PyCodeObject 对象与pyc文件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-2-2-python源码源码中PyCodeObject"><span class="nav-number">1.2.2.</span> <span class="nav-text">7.2.2 python源码源码中PyCodeObject</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-2-3-pyc对象？"><span class="nav-number">1.2.3.</span> <span class="nav-text">7.2.3 pyc对象？</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-2-4-在Python中访问PyCodeObject对象"><span class="nav-number">1.2.4.</span> <span class="nav-text">7.2.4 在Python中访问PyCodeObject对象</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7-3-Pyc文件的生成"><span class="nav-number">1.3.</span> <span class="nav-text">7.3 Pyc文件的生成</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#7-3-1-创建pyc文件的具体过程"><span class="nav-number">1.3.1.</span> <span class="nav-text">7.3.1 创建pyc文件的具体过程</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-3-2-向pyc文件写入字符串"><span class="nav-number">1.3.2.</span> <span class="nav-text">7.3.2 向pyc文件写入字符串</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-3-3-一个PyCodeObject，多个PyCodeObject"><span class="nav-number">1.3.3.</span> <span class="nav-text">7.3.3 一个PyCodeObject，多个PyCodeObject</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7-4-Python的字节码"><span class="nav-number">1.4.</span> <span class="nav-text">7.4 Python的字节码</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7-5-解析pyc文件"><span class="nav-number">1.5.</span> <span class="nav-text">7.5 解析pyc文件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#待解决问题"><span class="nav-number">1.6.</span> <span class="nav-text">待解决问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文件"><span class="nav-number">1.7.</span> <span class="nav-text">参考文件</span></a></li></ol></li></ol></div>
+        
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">zzt</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+  <nav class="site-state motion-element">
+      <div class="site-state-item site-state-posts">
+        
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">40</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-categories">
+        
+          
+            <a href="/categories/">
+          
+        
+        
+        
+          
+        
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-tags">
+        
+          
+            <a href="/tags/">
+          
+        
+        
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">tags</span>
+        </a>
+      </div>
+    
+  </nav>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zzt</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.9.0</div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">Theme – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v7.4.0</div>
+
+        
+
+
+
+
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+
+
+  <script src="/lib/anime.min.js?v=3.1.0"></script>
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+<script src="/js/utils.js?v=7.4.0"></script><script src="/js/motion.js?v=7.4.0"></script>
+<script src="/js/schemes/muse.js?v=7.4.0"></script>
+<script src="/js/next-boot.js?v=7.4.0"></script>
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+</body>
+</html>

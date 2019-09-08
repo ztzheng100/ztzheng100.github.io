@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+
+
+
+
+
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.4.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.4.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.4.0">
+  <link rel="mask-icon" href="/images/logo.svg?v=7.4.0" color="#222">
+
+<link rel="stylesheet" href="/css/main.css?v=7.4.0">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '7.4.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: 'Copy',
+      copy_success: 'Copied',
+      copy_failure: 'Copy failed'
+    },
+    sidebarPadding: 40
+  };
+</script>
+
+  <meta name="description" content="[toc] 第15章 PYTHON多线程机制 key   python线程机制的实现15.1 GIL与线程调度   GIL: Global Interpreter Lock (全局解释器锁)  Python中的GIL是一个非常霸道的互斥实现，在一个线程拥有了解释器的访问权之后，其它的所有线程都必须等待它释放解释器的访问权，即使这些线程的下一条指令并不会互相影响。这样的说法也就意味着，无论如何，在同">
+<meta name="keywords" content="源码,python">
+<meta property="og:type" content="article">
+<meta property="og:title" content="第15章 PYTHON多线程机制">
+<meta property="og:url" content="https://ztzheng100.github.io.git/2019/09/08/python源码剖析/第15章-PYTHON多线程机制/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="[toc] 第15章 PYTHON多线程机制 key   python线程机制的实现15.1 GIL与线程调度   GIL: Global Interpreter Lock (全局解释器锁)  Python中的GIL是一个非常霸道的互斥实现，在一个线程拥有了解释器的访问权之后，其它的所有线程都必须等待它释放解释器的访问权，即使这些线程的下一条指令并不会互相影响。这样的说法也就意味着，无论如何，在同">
+<meta property="og:locale" content="en">
+<meta property="og:updated_time" content="2019-09-08T12:21:54.036Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="第15章 PYTHON多线程机制">
+<meta name="twitter:description" content="[toc] 第15章 PYTHON多线程机制 key   python线程机制的实现15.1 GIL与线程调度   GIL: Global Interpreter Lock (全局解释器锁)  Python中的GIL是一个非常霸道的互斥实现，在一个线程拥有了解释器的访问权之后，其它的所有线程都必须等待它释放解释器的访问权，即使这些线程的下一条指令并不会互相影响。这样的说法也就意味着，无论如何，在同">
+  <link rel="canonical" href="https://ztzheng100.github.io.git/2019/09/08/python源码剖析/第15章-PYTHON多线程机制/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>第15章 PYTHON多线程机制 | Hexo</title>
+  <meta name="generator" content="Hexo 3.9.0">
+  
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="en">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Hexo</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+      
+      
+      
+        
+        <li class="menu-item menu-item-home">
+      
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Home</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-tags">
+      
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>Tags</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-categories">
+      
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>Categories</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-archives">
+      
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archives</a>
+
+  </li>
+  </ul>
+
+    
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+      <article itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block post">
+    <link itemprop="mainEntityOfPage" href="https://ztzheng100.github.io.git/2019/09/08/python源码剖析/第15章-PYTHON多线程机制/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zzt">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Hexo">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">第15章 PYTHON多线程机制
+
+          
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              
+                
+              
+
+              <time title="Created: 2019-09-08 20:21:38 / Modified: 20:21:54" itemprop="dateCreated datePublished" datetime="2019-09-08T20:21:38+08:00">2019-09-08</time>
+            </span>
+          
+            
+
+            
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/python源码剖析/" itemprop="url" rel="index"><span itemprop="name">python源码剖析</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>[toc]</p>
+<h1 id="第15章-PYTHON多线程机制"><a href="#第15章-PYTHON多线程机制" class="headerlink" title="第15章 PYTHON多线程机制"></a>第15章 PYTHON多线程机制</h1><ul>
+<li><p>key </p>
+<ul>
+<li><em>python线程机制的实现</em><h2 id="15-1-GIL与线程调度"><a href="#15-1-GIL与线程调度" class="headerlink" title="15.1 GIL与线程调度"></a>15.1 GIL与线程调度</h2></li>
+</ul>
+</li>
+<li><p>GIL: Global Interpreter Lock (全局解释器锁)</p>
+<ul>
+<li>Python中的GIL是一个非常霸道的互斥实现，在一个线程拥有了解释器的访问权之后，其它的所有线程都必须等待它释放解释器的访问权，即使这些线程的下一条指令并不会互相影响。<br>这样的说法也就意味着，无论如何，在同一时间，只能有一个线程能访问Python提供的API</li>
+</ul>
+</li>
+<li><p>为什么需要全局解释锁？</p>
+<blockquote>
+<p>如果A执行完第一个动作后，obj-&gt;ob_refcnt的值变为1，不幸的是，在这里时候线程调度机制将A挂起，唤醒了B。更为不幸的是，B同样也开始销毁对obj的引用。B完成第一个动作后，obj -&gt;ob_refcnt为0，B是一个幸运儿，它没有被线程调度打断，而是顺利完成了接下来的第二个动作，将对象销毁，内存释放。好了吗，现在A又被重新唤醒，可现在已是物是人非，obj -&gt;ob_refcnt已经被B减少到0，而不是当时的1.按照约定，A开始在一次地对已经销毁的对象进行对象销毁的内存释放动作。结局是什么？只有天知道 </p>
+</blockquote>
+</li>
+<li><p>关于线程调度</p>
+<ol>
+<li><p>在何时挂起当前线程，选择处于等待状态的下一个线程？<br> 线程A何时释放GIL呢（如果A使用完解释器之后才释放GIL，那么，并行的计算退化为串行，多线程的意义何在？）</p>
+<ul>
+<li>操作系统的线程调度机制<ul>
+<li>操作系统是怎样进行进程的切换的：当一个进程执行了一段时间后，发生了时钟中断，操作系统响应时钟中断，并在这时开始进行进程的调度。</li>
+</ul>
+</li>
+<li>python的线程调度机制<ul>
+<li>Python也是通过软件模拟了时钟中断，来激活线程的调度。</li>
+<li>Python字节码解释器的工作原理是按照指令的顺序一条一条的顺序执行，Python内部维护着一个数值N（++这个数值N就是Python内部的时钟++），意味着Python在执行了N条指令以后应该立即启动线程调度机制。</li>
+<li>可以++通过sys.getcheckinterval()来获取这个值++，也可以通过sys.setcheckinterval()来更改这个值。</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>在众多处于等待状态的线程中，应该选择激活哪个线程？<br> 所以毫无疑问的，Python拥有其自己的一套线程调度机制。</p>
+<blockquote>
+<p>不知道。<br>这个选择机制Python交给了底层操作系统来解决。<br>也就是说，Python借助了底层操作系统所提供的线程调度机制来选择下一个使用Python解释器的线程是哪一个。  </p>
+</blockquote>
+</li>
+</ol>
+</li>
+<li><p>最终，在各不相同的原生线程的基础之上，Python提供了一套统一的抽象机制，给Python的使用者一个简单方便的多线程工具箱（thread、threading）。</p>
+</li>
+</ul>
+<h2 id="15-2-初见PYTHON-THREAD"><a href="#15-2-初见PYTHON-THREAD" class="headerlink" title="15.2 初见PYTHON THREAD"></a>15.2 初见PYTHON THREAD</h2><ul>
+<li>Thread module :C语言实现，最基础的多线程机制接口。python对操作系统的原生线程机制所做的精巧的包装。</li>
+<li>threading module ： Python语言实现，为用户提供了更加方便的多线程机制接口。</li>
+</ul>
+<h2 id="15-3-PYTHON线程的创建"><a href="#15-3-PYTHON线程的创建" class="headerlink" title="15.3 PYTHON线程的创建"></a>15.3 PYTHON线程的创建</h2><ul>
+<li>首先从创建线程说起，在threadmodule.c中，<code>thread_PyThread_start_new_thread()</code>函数通过三个主要的动作完成一个线程的创建：</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br></pre></td><td class="code"><pre><span class="line">static PyObject *</span><br><span class="line">thread_PyThread_start_new_thread(PyObject *self, PyObject *fargs)</span><br><span class="line">&#123;</span><br><span class="line">    PyObject *func, *args, *keyw = NULL;</span><br><span class="line">    struct bootstate *boot;</span><br><span class="line">    long ident;</span><br><span class="line"></span><br><span class="line">    if (!PyArg_UnpackTuple(fargs, &quot;start_new_thread&quot;, 2, 3,</span><br><span class="line">                           &amp;func, &amp;args, &amp;keyw))</span><br><span class="line">        return NULL;</span><br><span class="line">    if (!PyCallable_Check(func)) &#123;</span><br><span class="line">        PyErr_SetString(PyExc_TypeError,</span><br><span class="line">                        &quot;first arg must be callable&quot;);</span><br><span class="line">        return NULL;</span><br><span class="line">    &#125;</span><br><span class="line">    if (!PyTuple_Check(args)) &#123;</span><br><span class="line">        PyErr_SetString(PyExc_TypeError,</span><br><span class="line">                        &quot;2nd arg must be a tuple&quot;);</span><br><span class="line">        return NULL;</span><br><span class="line">    &#125;</span><br><span class="line">    if (keyw != NULL &amp;&amp; !PyDict_Check(keyw)) &#123;</span><br><span class="line">        PyErr_SetString(PyExc_TypeError,</span><br><span class="line">                        &quot;optional 3rd arg must be a dictionary&quot;);</span><br><span class="line">        return NULL;</span><br><span class="line">    &#125;</span><br><span class="line">    //[1]:创建bootstate结构</span><br><span class="line">    boot = PyMem_NEW(struct bootstate, 1);</span><br><span class="line">    if (boot == NULL)</span><br><span class="line">        return PyErr_NoMemory();</span><br><span class="line">    boot-&gt;interp = PyThreadState_GET()-&gt;interp;</span><br><span class="line">    boot-&gt;func = func;</span><br><span class="line">    boot-&gt;args = args;</span><br><span class="line">    boot-&gt;keyw = keyw;</span><br><span class="line">    boot-&gt;tstate = _PyThreadState_Prealloc(boot-&gt;interp);</span><br><span class="line">    if (boot-&gt;tstate == NULL) &#123;</span><br><span class="line">        PyMem_DEL(boot);</span><br><span class="line">        return PyErr_NoMemory();</span><br><span class="line">    &#125;</span><br><span class="line">    Py_INCREF(func);</span><br><span class="line">    Py_INCREF(args);</span><br><span class="line">    Py_XINCREF(keyw);</span><br><span class="line">    //[2]: 初始化多线程环境</span><br><span class="line">    PyEval_InitThreads(); /* Start the interpreter&apos;s thread-awareness */</span><br><span class="line">    //[3]:创建线程</span><br><span class="line">    ident = PyThread_start_new_thread(t_bootstrap, (void*) boot);</span><br><span class="line">    if (ident == -1) &#123;</span><br><span class="line">        PyErr_SetString(ThreadError, &quot;can&apos;t start new thread&quot;);</span><br><span class="line">        Py_DECREF(func);</span><br><span class="line">        Py_DECREF(args);</span><br><span class="line">        Py_XDECREF(keyw);</span><br><span class="line">        PyThreadState_Clear(boot-&gt;tstate);</span><br><span class="line">        PyMem_DEL(boot);</span><br><span class="line">        return NULL;</span><br><span class="line">    &#125;</span><br><span class="line">    return PyInt_FromLong(ident);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="15-3-1-建立多线程环境"><a href="#15-3-1-建立多线程环境" class="headerlink" title="15.3.1 建立多线程环境"></a>15.3.1 建立多线程环境</h3><ul>
+<li><p>创建GIL</p>
+<ul>
+<li><p>多线程环境的建立，主要就是创建GIL；</p>
+</li>
+<li><p>创建GIL的工作由<code>PyThread_allocate_lock</code>完成；  </p>
+</li>
+<li><p>python25\python目录下的<code>Thread_**.h</code>文件包装了不同操作系统的原生线程，通过统一的接口暴露给python；比如 <code>PyThread_allocate_lock</code> [threa_nt.h]包装了win32平台的原生thread。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">[pythread.h]</span><br><span class="line">typedef void *PyThread_type_lock; /*void* 可以任何东西 */</span><br><span class="line">[ceval.c]</span><br><span class="line">static long main_thread = 0;</span><br><span class="line">static PyThread_type_lock interpreter_lock = 0; /* This is the GIL */</span><br><span class="line">void</span><br><span class="line">PyEval_InitThreads(void)</span><br><span class="line">&#123;</span><br><span class="line">    if (interpreter_lock)</span><br><span class="line">        return;</span><br><span class="line">    interpreter_lock = PyThread_allocate_lock();</span><br><span class="line">    PyThread_acquire_lock(interpreter_lock, 1);</span><br><span class="line">    main_thread = PyThread_get_thread_ident();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>initialized 变量：指示着为了使用底层平台所提供的原生thread，必须的初始化动作是否已经完成；</p>
+<ul>
+<li><code>PyThread_init_thread</code>作用是设置initialized变量；</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">void</span><br><span class="line">PyThread_init_thread(void)</span><br><span class="line">&#123;</span><br><span class="line">#ifdef Py_DEBUG</span><br><span class="line">    char *p = Py_GETENV(&quot;PYTHONTHREADDEBUG&quot;);</span><br><span class="line"></span><br><span class="line">    if (p) &#123;</span><br><span class="line">        if (*p)</span><br><span class="line">            thread_debug = atoi(p);</span><br><span class="line">        else</span><br><span class="line">            thread_debug = 1;</span><br><span class="line">    &#125;</span><br><span class="line">#endif /* Py_DEBUG */</span><br><span class="line">    if (initialized)</span><br><span class="line">        return;</span><br><span class="line">    initialized = 1;</span><br><span class="line">    dprintf((&quot;PyThread_init_thread called\n&quot;));</span><br><span class="line">    PyThread__init_thread();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+<li><p>NRMUTEX</p>
+</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">typedef struct NRMUTEX &#123;</span><br><span class="line">    LONG   owned ;</span><br><span class="line">    DWORD  thread_id ;</span><br><span class="line">    HANDLE hevent ;</span><br><span class="line">&#125; NRMUTEX, *PNRMUTEX ;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>获取GIL</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line">int</span><br><span class="line">PyThread_acquire_lock(PyThread_type_lock aLock, int waitflag)</span><br><span class="line">&#123;</span><br><span class="line">    int success ;</span><br><span class="line"></span><br><span class="line">    dprintf((&quot;%ld: PyThread_acquire_lock(%p, %d) called\n&quot;, PyThread_get_thread_ident(),aLock, waitflag));</span><br><span class="line"></span><br><span class="line">    success = aLock &amp;&amp; EnterNonRecursiveMutex((PNRMUTEX) aLock, (waitflag ? INFINITE : 0)) == WAIT_OBJECT_0 ;</span><br><span class="line"></span><br><span class="line">    dprintf((&quot;%ld: PyThread_acquire_lock(%p, %d) -&gt; %d\n&quot;, PyThread_get_thread_ident(),aLock, waitflag, success));</span><br><span class="line"></span><br><span class="line">    return success;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">DWORD</span><br><span class="line">EnterNonRecursiveMutex(PNRMUTEX mutex, BOOL wait)</span><br><span class="line">&#123;</span><br><span class="line">    /* Assume that the thread waits successfully */</span><br><span class="line">    DWORD ret ;</span><br><span class="line"></span><br><span class="line">    /* InterlockedIncrement(&amp;mutex-&gt;owned) == 0 means that no thread currently owns the mutex */</span><br><span class="line">    if (!wait)</span><br><span class="line">    &#123;</span><br><span class="line">        if (InterlockedCompareExchange(&amp;mutex-&gt;owned, 0, -1) != -1)</span><br><span class="line">            return WAIT_TIMEOUT ;</span><br><span class="line">        ret = WAIT_OBJECT_0 ;</span><br><span class="line">    &#125;</span><br><span class="line">    else</span><br><span class="line">        ret = InterlockedIncrement(&amp;mutex-&gt;owned) ?</span><br><span class="line">            /* Some thread owns the mutex, let&apos;s wait... */</span><br><span class="line">            WaitForSingleObject(mutex-&gt;hevent, INFINITE) : WAIT_OBJECT_0 ;</span><br><span class="line"></span><br><span class="line">    mutex-&gt;thread_id = GetCurrentThreadId() ; /* We own it */</span><br><span class="line">    return ret ;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>释放GIL<ul>
+<li>子线程释放GIL后，GIL就到python 主线程了？</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">void</span><br><span class="line">PyThread_release_lock(PyThread_type_lock aLock)</span><br><span class="line">&#123;</span><br><span class="line">    dprintf((&quot;%ld: PyThread_release_lock(%p) called\n&quot;, PyThread_get_thread_ident(),aLock));</span><br><span class="line"></span><br><span class="line">    if (!(aLock &amp;&amp; LeaveNonRecursiveMutex((PNRMUTEX) aLock)))</span><br><span class="line">        dprintf((&quot;%ld: Could not PyThread_release_lock(%p) error: %ld\n&quot;, PyThread_get_thread_ident(), aLock, GetLastError()));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">BOOL</span><br><span class="line">LeaveNonRecursiveMutex(PNRMUTEX mutex)</span><br><span class="line">&#123;</span><br><span class="line">    /* We don&apos;t own the mutex */</span><br><span class="line">    mutex-&gt;thread_id = 0 ;</span><br><span class="line">    return</span><br><span class="line">        InterlockedDecrement(&amp;mutex-&gt;owned) &lt; 0 ||</span><br><span class="line">        SetEvent(mutex-&gt;hevent) ; /* Other threads are waiting, wake one on them up */</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="15-3-2-创建线程"><a href="#15-3-2-创建线程" class="headerlink" title="15.3.2 创建线程"></a>15.3.2 创建线程</h3><h4 id="15-3-2-1-子线程的诞生"><a href="#15-3-2-1-子线程的诞生" class="headerlink" title="15.3.2.1 子线程的诞生"></a>15.3.2.1 子线程的诞生</h4><ul>
+<li>主线程：</li>
+<li>子线程：</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br></pre></td><td class="code"><pre><span class="line">[threadmodule.c]</span><br><span class="line">static PyObject *</span><br><span class="line">thread_PyThread_start_new_thread(PyObject *self, PyObject *fargs)</span><br><span class="line">&#123;</span><br><span class="line">    PyObject *func, *args, *keyw = NULL;</span><br><span class="line">    struct bootstate *boot;</span><br><span class="line">    long ident;</span><br><span class="line"></span><br><span class="line">    if (!PyArg_UnpackTuple(fargs, &quot;start_new_thread&quot;, 2, 3,</span><br><span class="line">                           &amp;func, &amp;args, &amp;keyw))</span><br><span class="line">        return NULL;</span><br><span class="line">   //[1]:创建bootstate结构</span><br><span class="line">    boot = PyMem_NEW(struct bootstate, 1);</span><br><span class="line">    if (boot == NULL)</span><br><span class="line">        return PyErr_NoMemory();</span><br><span class="line">    boot-&gt;interp = PyThreadState_GET()-&gt;interp;</span><br><span class="line">    boot-&gt;func = func;</span><br><span class="line">    boot-&gt;args = args;</span><br><span class="line">    boot-&gt;keyw = keyw;</span><br><span class="line">    boot-&gt;tstate = _PyThreadState_Prealloc(boot-&gt;interp);</span><br><span class="line">    if (boot-&gt;tstate == NULL) &#123;</span><br><span class="line">        PyMem_DEL(boot);</span><br><span class="line">        return PyErr_NoMemory();</span><br><span class="line">    &#125;</span><br><span class="line">    Py_INCREF(func);</span><br><span class="line">    Py_INCREF(args);</span><br><span class="line">    Py_XINCREF(keyw);</span><br><span class="line">    //[2]:初始化多线程环境</span><br><span class="line">    PyEval_InitThreads(); /* Start the interpreter&apos;s thread-awareness */</span><br><span class="line">    //[3]:创建线程</span><br><span class="line">    ident = PyThread_start_new_thread(t_bootstrap, (void*) boot);</span><br><span class="line">    if (ident == -1) &#123;</span><br><span class="line">        PyErr_SetString(ThreadError, &quot;can&apos;t start new thread&quot;);</span><br><span class="line">        Py_DECREF(func);</span><br><span class="line">        Py_DECREF(args);</span><br><span class="line">        Py_XDECREF(keyw);</span><br><span class="line">        PyThreadState_Clear(boot-&gt;tstate);</span><br><span class="line">        PyMem_DEL(boot);</span><br><span class="line">        return NULL;</span><br><span class="line">    &#125;</span><br><span class="line">    return PyInt_FromLong(ident);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">[thread_nt.h]</span><br><span class="line"></span><br><span class="line">long</span><br><span class="line">PyThread_start_new_thread(void (*func)(void *), void *arg)</span><br><span class="line">&#123;</span><br><span class="line">    HANDLE hThread;</span><br><span class="line">    unsigned threadID;</span><br><span class="line">    callobj *obj;</span><br><span class="line"></span><br><span class="line">    dprintf((&quot;%ld: PyThread_start_new_thread called\n&quot;,</span><br><span class="line">             PyThread_get_thread_ident()));</span><br><span class="line">    if (!initialized)</span><br><span class="line">        PyThread_init_thread();</span><br><span class="line"></span><br><span class="line">    obj = (callobj*)HeapAlloc(GetProcessHeap(), 0, sizeof(*obj));</span><br><span class="line">    if (!obj)</span><br><span class="line">        return -1;</span><br><span class="line">    obj-&gt;func = func;</span><br><span class="line">    obj-&gt;arg = arg;</span><br><span class="line">#if defined(MS_WINCE)</span><br><span class="line">    hThread = CreateThread(NULL,</span><br><span class="line">                           Py_SAFE_DOWNCAST(_pythread_stacksize, Py_ssize_t, SIZE_T),</span><br><span class="line">                           bootstrap, obj, 0, &amp;threadID);</span><br><span class="line">#else</span><br><span class="line">    hThread = (HANDLE)_beginthreadex(0,</span><br><span class="line">                      Py_SAFE_DOWNCAST(_pythread_stacksize,</span><br><span class="line">                                       Py_ssize_t, unsigned int),</span><br><span class="line">                      bootstrap, obj,</span><br><span class="line">                      0, &amp;threadID);</span><br><span class="line">#endif</span><br><span class="line">    if (hThread == 0) &#123;</span><br><span class="line">#if defined(MS_WINCE)</span><br><span class="line">        /* Save error in variable, to prevent PyThread_get_thread_ident</span><br><span class="line">           from clobbering it. */</span><br><span class="line">        unsigned e = GetLastError();</span><br><span class="line">        dprintf((&quot;%ld: PyThread_start_new_thread failed, win32 error code %u\n&quot;,</span><br><span class="line">                 PyThread_get_thread_ident(), e));</span><br><span class="line">#else</span><br><span class="line">        /* I&apos;ve seen errno == EAGAIN here, which means &quot;there are</span><br><span class="line">         * too many threads&quot;.</span><br><span class="line">         */</span><br><span class="line">        int e = errno;</span><br><span class="line">        dprintf((&quot;%ld: PyThread_start_new_thread failed, errno %d\n&quot;,</span><br><span class="line">                 PyThread_get_thread_ident(), e));</span><br><span class="line">#endif</span><br><span class="line">        threadID = (unsigned)-1;</span><br><span class="line">        HeapFree(GetProcessHeap(), 0, obj);</span><br><span class="line">    &#125;</span><br><span class="line">    else &#123;</span><br><span class="line">        dprintf((&quot;%ld: PyThread_start_new_thread succeeded: %p\n&quot;,</span><br><span class="line">                 PyThread_get_thread_ident(), (void*)hThread));</span><br><span class="line">        CloseHandle(hThread);</span><br><span class="line">    &#125;</span><br><span class="line">    return (long) threadID;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="15-4-PYTHON线程的调度"><a href="#15-4-PYTHON线程的调度" class="headerlink" title="15.4 PYTHON线程的调度"></a>15.4 PYTHON线程的调度</h2><h3 id="15-4-1-标准调度"><a href="#15-4-1-标准调度" class="headerlink" title="15.4.1 标准调度"></a>15.4.1 标准调度</h3><h3 id="15-4-2-阻塞调度"><a href="#15-4-2-阻塞调度" class="headerlink" title="15.4.2 阻塞调度"></a>15.4.2 阻塞调度</h3><h2 id="15-5-PYTHON子线程的销毁"><a href="#15-5-PYTHON子线程的销毁" class="headerlink" title="15.5 PYTHON子线程的销毁"></a>15.5 PYTHON子线程的销毁</h2><h2 id="15-6-PYTHON线程的用户级互斥与同步"><a href="#15-6-PYTHON线程的用户级互斥与同步" class="headerlink" title="15.6 PYTHON线程的用户级互斥与同步"></a>15.6 PYTHON线程的用户级互斥与同步</h2><h3 id="15-6-1-用户级互斥与同步"><a href="#15-6-1-用户级互斥与同步" class="headerlink" title="15.6.1 用户级互斥与同步"></a>15.6.1 用户级互斥与同步</h3><h3 id="15-6-2-Lock对象"><a href="#15-6-2-Lock对象" class="headerlink" title="15.6.2 Lock对象"></a>15.6.2 Lock对象</h3><h2 id="15-7-高级线程库——THREADING"><a href="#15-7-高级线程库——THREADING" class="headerlink" title="15.7 高级线程库——THREADING"></a>15.7 高级线程库——THREADING</h2><h3 id="15-7-1-Threading-Module概述"><a href="#15-7-1-Threading-Module概述" class="headerlink" title="15.7.1 Threading Module概述"></a>15.7.1 Threading Module概述</h3><h3 id="15-7-2-Threading的线程同步工具"><a href="#15-7-2-Threading的线程同步工具" class="headerlink" title="15.7.2 Threading的线程同步工具"></a>15.7.2 Threading的线程同步工具</h3><h3 id="15-7-3-Threading中的Thread"><a href="#15-7-3-Threading中的Thread" class="headerlink" title="15.7.3 Threading中的Thread"></a>15.7.3 Threading中的Thread</h3><h2 id="参考文件"><a href="#参考文件" class="headerlink" title="参考文件"></a>参考文件</h2><p><a href="https://www.cnblogs.com/ybjourney/p/6429715.html" target="_blank" rel="noopener">Python多线程机制</a><br><a href="https://www.cnblogs.com/chenchao1990/p/5101973.html" target="_blank" rel="noopener">python多线程机制</a>  </p>
+
+    </div>
+
+    
+    
+    
+        
+      
+
+      <footer class="post-footer">
+          
+            
+          
+          <div class="post-tags">
+            
+              <a href="/tags/源码/" rel="tag"># 源码</a>
+            
+              <a href="/tags/python/" rel="tag"># python</a>
+            
+          </div>
+        
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+              
+                <a href="/2019/09/08/第14章-PYTHON模块的动态加载机制/" rel="next" title="第14章 PYTHON模块的动态加载机制">
+                  <i class="fa fa-chevron-left"></i> 第14章 PYTHON模块的动态加载机制
+                </a>
+              
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+              
+                <a href="/2019/09/08/第15章-PYTHON多线程机制/" rel="prev" title="第15章 PYTHON多线程机制">
+                  第15章 PYTHON多线程机制 <i class="fa fa-chevron-right"></i>
+                </a>
+              
+            </div>
+          </div>
+        
+      </footer>
+    
+  </div>
+  
+  
+  
+  </article>
+
+  </div>
+
+
+          </div>
+          
+
+        </div>
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+        
+        
+        
+        
+      
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#第15章-PYTHON多线程机制"><span class="nav-number">1.</span> <span class="nav-text">第15章 PYTHON多线程机制</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#15-1-GIL与线程调度"><span class="nav-number">1.1.</span> <span class="nav-text">15.1 GIL与线程调度</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#15-2-初见PYTHON-THREAD"><span class="nav-number">1.2.</span> <span class="nav-text">15.2 初见PYTHON THREAD</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#15-3-PYTHON线程的创建"><span class="nav-number">1.3.</span> <span class="nav-text">15.3 PYTHON线程的创建</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#15-3-1-建立多线程环境"><span class="nav-number">1.3.1.</span> <span class="nav-text">15.3.1 建立多线程环境</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#15-3-2-创建线程"><span class="nav-number">1.3.2.</span> <span class="nav-text">15.3.2 创建线程</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#15-3-2-1-子线程的诞生"><span class="nav-number">1.3.2.1.</span> <span class="nav-text">15.3.2.1 子线程的诞生</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#15-4-PYTHON线程的调度"><span class="nav-number">1.4.</span> <span class="nav-text">15.4 PYTHON线程的调度</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#15-4-1-标准调度"><span class="nav-number">1.4.1.</span> <span class="nav-text">15.4.1 标准调度</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#15-4-2-阻塞调度"><span class="nav-number">1.4.2.</span> <span class="nav-text">15.4.2 阻塞调度</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#15-5-PYTHON子线程的销毁"><span class="nav-number">1.5.</span> <span class="nav-text">15.5 PYTHON子线程的销毁</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#15-6-PYTHON线程的用户级互斥与同步"><span class="nav-number">1.6.</span> <span class="nav-text">15.6 PYTHON线程的用户级互斥与同步</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#15-6-1-用户级互斥与同步"><span class="nav-number">1.6.1.</span> <span class="nav-text">15.6.1 用户级互斥与同步</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#15-6-2-Lock对象"><span class="nav-number">1.6.2.</span> <span class="nav-text">15.6.2 Lock对象</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#15-7-高级线程库——THREADING"><span class="nav-number">1.7.</span> <span class="nav-text">15.7 高级线程库——THREADING</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#15-7-1-Threading-Module概述"><span class="nav-number">1.7.1.</span> <span class="nav-text">15.7.1 Threading Module概述</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#15-7-2-Threading的线程同步工具"><span class="nav-number">1.7.2.</span> <span class="nav-text">15.7.2 Threading的线程同步工具</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#15-7-3-Threading中的Thread"><span class="nav-number">1.7.3.</span> <span class="nav-text">15.7.3 Threading中的Thread</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文件"><span class="nav-number">1.8.</span> <span class="nav-text">参考文件</span></a></li></ol></li></ol></div>
+        
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">zzt</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+  <nav class="site-state motion-element">
+      <div class="site-state-item site-state-posts">
+        
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">40</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-categories">
+        
+          
+            <a href="/categories/">
+          
+        
+        
+        
+          
+        
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-tags">
+        
+          
+            <a href="/tags/">
+          
+        
+        
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">tags</span>
+        </a>
+      </div>
+    
+  </nav>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zzt</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.9.0</div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">Theme – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v7.4.0</div>
+
+        
+
+
+
+
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+
+
+  <script src="/lib/anime.min.js?v=3.1.0"></script>
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+<script src="/js/utils.js?v=7.4.0"></script><script src="/js/motion.js?v=7.4.0"></script>
+<script src="/js/schemes/muse.js?v=7.4.0"></script>
+<script src="/js/next-boot.js?v=7.4.0"></script>
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+
+
+
+
+
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.4.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.4.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.4.0">
+  <link rel="mask-icon" href="/images/logo.svg?v=7.4.0" color="#222">
+
+<link rel="stylesheet" href="/css/main.css?v=7.4.0">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '7.4.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: 'Copy',
+      copy_success: 'Copied',
+      copy_failure: 'Copy failed'
+    },
+    sidebarPadding: 40
+  };
+</script>
+
+  <meta name="description" content="[toc] 第14章 PYTHON模块的动态加载机制 多模块之间的引用和交互 一个模块是如何加载、引用另一个模块中的功能   python中一个module如何从硬盘中被加载到内存中  14.1 IMPORT前奏曲14.2 PYTHON中IMPORT机制的黑盒探测14.2.1 标准import14.2.2 嵌套import14.2.3 import package14.2.4 from与impor">
+<meta name="keywords" content="源码,python">
+<meta property="og:type" content="article">
+<meta property="og:title" content="第14章 PYTHON模块的动态加载机制">
+<meta property="og:url" content="https://ztzheng100.github.io.git/2019/09/08/python源码剖析/第14章-PYTHON模块的动态加载机制/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="[toc] 第14章 PYTHON模块的动态加载机制 多模块之间的引用和交互 一个模块是如何加载、引用另一个模块中的功能   python中一个module如何从硬盘中被加载到内存中  14.1 IMPORT前奏曲14.2 PYTHON中IMPORT机制的黑盒探测14.2.1 标准import14.2.2 嵌套import14.2.3 import package14.2.4 from与impor">
+<meta property="og:locale" content="en">
+<meta property="og:updated_time" content="2019-09-08T12:21:21.453Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="第14章 PYTHON模块的动态加载机制">
+<meta name="twitter:description" content="[toc] 第14章 PYTHON模块的动态加载机制 多模块之间的引用和交互 一个模块是如何加载、引用另一个模块中的功能   python中一个module如何从硬盘中被加载到内存中  14.1 IMPORT前奏曲14.2 PYTHON中IMPORT机制的黑盒探测14.2.1 标准import14.2.2 嵌套import14.2.3 import package14.2.4 from与impor">
+  <link rel="canonical" href="https://ztzheng100.github.io.git/2019/09/08/python源码剖析/第14章-PYTHON模块的动态加载机制/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>第14章 PYTHON模块的动态加载机制 | Hexo</title>
+  <meta name="generator" content="Hexo 3.9.0">
+  
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="en">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Hexo</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+      
+      
+      
+        
+        <li class="menu-item menu-item-home">
+      
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Home</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-tags">
+      
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>Tags</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-categories">
+      
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>Categories</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-archives">
+      
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archives</a>
+
+  </li>
+  </ul>
+
+    
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+      <article itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block post">
+    <link itemprop="mainEntityOfPage" href="https://ztzheng100.github.io.git/2019/09/08/python源码剖析/第14章-PYTHON模块的动态加载机制/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zzt">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Hexo">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">第14章 PYTHON模块的动态加载机制
+
+          
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              
+                
+              
+
+              <time title="Created: 2019-09-08 20:20:59 / Modified: 20:21:21" itemprop="dateCreated datePublished" datetime="2019-09-08T20:20:59+08:00">2019-09-08</time>
+            </span>
+          
+            
+
+            
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/python源码剖析/" itemprop="url" rel="index"><span itemprop="name">python源码剖析</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>[toc]</p>
+<h1 id="第14章-PYTHON模块的动态加载机制"><a href="#第14章-PYTHON模块的动态加载机制" class="headerlink" title="第14章 PYTHON模块的动态加载机制"></a>第14章 PYTHON模块的动态加载机制</h1><ul>
+<li>多模块之间的引用和交互</li>
+<li>一个模块是如何加载、引用另一个模块中的功能  </li>
+<li>python中一个module如何从硬盘中被加载到内存中</li>
+</ul>
+<h2 id="14-1-IMPORT前奏曲"><a href="#14-1-IMPORT前奏曲" class="headerlink" title="14.1 IMPORT前奏曲"></a>14.1 IMPORT前奏曲</h2><h2 id="14-2-PYTHON中IMPORT机制的黑盒探测"><a href="#14-2-PYTHON中IMPORT机制的黑盒探测" class="headerlink" title="14.2 PYTHON中IMPORT机制的黑盒探测"></a>14.2 PYTHON中IMPORT机制的黑盒探测</h2><h3 id="14-2-1-标准import"><a href="#14-2-1-标准import" class="headerlink" title="14.2.1 标准import"></a>14.2.1 标准import</h3><h3 id="14-2-2-嵌套import"><a href="#14-2-2-嵌套import" class="headerlink" title="14.2.2 嵌套import"></a>14.2.2 嵌套import</h3><h3 id="14-2-3-import-package"><a href="#14-2-3-import-package" class="headerlink" title="14.2.3 import package"></a>14.2.3 import package</h3><h3 id="14-2-4-from与import"><a href="#14-2-4-from与import" class="headerlink" title="14.2.4 from与import"></a>14.2.4 from与import</h3><h3 id="14-2-5-符号重命名"><a href="#14-2-5-符号重命名" class="headerlink" title="14.2.5 符号重命名"></a>14.2.5 符号重命名</h3><h3 id="14-2-6-符号的销毁与重载"><a href="#14-2-6-符号的销毁与重载" class="headerlink" title="14.2.6 符号的销毁与重载"></a>14.2.6 符号的销毁与重载</h3><h2 id="14-3-IMPORT机制的实现"><a href="#14-3-IMPORT机制的实现" class="headerlink" title="14.3 IMPORT机制的实现"></a>14.3 IMPORT机制的实现</h2><h3 id="14-3-1-解析module-package树状结构"><a href="#14-3-1-解析module-package树状结构" class="headerlink" title="14.3.1 解析module/package树状结构"></a>14.3.1 解析module/package树状结构</h3><ul>
+<li><code>import_module_level</code>函数的代码主要实现了对++x.y.z++这样的树状结构的遍历，遍历的规则是把x.y.z看做是一个二叉树，然后遍历整个二叉树，对每个节点都只访问其右子树。</li>
+</ul>
+<h3 id="14-3-2-加载module-pakcage"><a href="#14-3-2-加载module-pakcage" class="headerlink" title="14.3.2 加载module/pakcage"></a>14.3.2 加载module/pakcage</h3><ul>
+<li><code>load_next</code> 中调用<code>import_submodule</code>完成搜索module并加载module的工作。</li>
+</ul>
+<h4 id="14-3-2-1-搜索module"><a href="#14-3-2-1-搜索module" class="headerlink" title="14.3.2.1 搜索module"></a>14.3.2.1 搜索module</h4><h4 id="14-3-2-2-加载module"><a href="#14-3-2-2-加载module" class="headerlink" title="14.3.2.2 加载module"></a>14.3.2.2 加载module</h4><ul>
+<li>加载module的动作在load_module中完成。</li>
+<li>根据module不同类型选择不同的加载方式。</li>
+</ul>
+<h5 id="py文件与pyc文件"><a href="#py文件与pyc文件" class="headerlink" title="py文件与pyc文件"></a>py文件与pyc文件</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">case PY_SOURCE:</span><br><span class="line">        m = load_source_module(name, pathname, fp);</span><br><span class="line">        break;</span><br></pre></td></tr></table></figure>
+
+<ol>
+<li>先对py文件进行编译，产生PyCodeObject对象。</li>
+<li>执行PyCodeObject对象中的字节码，创建PyFunctionObject，PyClassObject对象，最后返回从符号映射到对象的dict。</li>
+</ol>
+<h5 id="package"><a href="#package" class="headerlink" title="package"></a>package</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">case PKG_DIRECTORY:</span><br><span class="line">      m = load_package(name, pathname);</span><br><span class="line">      break;</span><br></pre></td></tr></table></figure>
+
+<h5 id="内建module"><a href="#内建module" class="headerlink" title="内建module"></a>内建module</h5><h5 id="c扩展模块"><a href="#c扩展模块" class="headerlink" title="c扩展模块"></a>c扩展模块</h5><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">#ifdef HAVE_DYNAMIC_LOADING</span><br><span class="line">    case C_EXTENSION:</span><br><span class="line">        m = _PyImport_LoadDynamicModule(name, pathname, fp);</span><br><span class="line">        break;</span><br><span class="line">#endif</span><br></pre></td></tr></table></figure>
+
+<h3 id="14-3-3-from与import"><a href="#14-3-3-from与import" class="headerlink" title="14.3.3 from与import"></a>14.3.3 from与import</h3><h2 id="14-4-PYTHON中的IMPORT操作"><a href="#14-4-PYTHON中的IMPORT操作" class="headerlink" title="14.4 PYTHON中的IMPORT操作"></a>14.4 PYTHON中的IMPORT操作</h2><h3 id="14-4-1-import-module"><a href="#14-4-1-import-module" class="headerlink" title="14.4.1 import module"></a>14.4.1 import module</h3><h3 id="14-4-2-import-package"><a href="#14-4-2-import-package" class="headerlink" title="14.4.2 import package"></a>14.4.2 import package</h3><h3 id="14-4-3-from-amp-import"><a href="#14-4-3-from-amp-import" class="headerlink" title="14.4.3 from &amp; import"></a>14.4.3 from &amp; import</h3><h3 id="14-4-4-import-amp-as"><a href="#14-4-4-import-amp-as" class="headerlink" title="14.4.4 import &amp; as"></a>14.4.4 import &amp; as</h3><h3 id="14-4-5-reload"><a href="#14-4-5-reload" class="headerlink" title="14.4.5 reload"></a>14.4.5 reload</h3><h3 id="14-4-6-内建module：imp"><a href="#14-4-6-内建module：imp" class="headerlink" title="14.4.6 内建module：imp"></a>14.4.6 内建module：imp</h3><h2 id="14-5-与MODULE有关的名字空间问题"><a href="#14-5-与MODULE有关的名字空间问题" class="headerlink" title="14.5 与MODULE有关的名字空间问题"></a>14.5 与MODULE有关的名字空间问题</h2><h2 id="参考文件"><a href="#参考文件" class="headerlink" title="参考文件"></a>参考文件</h2><p><a href="https://www.jianshu.com/p/0c5a2302931e" target="_blank" rel="noopener">简书-【Python】动态加载机制</a>  </p>
+
+    </div>
+
+    
+    
+    
+        
+      
+
+      <footer class="post-footer">
+          
+            
+          
+          <div class="post-tags">
+            
+              <a href="/tags/源码/" rel="tag"># 源码</a>
+            
+              <a href="/tags/python/" rel="tag"># python</a>
+            
+          </div>
+        
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+              
+                <a href="/2019/09/08/第13章-Python运行环境初始化/" rel="next" title="第13章 Python运行环境初始化">
+                  <i class="fa fa-chevron-left"></i> 第13章 Python运行环境初始化
+                </a>
+              
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+              
+                <a href="/2019/09/08/第14章-PYTHON模块的动态加载机制/" rel="prev" title="第14章 PYTHON模块的动态加载机制">
+                  第14章 PYTHON模块的动态加载机制 <i class="fa fa-chevron-right"></i>
+                </a>
+              
+            </div>
+          </div>
+        
+      </footer>
+    
+  </div>
+  
+  
+  
+  </article>
+
+  </div>
+
+
+          </div>
+          
+
+        </div>
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+        
+        
+        
+        
+      
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#第14章-PYTHON模块的动态加载机制"><span class="nav-number">1.</span> <span class="nav-text">第14章 PYTHON模块的动态加载机制</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#14-1-IMPORT前奏曲"><span class="nav-number">1.1.</span> <span class="nav-text">14.1 IMPORT前奏曲</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#14-2-PYTHON中IMPORT机制的黑盒探测"><span class="nav-number">1.2.</span> <span class="nav-text">14.2 PYTHON中IMPORT机制的黑盒探测</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#14-2-1-标准import"><span class="nav-number">1.2.1.</span> <span class="nav-text">14.2.1 标准import</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#14-2-2-嵌套import"><span class="nav-number">1.2.2.</span> <span class="nav-text">14.2.2 嵌套import</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#14-2-3-import-package"><span class="nav-number">1.2.3.</span> <span class="nav-text">14.2.3 import package</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#14-2-4-from与import"><span class="nav-number">1.2.4.</span> <span class="nav-text">14.2.4 from与import</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#14-2-5-符号重命名"><span class="nav-number">1.2.5.</span> <span class="nav-text">14.2.5 符号重命名</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#14-2-6-符号的销毁与重载"><span class="nav-number">1.2.6.</span> <span class="nav-text">14.2.6 符号的销毁与重载</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#14-3-IMPORT机制的实现"><span class="nav-number">1.3.</span> <span class="nav-text">14.3 IMPORT机制的实现</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#14-3-1-解析module-package树状结构"><span class="nav-number">1.3.1.</span> <span class="nav-text">14.3.1 解析module/package树状结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#14-3-2-加载module-pakcage"><span class="nav-number">1.3.2.</span> <span class="nav-text">14.3.2 加载module/pakcage</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#14-3-2-1-搜索module"><span class="nav-number">1.3.2.1.</span> <span class="nav-text">14.3.2.1 搜索module</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#14-3-2-2-加载module"><span class="nav-number">1.3.2.2.</span> <span class="nav-text">14.3.2.2 加载module</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#py文件与pyc文件"><span class="nav-number">1.3.2.2.1.</span> <span class="nav-text">py文件与pyc文件</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#package"><span class="nav-number">1.3.2.2.2.</span> <span class="nav-text">package</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#内建module"><span class="nav-number">1.3.2.2.3.</span> <span class="nav-text">内建module</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#c扩展模块"><span class="nav-number">1.3.2.2.4.</span> <span class="nav-text">c扩展模块</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#14-3-3-from与import"><span class="nav-number">1.3.3.</span> <span class="nav-text">14.3.3 from与import</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#14-4-PYTHON中的IMPORT操作"><span class="nav-number">1.4.</span> <span class="nav-text">14.4 PYTHON中的IMPORT操作</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#14-4-1-import-module"><span class="nav-number">1.4.1.</span> <span class="nav-text">14.4.1 import module</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#14-4-2-import-package"><span class="nav-number">1.4.2.</span> <span class="nav-text">14.4.2 import package</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#14-4-3-from-amp-import"><span class="nav-number">1.4.3.</span> <span class="nav-text">14.4.3 from &amp; import</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#14-4-4-import-amp-as"><span class="nav-number">1.4.4.</span> <span class="nav-text">14.4.4 import &amp; as</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#14-4-5-reload"><span class="nav-number">1.4.5.</span> <span class="nav-text">14.4.5 reload</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#14-4-6-内建module：imp"><span class="nav-number">1.4.6.</span> <span class="nav-text">14.4.6 内建module：imp</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#14-5-与MODULE有关的名字空间问题"><span class="nav-number">1.5.</span> <span class="nav-text">14.5 与MODULE有关的名字空间问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文件"><span class="nav-number">1.6.</span> <span class="nav-text">参考文件</span></a></li></ol></li></ol></div>
+        
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">zzt</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+  <nav class="site-state motion-element">
+      <div class="site-state-item site-state-posts">
+        
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">40</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-categories">
+        
+          
+            <a href="/categories/">
+          
+        
+        
+        
+          
+        
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-tags">
+        
+          
+            <a href="/tags/">
+          
+        
+        
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">tags</span>
+        </a>
+      </div>
+    
+  </nav>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zzt</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.9.0</div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">Theme – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v7.4.0</div>
+
+        
+
+
+
+
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+
+
+  <script src="/lib/anime.min.js?v=3.1.0"></script>
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+<script src="/js/utils.js?v=7.4.0"></script><script src="/js/motion.js?v=7.4.0"></script>
+<script src="/js/schemes/muse.js?v=7.4.0"></script>
+<script src="/js/next-boot.js?v=7.4.0"></script>
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+</body>
+</html>

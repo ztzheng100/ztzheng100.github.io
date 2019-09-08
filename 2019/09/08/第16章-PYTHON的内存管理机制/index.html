@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+
+
+
+
+
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.4.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.4.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.4.0">
+  <link rel="mask-icon" href="/images/logo.svg?v=7.4.0" color="#222">
+
+<link rel="stylesheet" href="/css/main.css?v=7.4.0">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '7.4.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: 'Copy',
+      copy_success: 'Copied',
+      copy_failure: 'Copy failed'
+    },
+    sidebarPadding: 40
+  };
+</script>
+
+  <meta name="description" content="第16章 PYTHON的内存管理机制 keyword   垃圾收集制度(garbage collection,GC)      16.1 内存管理架构 Python内存管理机制有两套实现，由编译符号PYMALLOC_DEBUG控制，当该符号被定义时，开启debug模式下的内存管理机制，这套机制在正常内存管理动作外还记录许多关于内存的信息，方便调试。 Python内存管理机制被抽象成分层设计： 比如">
+<meta name="keywords" content="源码,python">
+<meta property="og:type" content="article">
+<meta property="og:title" content="第16章 PYTHON的内存管理机制">
+<meta property="og:url" content="https://ztzheng100.github.io.git/2019/09/08/第16章-PYTHON的内存管理机制/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="第16章 PYTHON的内存管理机制 keyword   垃圾收集制度(garbage collection,GC)      16.1 内存管理架构 Python内存管理机制有两套实现，由编译符号PYMALLOC_DEBUG控制，当该符号被定义时，开启debug模式下的内存管理机制，这套机制在正常内存管理动作外还记录许多关于内存的信息，方便调试。 Python内存管理机制被抽象成分层设计： 比如">
+<meta property="og:locale" content="en">
+<meta property="og:image" content="http://img.it610.com/image/info5/ff7ac22a0ba34183b3b6ae04a45979cd.jpg">
+<meta property="og:image" content="http://img.it610.com/image/info5/a2905b143b4d4828b06b40150ab2811d.jpg">
+<meta property="og:image" content="https://img-blog.csdn.net/20150508175417779">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/5366157-710a7bf1b0198b4a.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/496/format/webp">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/5366157-59a486232ec1a3a6.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/715/format/webp">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/5366157-0c1dc4e6ff726be9.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/760/format/webp">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/5366157-6014ed1c9f210995.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/652/format/webp">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/5366157-f24e04c582e539f4.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/345/format/webp">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/5366157-3b9b4cc90bed44df.png?imageMogr2/auto-orient/">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/5366157-777abdb4fced591e.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/821/format/webp">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/5366157-6269b4d95d918d2b.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/916/format/webp">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/5366157-04e644eddd6a276c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/790/format/webp">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/5366157-c52e668a283d050c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/828/format/webp">
+<meta property="og:updated_time" content="2019-09-08T12:22:31.112Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="第16章 PYTHON的内存管理机制">
+<meta name="twitter:description" content="第16章 PYTHON的内存管理机制 keyword   垃圾收集制度(garbage collection,GC)      16.1 内存管理架构 Python内存管理机制有两套实现，由编译符号PYMALLOC_DEBUG控制，当该符号被定义时，开启debug模式下的内存管理机制，这套机制在正常内存管理动作外还记录许多关于内存的信息，方便调试。 Python内存管理机制被抽象成分层设计： 比如">
+<meta name="twitter:image" content="http://img.it610.com/image/info5/ff7ac22a0ba34183b3b6ae04a45979cd.jpg">
+  <link rel="canonical" href="https://ztzheng100.github.io.git/2019/09/08/第16章-PYTHON的内存管理机制/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>第16章 PYTHON的内存管理机制 | Hexo</title>
+  <meta name="generator" content="Hexo 3.9.0">
+  
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="en">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Hexo</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+      
+      
+      
+        
+        <li class="menu-item menu-item-home">
+      
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Home</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-tags">
+      
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>Tags</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-categories">
+      
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>Categories</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-archives">
+      
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archives</a>
+
+  </li>
+  </ul>
+
+    
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+      <article itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block post">
+    <link itemprop="mainEntityOfPage" href="https://ztzheng100.github.io.git/2019/09/08/第16章-PYTHON的内存管理机制/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zzt">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Hexo">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">第16章 PYTHON的内存管理机制
+
+          
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              
+                
+              
+
+              <time title="Created: 2019-09-08 20:22:13 / Modified: 20:22:31" itemprop="dateCreated datePublished" datetime="2019-09-08T20:22:13+08:00">2019-09-08</time>
+            </span>
+          
+            
+
+            
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/python源码剖析/" itemprop="url" rel="index"><span itemprop="name">python源码剖析</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="第16章-PYTHON的内存管理机制"><a href="#第16章-PYTHON的内存管理机制" class="headerlink" title="第16章 PYTHON的内存管理机制"></a>第16章 PYTHON的内存管理机制</h1><ul>
+<li>keyword  <ul>
+<li>垃圾收集制度(garbage collection,GC)  </li>
+</ul>
+</li>
+</ul>
+<h2 id="16-1-内存管理架构"><a href="#16-1-内存管理架构" class="headerlink" title="16.1 内存管理架构"></a>16.1 内存管理架构</h2><ul>
+<li>Python内存管理机制有两套实现，由编译符号PYMALLOC_DEBUG控制，当该符号被定义时，开启debug模式下的内存管理机制，这套机制在正常内存管理动作外还记录许多关于内存的信息，方便调试。</li>
+<li>Python内存管理机制被抽象成分层设计：<br><img src="http://img.it610.com/image/info5/ff7ac22a0ba34183b3b6ae04a45979cd.jpg" alt="Python中内存管理的层次结构"><ul>
+<li>比如调用 malloc(0)，有的操作系统会返回 NULL，表示内存申请失败；然而有的操作系统会返回一个貌似正常的指针，但是这个指针所指的内存并不是有效的。</li>
+<li>为了最广泛的可移植性，Python 必须保证相同的语义一定代表着相同的运行时行为，为了处理这些与平台相关的内存分配行为，Python 必须 要在 C的内存分配接口之上再提供一层包装</li>
+</ul>
+</li>
+</ul>
+<h3 id="16-1-1-第一层的实现"><a href="#16-1-1-第一层的实现" class="headerlink" title="16.1.1 第一层的实现"></a>16.1.1 第一层的实现</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">[pymem.h]</span><br><span class="line">#define PyMem_MALLOC(n)		((size_t)(n) &gt; (size_t)PY_SSIZE_T_MAX ? NULL \</span><br><span class="line">				: malloc((n) ? (n) : 1))</span><br><span class="line">#define PyMem_REALLOC(p, n)	((size_t)(n) &gt; (size_t)PY_SSIZE_T_MAX  ? NULL \</span><br><span class="line">				: realloc((p), (n) ? (n) : 1))</span><br><span class="line">#define PyMem_FREE		free</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>python 提供了函数和宏两套接头</li>
+<li>python 提供了面向python类型的内存分配器（函数）</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">[pymem.h] </span><br><span class="line">#define PyMem_New(type, n) \ ( (type *) PyMem_Malloc((n) * sizeof(type)) ) </span><br><span class="line">#define PyMem_NEW(type, n) \ ( (type *) PyMem_MALLOC((n) * sizeof(type)) ) </span><br><span class="line">#define PyMem_Resize(p, type, n) \ ( (p) = (type *) PyMem_Realloc((p), (n) * sizeof(type)) ) </span><br><span class="line">#define PyMem_RESIZE(p, type, n) \ ( (p) = (type *) PyMem_REALLOC((p), (n) * sizeof(type)) ) </span><br><span class="line">#define PyMem_Del PyMem_Free</span><br><span class="line">#define PyMem_DEL PyMem_FREE</span><br></pre></td></tr></table></figure>
+
+<h2 id="16-2-小块空间的内存池"><a href="#16-2-小块空间的内存池" class="headerlink" title="16.2 小块空间的内存池"></a>16.2 小块空间的内存池</h2><ul>
+<li>背景<ul>
+<li>在 Python 中，许多时候申请的内存都是小块的内存，这些小块内存在申请后，很快又会被释放，由于这些内存的申请并不是为了创建对象，所以并没有对象一级的内存池机制。</li>
+<li>为了加速 Python 的执行效率，Python引入了一个内存池机制，用于管理对小块内存的申请和释放</li>
+</ul>
+</li>
+<li>整个小块内存的内存池可以视为一个层次结构，在这个层次结构中，一共分为 4 层，从下至上分别是：block，pool，arena 和内存池</li>
+<li>最顶层的“内存池”只是一个概念上的东西，表示 Python对于整个小块内存分配和释放行为的内存管理机制</li>
+</ul>
+<h3 id="16-2-1-Block"><a href="#16-2-1-Block" class="headerlink" title="16.2.1 Block"></a>16.2.1 Block</h3><ul>
+<li>最底层，block是一个确定大小的内存块，长度都是8字节对齐。</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[obmalloc.c] </span><br><span class="line">#define ALIGNMENT 8 /* must be 2^N */</span><br><span class="line">#define ALIGNMENT_SHIFT 3</span><br><span class="line">#define ALIGNMENT_MASK (ALIGNMENT - 1)</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>block的上限值为256</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">#define SMALL_REQUEST_THRESHOLD 512 </span><br><span class="line">#define NB_SMALL_SIZE_CLASSES   (SMALL_REQUEST_THRESHOLD / ALIGNMENT) //64</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>在 size class 和 size class index 之间的转换：<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">//从 size class index 转换到 size class </span><br><span class="line">#define INDEX2SIZE(I) (((uint)(I) + 1) &lt;&lt; ALIGNMENT_SHIFT) </span><br><span class="line">//size class 转换到 size class index </span><br><span class="line">size = (uint )(nbytes - 1) &gt;&gt; ALIGNMENT_SHIFT;</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h3 id="16-2-2-Pool"><a href="#16-2-2-Pool" class="headerlink" title="16.2.2 Pool"></a>16.2.2 Pool</h3><ul>
+<li><p>管理block</p>
+</li>
+<li><p>pool的大小定义为4KB，因为一个pool为一个系统内存页<br><img src="http://img.it610.com/image/info5/a2905b143b4d4828b06b40150ab2811d.jpg" alt="经过改造的 4KB 内存"></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[obmalloc.c] </span><br><span class="line">#define SYSTEM_PAGE_SIZE (4 * 1024)</span><br><span class="line">#define SYSTEM_PAGE_SIZE_MASK (SYSTEM_PAGE_SIZE - 1)</span><br><span class="line">#define POOL_SIZE SYSTEM_PAGE_SIZE /* must be 2^N */</span><br><span class="line">#define POOL_SIZE_MASK SYSTEM_PAGE_SIZE_MASK</span><br></pre></td></tr></table></figure>
+</li>
+<li><p><code>pool_header</code> 的定义</p>
+</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">/* When you say memory, my mind reasons in terms of (pointers to) blocks */</span><br><span class="line">typedef uchar block;</span><br><span class="line"></span><br><span class="line">/* Pool for small blocks. */</span><br><span class="line">struct pool_header &#123;</span><br><span class="line">    union &#123; block *_padding;</span><br><span class="line">            uint count; &#125; ref;          /* number of allocated blocks    */</span><br><span class="line">    block *freeblock;                   /* pool&apos;s free list head         */</span><br><span class="line">    struct pool_header *nextpool;       /* next pool of this size class  */</span><br><span class="line">    struct pool_header *prevpool;       /* previous pool       &quot;&quot;        */</span><br><span class="line">    uint arenaindex;                    /* index into arenas of base adr */</span><br><span class="line">    uint szidx;                         /* block size class index        */</span><br><span class="line">    uint nextoffset;                    /* bytes to virgin block         */</span><br><span class="line">    uint maxnextoffset;                 /* largest valid nextoffset      */</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>python 如何将4KB的内存改造成32字节block的pool，并从pool中取出第一块block的。</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">[obmalloc.c]-[convert 4k raw memory to pool]</span><br><span class="line">#define ROUNDUP(x)(((x) + ALIGNMENT_MASK) &amp; ~ALIGNMENT_MASK)</span><br><span class="line">#define POOL_OVERHEADROUNDUP(sizeof(struct pool_header))</span><br><span class="line">#define struct pool_header* poolp</span><br><span class="line">#define uchar blockpoolp pool;block* bp;…… </span><br><span class="line">// pool 指向了一块 4k 的内存</span><br><span class="line">pool-&gt;ref.count = 1;</span><br><span class="line">//设置 pool 的 size class </span><br><span class="line">indexpool-&gt;szidx = size;</span><br><span class="line">//将 size class index 转换为 size，比如 3 转换为 32 字节</span><br><span class="line">size = INDEX2SIZE(size);</span><br><span class="line">//跳过用于 pool_header 的内存，并进行对齐</span><br><span class="line">bp = (block *)pool + POOL_OVERHEAD;</span><br><span class="line">//实际就是 pool-&gt;nextoffset = POOL_OVERHEAD+size+size</span><br><span class="line">pool-&gt;nextoffset = POOL_OVERHEAD + (size &lt;&lt; 1);</span><br><span class="line">pool-&gt;maxnextoffset = POOL_SIZE - size;</span><br><span class="line">pool-&gt;freeblock = bp + size;</span><br><span class="line">*(block **)(pool-&gt;freeblock) = NULL;</span><br><span class="line">return (void *)bp;  //bp 指向从pool中取出第一块block的指针</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>连续申请5块28字节内存，实际上申请5块32字节的内存</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">[obmalloc.c]-[allocate block] </span><br><span class="line">if (pool != pool-&gt;nextpool) </span><br><span class="line">&#123; </span><br><span class="line">	++pool-&gt;ref.count;</span><br><span class="line">	bp = pool-&gt;freeblock;</span><br><span class="line">	……</span><br><span class="line">	if (pool-&gt;nextoffset &lt;= pool-&gt;maxnextoffset) &#123; </span><br><span class="line">	//有足够的 block 空间 </span><br><span class="line">		pool-&gt;freeblock = (block *)pool + pool-&gt;nextoffset;</span><br><span class="line">		pool-&gt;nextoffset += INDEX2SIZE(size);</span><br><span class="line">		*(block **)(pool-&gt;freeblock) = NULL;</span><br><span class="line">		return (void *)bp;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>maxnextoffset 指明了该pool中最后一个可用的block距pool开始位置的偏移。</li>
+<li>nextoffset指向下一个block的偏移量</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">pool-&gt;freeblock = (block *)pool + pool-&gt;nextoffset;</span><br><span class="line">pool-&gt;nextoffset += INDEX2SIZE(size);</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>自由离散的block怎么处理<ul>
+<li>自由block链表–&gt;pool_header.freeblock<br><img src="https://img-blog.csdn.net/20150508175417779" alt="freeblock"><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">[obmalloc.c] </span><br><span class="line">//基于地址 P 获得离 P 最近的 pool 的边界地址</span><br><span class="line">#define POOL_ADDR(P) ((poolp)((uptr)(P) &amp; ~(uptr)POOL_SIZE_MASK))</span><br><span class="line">void PyObject_Free(void *p) </span><br><span class="line">&#123; </span><br><span class="line">	poolp pool;</span><br><span class="line">	block *lastfree;</span><br><span class="line">	poolp next, prev;uint size;</span><br><span class="line">	pool = POOL_ADDR(p); </span><br><span class="line">	//判断 p 指向的 block 是否属于 pool </span><br><span class="line">	if (Py_ADDRESS_IN_RANGE(p, pool)) </span><br><span class="line">	&#123; </span><br><span class="line">		*(block **)p = lastfree = pool-&gt;freeblock; //[1] </span><br><span class="line">		pool-&gt;freeblock = (block *)p;//[2]</span><br><span class="line">		 …… </span><br><span class="line">	 &#125;</span><br><span class="line"> &#125;</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="16-2-3-arena"><a href="#16-2-3-arena" class="headerlink" title="16.2.3 arena"></a>16.2.3 arena</h3><ul>
+<li>多个pool聚合的结果就是一个arena。</li>
+<li>每个 arena 的 大小都有一个默 认的值ARENA_SIZE  为256K</li>
+<li>一个 arena 中容纳的 pool 的个数就是<code>ARENA_SIZE / POOL_SIZE</code> = 64 个</li>
+<li>一个完整的 arena 包括一个 <code>arena_object 和透过这个 arena_object</code> 管理着的 pool 集合<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">[obmalloc.c] #define ARENA_SIZE (256 &lt;&lt; 10) /* 256KB */</span><br><span class="line">[obmalloc.c]</span><br><span class="line">typedef uchar block;</span><br><span class="line"></span><br><span class="line">struct arena_object </span><br><span class="line">&#123;</span><br><span class="line">	uptr address;</span><br><span class="line">	block* pool_address;</span><br><span class="line">	uint nfreepools;</span><br><span class="line">	uint ntotalpools;</span><br><span class="line">	struct pool_header* freepools;</span><br><span class="line">	struct arena_object* nextarena;</span><br><span class="line">	struct arena_object* prevarena;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h4 id="16-2-3-1-“未使用”的arena和可用的arena"><a href="#16-2-3-1-“未使用”的arena和可用的arena" class="headerlink" title="16.2.3.1 “未使用”的arena和可用的arena"></a>16.2.3.1 “未使用”的arena和可用的arena</h4><ul>
+<li>在Python中，多个arena_object会构成一个集合，这个集合用数组来维护，数组的首地址由arenas维护。</li>
+<li><code>pool_header</code> 管理的内存与 <code>pool_header</code> 自身是一块连续的内存，而 <code>areana_object</code> 与其管理的内存则是分离的<br><img src="https://upload-images.jianshu.io/upload_images/5366157-710a7bf1b0198b4a.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/496/format/webp" alt="pool 和 arena 的内存布局区别"></li>
+<li><code>arena_object被申请的时候，它所管理的pool集合内存还没有被申请，即arena_object和pool集合还没有建立联系</code>：<ul>
+<li>当一个arena的arena_object没有与pool集合建立联系时，这时的arena处于”未使用”状态；</li>
+<li>一旦建立联系，这时的arena就是”可用”状态；</li>
+</ul>
+</li>
+<li>对于每种状态都有一个arena链表：<ul>
+<li>“未使用”的arena的链表表头是unused_arena_objects，arena之间通过nextarena连接，即单向链表；</li>
+<li>“可用”的arena链表表头是usable_arenas，arena之间通过nextarena和prevarena连接，即双向链表；<br><img src="https://upload-images.jianshu.io/upload_images/5366157-59a486232ec1a3a6.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/715/format/webp" alt="arena某时刻状态"></li>
+</ul>
+</li>
+</ul>
+<h4 id="16-2-3-2-申请arena"><a href="#16-2-3-2-申请arena" class="headerlink" title="16.2.3.2 申请arena"></a>16.2.3.2 申请arena</h4><ul>
+<li>创建一个arena<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br></pre></td><td class="code"><pre><span class="line">// obmalloc.c</span><br><span class="line">/* arenas管理着arena_object的集合 */</span><br><span class="line">static struct arena_object* arenas = NULL;</span><br><span class="line">/* 当前arenas管理的arena_object的个数 */</span><br><span class="line">static uint maxarenas = 0;</span><br><span class="line">/* 未使用的*arena_object链表 */</span><br><span class="line">static struct arena_object* unused_arena_objects = NULL;</span><br><span class="line">/* 可用的*arena_object链表 */</span><br><span class="line">static struct arena_object* usable_arenas = NULL;</span><br><span class="line">/* 初始化时需要申请的arena_object的个数 */</span><br><span class="line">#define INITIAL_ARENA_OBJECTS 16</span><br><span class="line"></span><br><span class="line">static struct arena_object* new_arena(void)</span><br><span class="line">&#123;</span><br><span class="line">    struct arena_object* arenaobj;</span><br><span class="line">    uint excess;    /* number of bytes above pool alignment */</span><br><span class="line">    // 判断是否需要扩充未使用的arena_object链表</span><br><span class="line">    if (unused_arena_objects == NULL) &#123;</span><br><span class="line">        uint i;</span><br><span class="line">        uint numarenas;</span><br><span class="line">        size_t nbytes;</span><br><span class="line">        // 确定本次需要申请的arena_object的个数，并申请内存</span><br><span class="line">        numarenas = maxarenas ? maxarenas &lt;&lt; 1 : INITIAL_ARENA_OBJECTS;</span><br><span class="line">        if (numarenas &lt;= maxarenas)</span><br><span class="line">            return NULL;    /* overflow */</span><br><span class="line">        if (numarenas &gt; PY_SIZE_MAX / sizeof(*arenas))</span><br><span class="line">            return NULL;    /* overflow */</span><br><span class="line">        nbytes = numarenas * sizeof(*arenas);</span><br><span class="line">        arenaobj = (struct arena_object *)realloc(arenas, nbytes);</span><br><span class="line">        if (arenaobj == NULL)</span><br><span class="line">            return NULL;</span><br><span class="line">        arenas = arenaobj;</span><br><span class="line">        /* 初始化新申请的arena_object，并将其放入unused_arena_objects 链表中 */</span><br><span class="line">        for (i = maxarenas; i &lt; numarenas; ++i) &#123;</span><br><span class="line">            arenas[i].address = 0;  /* mark as unassociated */</span><br><span class="line">            arenas[i].nextarena = i &lt; numarenas - 1 ?</span><br><span class="line">                           &amp;arenas[i+1] : NULL;</span><br><span class="line">        &#125;</span><br><span class="line">        /* Update globals. */</span><br><span class="line">        unused_arena_objects = &amp;arenas[maxarenas];</span><br><span class="line">        maxarenas = numarenas;</span><br><span class="line">    &#125;</span><br><span class="line">    /* 从unused_arena_objects 链表中取出一个未使用的arena_object */</span><br><span class="line">    arenaobj = unused_arena_objects;</span><br><span class="line">    unused_arena_objects = arenaobj-&gt;nextarena;</span><br><span class="line">    assert(arenaobj-&gt;address == 0);</span><br><span class="line">    /* 申请arena_object管理的内存，即pool集合内存 */</span><br><span class="line">    arenaobj-&gt;address = (uptr)malloc(ARENA_SIZE);</span><br><span class="line">    if (arenaobj-&gt;address == 0) &#123;</span><br><span class="line">        arenaobj-&gt;nextarena = unused_arena_objects;</span><br><span class="line">        unused_arena_objects = arenaobj;</span><br><span class="line">        return NULL;</span><br><span class="line">    &#125;</span><br><span class="line">    //当前已被关联的pool数量加1</span><br><span class="line">    ++narenas_currently_allocated;</span><br><span class="line">    /* 设置pool集合的相关信息 */</span><br><span class="line">    arenaobj-&gt;freepools = NULL;</span><br><span class="line">    arenaobj-&gt;pool_address = (block*)arenaobj-&gt;address;</span><br><span class="line">    arenaobj-&gt;nfreepools = ARENA_SIZE / POOL_SIZE;</span><br><span class="line">    assert(POOL_SIZE * arenaobj-&gt;nfreepools == ARENA_SIZE);</span><br><span class="line">    /* 将pool的起始地址调整为系统页的边界 */</span><br><span class="line">    excess = (uint)(arenaobj-&gt;address &amp; POOL_SIZE_MASK);</span><br><span class="line">    if (excess != 0) &#123;</span><br><span class="line">        --arenaobj-&gt;nfreepools;</span><br><span class="line">        arenaobj-&gt;pool_address += POOL_SIZE - excess;</span><br><span class="line">    &#125;</span><br><span class="line">    arenaobj-&gt;ntotalpools = arenaobj-&gt;nfreepools;</span><br><span class="line">    return arenaobj;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h3 id="16-2-4-内存池"><a href="#16-2-4-内存池" class="headerlink" title="16.2.4 内存池"></a>16.2.4 内存池</h3><h4 id="16-2-4-1-可用pool缓冲池—usedpools"><a href="#16-2-4-1-可用pool缓冲池—usedpools" class="headerlink" title="16.2.4.1 可用pool缓冲池—usedpools"></a>16.2.4.1 可用pool缓冲池—usedpools</h4><ul>
+<li>Python内部默认的小块内存和大块内存的分界点是256字节（<code>SMALL_REQUEST_THRESHOLD</code>符号控制）。<ul>
+<li>当申请小于256字节时，PyObject_Malloc会在内存池中申请内存，否则将使用malloc申请。<blockquote>
+<p>Python内部申请内存时，最基本的操作单元是pool而不是arena，因为pool是一个有size概念的内存管理抽象体，一个pool中的block总是有确定的大小（与某个size class index对应），arena没有size这个概念，arena中的pool中存储的block可能是不一样的。</p>
+</blockquote>
+</li>
+</ul>
+</li>
+<li>内存池中的pool，不仅有size概念，它还有状态，一个pool在Python运行时，总是处于以下三种状态：<ul>
+<li>used状态：pool中至少有一个block已经使用，并且至少有一个block还未被使用，这种状态的pool受控于usedpools数组；</li>
+<li>full状态：pool中的所有block都已经被使用，这种状态的pool在arena中，但不在arena的freepool链表中；</li>
+<li>empty状态：pool中所有的block都未被使用，这种状态的pool通过其<code>pool_header</code>中的nextpool连接构成一个链表，表头是<code>arena_object</code>中的freepools<br><img src="https://upload-images.jianshu.io/upload_images/5366157-0c1dc4e6ff726be9.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/760/format/webp" alt="某时刻arena中pool集合的可能状态"></li>
+</ul>
+</li>
+<li>arena中处于full状态的pool是各自独立的，并没有像其他pool一样会链接称链表。<h4 id="16-2-4-2-待补充"><a href="#16-2-4-2-待补充" class="headerlink" title="16.2.4.2 待补充"></a>16.2.4.2 待补充</h4></li>
+</ul>
+<h4 id="16-2-4-3-block的释放"><a href="#16-2-4-3-block的释放" class="headerlink" title="16.2.4.3 block的释放"></a>16.2.4.3 block的释放</h4><ul>
+<li>对 block 的释放实际上就是将一块 block 归还给 pool</li>
+<li>当我们释放一个 block 后，可能会引起 pool 的状态的转变，这种转变可能分为两种情况：<ol>
+<li>used 状态转变为 empty 状态</li>
+<li>full 状态转变为 used 状态</li>
+</ol>
+</li>
+<li>例子：pool 中尽管收回了一个 block，但是它仍然处于 used 状态</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">[obmalloc.c]</span><br><span class="line">void</span><br><span class="line">PyObject_Free(void *p)</span><br><span class="line">&#123;</span><br><span class="line">    poolp pool;</span><br><span class="line">    block *lastfree;</span><br><span class="line">    poolp next, prev;</span><br><span class="line">    uint size;</span><br><span class="line"></span><br><span class="line">    pool = POOL_ADDR(p);</span><br><span class="line">    if (Py_ADDRESS_IN_RANGE(p, pool)) &#123;</span><br><span class="line">        /* We allocated this address. */</span><br><span class="line">   </span><br><span class="line">    free(p);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="16-2-4-4-内存池全景"><a href="#16-2-4-4-内存池全景" class="headerlink" title="16.2.4.4 内存池全景"></a>16.2.4.4 内存池全景</h4><p><img src="https://upload-images.jianshu.io/upload_images/5366157-6014ed1c9f210995.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/652/format/webp" alt="Python中小块内存的内存池全景图"></p>
+<h2 id="16-3-循环引用的垃圾收集"><a href="#16-3-循环引用的垃圾收集" class="headerlink" title="16.3 循环引用的垃圾收集"></a>16.3 循环引用的垃圾收集</h2><h3 id="16-3-1-引用计数与垃圾收集"><a href="#16-3-1-引用计数与垃圾收集" class="headerlink" title="16.3.1 引用计数与垃圾收集"></a>16.3.1 引用计数与垃圾收集</h3><ul>
+<li>从广义上说，引用计数也是一种垃圾回收机制：</li>
+<li>优点：<ul>
+<li>简单</li>
+<li>实时性（任何内存，一旦没有指向它的引用，就会立即被回收）</li>
+</ul>
+</li>
+<li>缺点：<ul>
+<li>执行效率低（引用计数机制带来的额外维护操作与内存分配/释放/引用赋值的次数成正比<ul>
+<li>主流的垃圾回收机制（标记-清除，停止-复制等），所带来的额外操作基本上只与待回收的内存数量相关</li>
+<li>为了与引用计数机制搭配，在内存分配和释放上获得更高的效率，Python因此设计了大量的内存池机制（小块内存池、与各种对象相关的内存池机制等），这样大量使用的面向特定对象的对象内存池机制正式为了竭力弥补引用计数机制的软肋</li>
+</ul>
+</li>
+<li>循环引用（与手动进行内存管理出现内存泄漏一样）<ul>
+<li>引入标记-清除和分代收集两种技术来填补该漏洞</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3 id="16-3-2-三色标记模型"><a href="#16-3-2-三色标记模型" class="headerlink" title="16.3.2 三色标记模型"></a>16.3.2 三色标记模型</h3><blockquote>
+<p>垃圾收集一般包含两个阶段：</p>
+<blockquote>
+<p>垃圾检测<br>垃圾检测是从所有已分配的内存中区别出可以回收的内存和不可回收的内存</p>
+</blockquote>
+<blockquote>
+<p>垃圾回收<br>垃圾回收是使系统重新掌握在垃圾检测阶段所标识出来的可回收的内存块</p>
+</blockquote>
+</blockquote>
+<ul>
+<li><p>Python中的垃圾收集是基于三色标记模型完成的，即标记-清除（mark-sweep）方法的实现：</p>
+<ul>
+<li>寻找根对象（root object）的集合，所谓root         object就是一些全局引用和函数栈中的引用。这些引用所用的对象是不可被删除的。root object集合是垃圾检测动作的起点；</li>
+<li>从root object集合出发，沿着root object集合中的每一个引用，如果能到达某个对象A，则A称为可达的（reachable），可达的对象也不可被删除。这个阶段就是垃圾检测阶段；</li>
+<li>当垃圾检测阶段结束后，所有对象分为了可达的（reachable）和不可达的（unreachable）两部分，所有的可达对象都必须给予保留，而所有不可达对象所占用的内存将被回收，这就是垃圾回收阶段。</li>
+</ul>
+</li>
+<li><p>在垃圾收集动作被激活之前，系统中所分配的所有对象和对象之间的引用组成了一张有向图，其中对象是图中的节点，而对象间的引用是图的边。<br><img src="https://upload-images.jianshu.io/upload_images/5366157-f24e04c582e539f4.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/345/format/webp" alt="垃圾收集过程中某个时刻的多个对象组成的有向图"></p>
+</li>
+<li><p>在有向图的基础上，建立一个三色标注模型，更形象地展示垃圾收集的整个动作：</p>
+<ul>
+<li>当垃圾收集开始时，假设系统中的所有对象都是不可达的，对应到有向图上，即所有的节点都标注为白色；</li>
+<li>随后，从垃圾收集动作开始，沿着始于root object集合中的某个object的引用链，在某时刻到达了对象A，那么A被标记为灰色（灰色表示一个对象是可达的，但是其所包含的引用还没有检查）</li>
+<li>当我们检查了对象A中所包含的所有引用之后，A被标记为黑色（表示其包含的所有引用已经被检查过了）。</li>
+</ul>
+</li>
+</ul>
+<h2 id="16-4-PYTHON中的垃圾收集"><a href="#16-4-PYTHON中的垃圾收集" class="headerlink" title="16.4 PYTHON中的垃圾收集"></a>16.4 PYTHON中的垃圾收集</h2><ul>
+<li>在Python中，主要的内存管理手段是引用计数机制，而标记-清除（mark-sweep）和分代收集只是为了打破循环引用而引入的补充技术。</li>
+<li>当Python的垃圾收集机制运行时，只需要去检查这些container对象，带来的开销只依赖于container对象的数量，而非所有对象。</li>
+<li>为了达到这一点，Python必须跟踪所创建的每一个container对象，并将这些对象组织到一个集合中，因为只有弄到一个集合里，才能将垃圾收集的动作做限制在这些对象上。</li>
+<li>++Python采用双向链表将所有container对象组织在一起。++</li>
+</ul>
+<h3 id="16-4-1-可收集对象链表"><a href="#16-4-1-可收集对象链表" class="headerlink" title="16.4.1 可收集对象链表"></a>16.4.1 可收集对象链表</h3><blockquote>
+<p>之前讲任何一个Python对象都分为两部分：PyObject_HEAD和对象自身的数据。<br>对于container对象而言，它必须链入到Python内部的可收集对象链表中去，所以在PyObject_HEAD之前还需要加入PyGC_Head。</p>
+</blockquote>
+<ul>
+<li><p>对于Python所创建的可收集container对象，其内存分布与我们之前所了解的内存布局是不同的。</p>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">// objimp1.h</span><br><span class="line">typedef union _gc_head &#123;</span><br><span class="line">    struct &#123;</span><br><span class="line">        union _gc_head *gc_next;</span><br><span class="line">        union _gc_head *gc_prev;</span><br><span class="line">        Py_ssize_t gc_refs;</span><br><span class="line">    &#125; gc;</span><br><span class="line">    long double dummy;  /* force worst-case alignment */</span><br><span class="line">&#125; PyGC_Head;</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<p><img src="https://upload-images.jianshu.io/upload_images/5366157-3b9b4cc90bed44df.png?imageMogr2/auto-orient/" alt="被垃圾收集机制监控的container对象"></p>
+<ul>
+<li><p>可收集container对象内存分为三部分：</p>
+<ul>
+<li>首先的一块内存用于垃圾收集机制<code>_gc_head</code>，双向链表</li>
+<li>然后紧跟着是Python中所有对象都会有的PyObject_HEAD</li>
+<li>最后是属于container对象自身的数据（PyDictObject、PyListObject等）</li>
+</ul>
+</li>
+<li><p>当垃圾收集机制运行期间，我们需要在一个可收集container对象的<code>PyGC_Head部分和PyObject_HEAD部分</code>来回转换</p>
+<ul>
+<li>即某些时候，我们持有一个对象A的<code>PyObject_HEAD</code>的地址，但是我们需要根据此地址获得A的<code>PyGC_Head</code>的地址；</li>
+<li>而某些时候需要进行相反的操作。这个转换很容易，减去偏移量就可以了</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">/* Get an object&apos;s GC head */</span><br><span class="line">#define AS_GC(o) ((PyGC_Head *)(o)-1)</span><br><span class="line">/* Get the object given the GC head */</span><br><span class="line">#define FROM_GC(g) ((PyObject *)(((PyGC_Head *)g)+1))</span><br><span class="line">[objimpl.h]</span><br><span class="line">#define _Py_AS_GC(o) ((PyGC_Head *)(o)-1)</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>在创建container中的最后一步，将该对象关联到链表</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">PyObject *</span><br><span class="line">PyDict_New(void)</span><br><span class="line">&#123;</span><br><span class="line"> register PyDictObject *mp;</span><br><span class="line"> ...</span><br><span class="line">  mp = PyObject_GC_New(PyDictObject, &amp;PyDict_Type);</span><br><span class="line">  ...</span><br><span class="line">   _PyObject_GC_TRACK(mp);</span><br><span class="line">    return (PyObject *)mp;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>这个动作在创建container对象的最后一步进行：<code>_PyObject_GC_TRACK()</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">/* Tell the GC to track this object.  NB: While the object is tracked the</span><br><span class="line"> * collector it must be safe to call the ob_traverse method. */</span><br><span class="line">#define _PyObject_GC_TRACK(o) do &#123; \</span><br><span class="line">    PyGC_Head *g = _Py_AS_GC(o); \</span><br><span class="line">    if (g-&gt;gc.gc_refs != _PyGC_REFS_UNTRACKED) \</span><br><span class="line">        Py_FatalError(&quot;GC object already tracked&quot;); \</span><br><span class="line">    g-&gt;gc.gc_refs = _PyGC_REFS_REACHABLE; \</span><br><span class="line">    g-&gt;gc.gc_next = _PyGC_generation0; \</span><br><span class="line">    g-&gt;gc.gc_prev = _PyGC_generation0-&gt;gc.gc_prev; \</span><br><span class="line">    g-&gt;gc.gc_prev-&gt;gc.gc_next = g; \</span><br><span class="line">    _PyGC_generation0-&gt;gc.gc_prev = g; \</span><br><span class="line">    &#125; while (0);</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>在销毁这个对象的时候，调用<code>_PyObject_GC_UNTRACK()</code>函数将container对象从该链表中移除。</p>
+</li>
+</ul>
+<h3 id="16-4-2-分代的垃圾收集"><a href="#16-4-2-分代的垃圾收集" class="headerlink" title="16.4.2 分代的垃圾收集"></a>16.4.2 分代的垃圾收集</h3><blockquote>
+<p>研究表明，80%到98%之间的内存块的生命周期都比较短，通常是几百万条机器指令的寿命，而剩下的内存块，其生命周期会比较长，甚至从程序的开始到结束。  </p>
+<p>++像标记-清除（mark-sweep）这样的垃圾收集所带来的额外操作实际上与系统中总的内存块数量是成正比的++。即当系统中使用的内存越少时，整个垃圾收集所带来的额外操作也就越少。为了提高垃圾收集的效率，采用这种以空间换时间的策略。</p>
+</blockquote>
+<ul>
+<li>分代的垃圾收集<ul>
+<li>将内存块按存活时间分成三个双向链表，通过一个数组维护了三个gc_generation结构，也就是3条可收集对象链表。  </li>
+<li>存活时间越长，垃圾回收的周期越长，从而提高垃圾回收的效率<blockquote>
+<p>存活时间的衡量：通常是利用经过了几次垃圾收集动作来衡量。</p>
+<p>threshold表示该条可收集对象链表最多可容纳多少个可收集对象。根据代码，第0代链表最多可容纳700个container对象，一旦第0代链表的count超过了700这个极限值，++则会立即触发垃圾收集机制++。</p>
+</blockquote>
+</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">// gcmodule.c</span><br><span class="line">struct gc_generation &#123;</span><br><span class="line">    PyGC_Head head;</span><br><span class="line">    int threshold; /* collection threshold */</span><br><span class="line">    int count; /* count of allocations or collections of younger</span><br><span class="line">              generations */</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">#define NUM_GENERATIONS 3</span><br><span class="line">#define GEN_HEAD(n) (&amp;generations[n].head)</span><br><span class="line"></span><br><span class="line">/* linked lists of container objects */</span><br><span class="line">static struct gc_generation generations[NUM_GENERATIONS] = &#123;</span><br><span class="line">    /* PyGC_Head,               threshold,  count */</span><br><span class="line">    &#123;&#123;&#123;GEN_HEAD(0), GEN_HEAD(0), 0&#125;&#125;,   700,        0&#125;,</span><br><span class="line">    &#123;&#123;&#123;GEN_HEAD(1), GEN_HEAD(1), 0&#125;&#125;,   10,     0&#125;,</span><br><span class="line">    &#123;&#123;&#123;GEN_HEAD(2), GEN_HEAD(2), 0&#125;&#125;,   10,     0&#125;,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<h3 id="16-4-3-Python中的标记-清除方法"><a href="#16-4-3-Python中的标记-清除方法" class="headerlink" title="16.4.3 Python中的标记-清除方法"></a>16.4.3 Python中的标记-清除方法</h3><ul>
+<li><p>如前所述：如果当前收集的是第1代，，那么在垃圾收集之前，Python会将比其”年轻”的所有”代”的内存链表整个的链接到第1代内存链表之后，通过<code>gc_list_merge</code>实现：</p>
+</li>
+<li><p>双向链表首尾相连</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">// gcmodule.c</span><br><span class="line">//初始化链表</span><br><span class="line">static void</span><br><span class="line">gc_list_init(PyGC_Head *list)</span><br><span class="line">&#123;</span><br><span class="line">    list-&gt;gc.gc_prev = list;</span><br><span class="line">    list-&gt;gc.gc_next = list;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">/* append list `from` onto list `to`; `from` becomes an empty list */</span><br><span class="line">static void</span><br><span class="line">gc_list_merge(PyGC_Head *from, PyGC_Head *to)</span><br><span class="line">&#123;</span><br><span class="line">    PyGC_Head *tail;</span><br><span class="line">    assert(from != to);</span><br><span class="line">    if (!gc_list_is_empty(from)) &#123;</span><br><span class="line">        tail = to-&gt;gc.gc_prev;</span><br><span class="line">        tail-&gt;gc.gc_next = from-&gt;gc.gc_next;</span><br><span class="line">        tail-&gt;gc.gc_next-&gt;gc.gc_prev = tail;</span><br><span class="line">        to-&gt;gc.gc_prev = from-&gt;gc.gc_prev;</span><br><span class="line">        to-&gt;gc.gc_prev-&gt;gc.gc_next = to;</span><br><span class="line">    &#125;</span><br><span class="line">    gc_list_init(from);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>图解merge过程<br><img src="https://upload-images.jianshu.io/upload_images/5366157-777abdb4fced591e.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/821/format/webp" alt="merge过程"></p>
+</li>
+</ul>
+<h4 id="16-4-3-1-寻找Root-Object集合"><a href="#16-4-3-1-寻找Root-Object集合" class="headerlink" title="16.4.3.1 寻找Root Object集合"></a>16.4.3.1 寻找Root Object集合</h4><ul>
+<li><p>用于演示标记-清除算法的栗子<br><img src="https://upload-images.jianshu.io/upload_images/5366157-6269b4d95d918d2b.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/916/format/webp" alt="用于演示标记-清除算法的例子"></p>
+</li>
+<li><p>按照之前所讲，需要先找到root object集合，才能开始垃圾收集机制。</p>
+</li>
+<li><p>为了从引用计数获得有效引用计数，必须将循环引用的影响去除。具体的实现就是两个对象各自的引用计数值都减去1。这里并不改动真实的引用计数，而是改用引用计数的副本（PyGC_Head的gc.gc_ref）。</p>
+</li>
+<li><p>例子：list3和list4的引用计数都是1，实际为0</p>
+</li>
+<li><p>垃圾收集的步骤  </p>
+<ol>
+<li><p>垃圾收集的第一步，就是遍历可收集对象链表，将每个对象的gc.gc_ref值设置为其ob_refcnt值。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">// gcmodule.c</span><br><span class="line">static void</span><br><span class="line">update_refs(PyGC_Head *containers)</span><br><span class="line">&#123;</span><br><span class="line">   PyGC_Head *gc = containers-&gt;gc.gc_next;</span><br><span class="line">   for (; gc != containers; gc = gc-&gt;gc.gc_next) &#123;</span><br><span class="line">       assert(gc-&gt;gc.gc_refs == GC_REACHABLE);</span><br><span class="line">       gc-&gt;gc.gc_refs = FROM_GC(gc)-&gt;ob_refcnt;</span><br><span class="line">       assert(gc-&gt;gc.gc_refs != 0);</span><br><span class="line">   &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>将循环引用从引用中摘除：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">// gcmodule.c</span><br><span class="line">static void</span><br><span class="line">subtract_refs(PyGC_Head *containers)</span><br><span class="line">&#123;</span><br><span class="line">    traverseproc traverse;</span><br><span class="line">    PyGC_Head *gc = containers-&gt;gc.gc_next;</span><br><span class="line">    for (; gc != containers; gc=gc-&gt;gc.gc_next) &#123;</span><br><span class="line">        traverse = FROM_GC(gc)-&gt;ob_type-&gt;tp_traverse;</span><br><span class="line">        (void) traverse(FROM_GC(gc),</span><br><span class="line">                   (visitproc)visit_decref,</span><br><span class="line">                   NULL);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+</li>
+<li><p><code>(void) traverse(FROM_GC(gc),(visitproc)visit_decref,NULL);</code> </p>
+<ul>
+<li>traverse的动作就是遍历container中的每一个引用，然后对引用进行visit_decref操作。</li>
+<li><code>subtract_refs就是visit_decref</code>，它以一个回调函数的形式传递到traverse。<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line">static int</span><br><span class="line">dict_traverse(PyObject *op, visitproc visit, void *arg)</span><br><span class="line">&#123;</span><br><span class="line">    Py_ssize_t i = 0;</span><br><span class="line">    PyObject *pk;</span><br><span class="line">    PyObject *pv;</span><br><span class="line"></span><br><span class="line">    while (PyDict_Next(op, &amp;i, &amp;pk, &amp;pv)) &#123;</span><br><span class="line">        Py_VISIT(pk);</span><br><span class="line">        Py_VISIT(pv);</span><br><span class="line">    &#125;</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">/* A traversal callback for subtract_refs. */</span><br><span class="line">static int</span><br><span class="line">visit_decref(PyObject *op, void *data)</span><br><span class="line">&#123;</span><br><span class="line">    assert(op != NULL);</span><br><span class="line">    if (PyObject_IS_GC(op)) &#123;</span><br><span class="line">        PyGC_Head *gc = AS_GC(op);</span><br><span class="line">        /* We&apos;re only interested in gc_refs for objects in the</span><br><span class="line">         * generation being collected, which can be recognized</span><br><span class="line">         * because only they have positive gc_refs.</span><br><span class="line">         */</span><br><span class="line">        assert(gc-&gt;gc.gc_refs != 0); /* else refcount was too small */</span><br><span class="line">        if (gc-&gt;gc.gc_refs &gt; 0)</span><br><span class="line">            gc-&gt;gc.gc_refs--;</span><br><span class="line">    &#125;</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+<li><p><code>update_refs和subtract_refs的执行结果</code><br><img src="https://upload-images.jianshu.io/upload_images/5366157-04e644eddd6a276c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/790/format/webp" alt="update_refs和subtract_refs的执行结果"></p>
+<h4 id="16-4-3-2-垃圾标记"><a href="#16-4-3-2-垃圾标记" class="headerlink" title="16.4.3.2 垃圾标记"></a>16.4.3.2 垃圾标记</h4></li>
+<li><p>垃圾标记：将可回收对象连接到unreachable</p>
+</li>
+<li><p>在从root object出发前，需要将现在的内存链一分为二：一条链表中维护root object集合，称为root链表；另一条链表中维护剩下的对象，称为unreachable链表。</p>
+</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br></pre></td><td class="code"><pre><span class="line">//gcmodule.c</span><br><span class="line">static void</span><br><span class="line">move_unreachable(PyGC_Head *young, PyGC_Head *unreachable)</span><br><span class="line">&#123;</span><br><span class="line">    PyGC_Head *gc = young-&gt;gc.gc_next;</span><br><span class="line"></span><br><span class="line">    while (gc != young) &#123;</span><br><span class="line">        PyGC_Head *next;</span><br><span class="line"></span><br><span class="line">        if (gc-&gt;gc.gc_refs) &#123;</span><br><span class="line">                        /* 对于root object，设置其gc_refs为GC_REACHABLE标志 */</span><br><span class="line">                        PyObject *op = FROM_GC(gc);</span><br><span class="line">                        traverseproc traverse = op-&gt;ob_type-&gt;tp_traverse;</span><br><span class="line">                        assert(gc-&gt;gc.gc_refs &gt; 0);</span><br><span class="line">                        gc-&gt;gc.gc_refs = GC_REACHABLE;</span><br><span class="line">                        (void) traverse(op,</span><br><span class="line">                                        (visitproc)visit_reachable,</span><br><span class="line">                                        (void *)young);</span><br><span class="line">                        next = gc-&gt;gc.gc_next;</span><br><span class="line">        &#125;</span><br><span class="line">        else &#123;</span><br><span class="line">            /* 对于非root对象，移到unreachable链表中 */</span><br><span class="line">            next = gc-&gt;gc.gc_next;</span><br><span class="line">            gc_list_move(gc, unreachable);</span><br><span class="line">            gc-&gt;gc.gc_refs = GC_TENTATIVELY_UNREACHABLE;</span><br><span class="line">        &#125;</span><br><span class="line">        gc = next;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">/* A traversal callback for move_unreachable. */</span><br><span class="line">static int</span><br><span class="line">visit_reachable(PyObject *op, PyGC_Head *reachable)</span><br><span class="line">&#123;</span><br><span class="line">    if (PyObject_IS_GC(op)) &#123;</span><br><span class="line">        PyGC_Head *gc = AS_GC(op);</span><br><span class="line">        const Py_ssize_t gc_refs = gc-&gt;gc.gc_refs;</span><br><span class="line"></span><br><span class="line">        if (gc_refs == 0) &#123;</span><br><span class="line">            /* 对于还没有处理的对象，恢复其gc_refs */</span><br><span class="line">            gc-&gt;gc.gc_refs = 1;</span><br><span class="line">        &#125;</span><br><span class="line">        else if (gc_refs == GC_TENTATIVELY_UNREACHABLE) &#123;</span><br><span class="line">            /* 对于已经挪到unreachable链表的对象，将其再次挪到原来的链表中 */</span><br><span class="line">            gc_list_move(gc, reachable);</span><br><span class="line">            gc-&gt;gc.gc_refs = 1;</span><br><span class="line">        &#125;</span><br><span class="line">         else &#123;</span><br><span class="line">            assert(gc_refs &gt; 0</span><br><span class="line">                   || gc_refs == GC_REACHABLE</span><br><span class="line">                   || gc_refs == GC_UNTRACKED);</span><br><span class="line">         &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>此时得到的reachable链表和unreachable链表<br><img src="https://upload-images.jianshu.io/upload_images/5366157-c52e668a283d050c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/828/format/webp" alt="此时得到的reachable链表和unreachable链表"></li>
+<li>特例：对象B在finalizer中调用对象A的某个操作<ul>
+<li>class中定义一个特殊的方法<code>__del__</code>,这个方法称为finalizer；在拥有finalizer的实例对象被销毁时，会先调用这个finalizer。</li>
+<li>安全的垃圾回收必须保证对象A一定要在对象B之后回收</li>
+<li>python无法保证垃圾回收的顺序，所以同时满足存在finalizer和循环引用两个条件时，将unreachable链表中的用于finalizer的PyInstanceObject对象都移动到一个名为garbage的PyListObject对象中。</li>
+</ul>
+</li>
+</ul>
+<h4 id="16-4-3-3-垃圾回收"><a href="#16-4-3-3-垃圾回收" class="headerlink" title="16.4.3.3 垃圾回收"></a>16.4.3.3 垃圾回收</h4><ul>
+<li>前面我们已经打破了对象间循环引用。上面只是对gc_refs进行了调整。接下来对ob_refcnt进行调整，直到unreachable链表中的每一个对象的ob_refcnt变为0（触发对象的销毁）。</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">// gcmodule.c</span><br><span class="line">static int</span><br><span class="line">gc_list_is_empty(PyGC_Head *list)</span><br><span class="line">&#123;</span><br><span class="line">    return (list-&gt;gc.gc_next == list);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">static void</span><br><span class="line">delete_garbage(PyGC_Head *collectable, PyGC_Head *old)</span><br><span class="line">&#123;</span><br><span class="line">    inquiry clear;</span><br><span class="line">    while (!gc_list_is_empty(collectable)) &#123;</span><br><span class="line">        PyGC_Head *gc = collectable-&gt;gc.gc_next;</span><br><span class="line">        PyObject *op = FROM_GC(gc);</span><br><span class="line"></span><br><span class="line">        assert(IS_TENTATIVELY_UNREACHABLE(op));</span><br><span class="line">        if (debug &amp; DEBUG_SAVEALL) &#123;</span><br><span class="line">            PyList_Append(garbage, op);</span><br><span class="line">        &#125;</span><br><span class="line">        else &#123;</span><br><span class="line">            if ((clear = op-&gt;ob_type-&gt;tp_clear) != NULL) &#123;</span><br><span class="line">                Py_INCREF(op);</span><br><span class="line">                clear(op);</span><br><span class="line">                Py_DECREF(op);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        if (collectable-&gt;gc.gc_next == gc) &#123;</span><br><span class="line">            /* object is still alive, move it, it may die later */</span><br><span class="line">            gc_list_move(gc, old);</span><br><span class="line">            gc-&gt;gc.gc_refs = GC_REACHABLE;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="16-4-4-垃圾收集全景"><a href="#16-4-4-垃圾收集全景" class="headerlink" title="16.4.4 垃圾收集全景"></a>16.4.4 垃圾收集全景</h3><h3 id="16-4-5-Python中的gc模块"><a href="#16-4-5-Python中的gc模块" class="headerlink" title="16.4.5 Python中的gc模块"></a>16.4.5 Python中的gc模块</h3><h3 id="16-4-6-总结"><a href="#16-4-6-总结" class="headerlink" title="16.4.6 总结"></a>16.4.6 总结</h3><ul>
+<li>python以引用计数来作为自动内存管理的方案，同时采用多种方式来弥补引用计数的不足（标记-清除）。</li>
+<li>在分布式环境下，引用计数是目前最有效的垃圾收集技术。</li>
+<li>标记-清除算法是用来打破循环引用的垃圾收集方法。<h2 id="参考文件"><a href="#参考文件" class="headerlink" title="参考文件"></a>参考文件</h2><code>Python源码剖析 site:blog.donews.com</code><br><a href="http://webcache.googleusercontent.com/search?q=cache:uBCGpGZKiqYJ:markmail.org/download.xqy%3Fid%3Dactenm4eebvjxrln%26number%3D1+&cd=3&hl=zh-CN&ct=clnk&gl=us" target="_blank" rel="noopener">谷歌快照</a><br><a href="http://webcache.googleusercontent.com/search?q=cache:s1Yk8yGsEWoJ:he11olx.com/2018/08/05/1.CPython3.6%25E6%25BA%2590%25E7%25A0%2581%25E5%2588%2586%25E6%259E%2590/1.15.%2520Python%2520%25E5%259E%2583%25E5%259C%25BE%25E5%259B%259E%25E6%2594%25B6/+&cd=1&hl=zh-CN&ct=clnk&gl=us" target="_blank" rel="noopener">【谷歌快照】【CPython3.6源码分析】Python 垃圾回收</a></li>
+</ul>
+<p><a href="https://www.jianshu.com/p/24c718bc5870" target="_blank" rel="noopener">【Python】内存管理机制 - 简书</a><br><a href="https://nodefe.com/implement-of-pymalloc-from-source/" target="_blank" rel="noopener">pymalloc — 从源码看 Python 对象分配器实现</a><br><a href="https://www.cnblogs.com/GO-NO-1/p/6535097.html" target="_blank" rel="noopener">成成</a></p>
+
+    </div>
+
+    
+    
+    
+        
+      
+
+      <footer class="post-footer">
+          
+            
+          
+          <div class="post-tags">
+            
+              <a href="/tags/源码/" rel="tag"># 源码</a>
+            
+              <a href="/tags/python/" rel="tag"># python</a>
+            
+          </div>
+        
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+              
+                <a href="/2019/09/08/python源码剖析/第16章-PYTHON的内存管理机制/" rel="next" title="第16章 PYTHON的内存管理机制">
+                  <i class="fa fa-chevron-left"></i> 第16章 PYTHON的内存管理机制
+                </a>
+              
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+              
+                <a href="/2019/09/08/python源码剖析/yield-关键字源码解析/" rel="prev" title="yield 关键字源码解析">
+                  yield 关键字源码解析 <i class="fa fa-chevron-right"></i>
+                </a>
+              
+            </div>
+          </div>
+        
+      </footer>
+    
+  </div>
+  
+  
+  
+  </article>
+
+  </div>
+
+
+          </div>
+          
+
+        </div>
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+        
+        
+        
+        
+      
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#第16章-PYTHON的内存管理机制"><span class="nav-number">1.</span> <span class="nav-text">第16章 PYTHON的内存管理机制</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#16-1-内存管理架构"><span class="nav-number">1.1.</span> <span class="nav-text">16.1 内存管理架构</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#16-1-1-第一层的实现"><span class="nav-number">1.1.1.</span> <span class="nav-text">16.1.1 第一层的实现</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#16-2-小块空间的内存池"><span class="nav-number">1.2.</span> <span class="nav-text">16.2 小块空间的内存池</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#16-2-1-Block"><span class="nav-number">1.2.1.</span> <span class="nav-text">16.2.1 Block</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#16-2-2-Pool"><span class="nav-number">1.2.2.</span> <span class="nav-text">16.2.2 Pool</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#16-2-3-arena"><span class="nav-number">1.2.3.</span> <span class="nav-text">16.2.3 arena</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#16-2-3-1-“未使用”的arena和可用的arena"><span class="nav-number">1.2.3.1.</span> <span class="nav-text">16.2.3.1 “未使用”的arena和可用的arena</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#16-2-3-2-申请arena"><span class="nav-number">1.2.3.2.</span> <span class="nav-text">16.2.3.2 申请arena</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#16-2-4-内存池"><span class="nav-number">1.2.4.</span> <span class="nav-text">16.2.4 内存池</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#16-2-4-1-可用pool缓冲池—usedpools"><span class="nav-number">1.2.4.1.</span> <span class="nav-text">16.2.4.1 可用pool缓冲池—usedpools</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#16-2-4-2-待补充"><span class="nav-number">1.2.4.2.</span> <span class="nav-text">16.2.4.2 待补充</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#16-2-4-3-block的释放"><span class="nav-number">1.2.4.3.</span> <span class="nav-text">16.2.4.3 block的释放</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#16-2-4-4-内存池全景"><span class="nav-number">1.2.4.4.</span> <span class="nav-text">16.2.4.4 内存池全景</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#16-3-循环引用的垃圾收集"><span class="nav-number">1.3.</span> <span class="nav-text">16.3 循环引用的垃圾收集</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#16-3-1-引用计数与垃圾收集"><span class="nav-number">1.3.1.</span> <span class="nav-text">16.3.1 引用计数与垃圾收集</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#16-3-2-三色标记模型"><span class="nav-number">1.3.2.</span> <span class="nav-text">16.3.2 三色标记模型</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#16-4-PYTHON中的垃圾收集"><span class="nav-number">1.4.</span> <span class="nav-text">16.4 PYTHON中的垃圾收集</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#16-4-1-可收集对象链表"><span class="nav-number">1.4.1.</span> <span class="nav-text">16.4.1 可收集对象链表</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#16-4-2-分代的垃圾收集"><span class="nav-number">1.4.2.</span> <span class="nav-text">16.4.2 分代的垃圾收集</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#16-4-3-Python中的标记-清除方法"><span class="nav-number">1.4.3.</span> <span class="nav-text">16.4.3 Python中的标记-清除方法</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#16-4-3-1-寻找Root-Object集合"><span class="nav-number">1.4.3.1.</span> <span class="nav-text">16.4.3.1 寻找Root Object集合</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#16-4-3-2-垃圾标记"><span class="nav-number">1.4.3.2.</span> <span class="nav-text">16.4.3.2 垃圾标记</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#16-4-3-3-垃圾回收"><span class="nav-number">1.4.3.3.</span> <span class="nav-text">16.4.3.3 垃圾回收</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#16-4-4-垃圾收集全景"><span class="nav-number">1.4.4.</span> <span class="nav-text">16.4.4 垃圾收集全景</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#16-4-5-Python中的gc模块"><span class="nav-number">1.4.5.</span> <span class="nav-text">16.4.5 Python中的gc模块</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#16-4-6-总结"><span class="nav-number">1.4.6.</span> <span class="nav-text">16.4.6 总结</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文件"><span class="nav-number">1.5.</span> <span class="nav-text">参考文件</span></a></li></ol></li></ol></div>
+        
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">zzt</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+  <nav class="site-state motion-element">
+      <div class="site-state-item site-state-posts">
+        
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">40</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-categories">
+        
+          
+            <a href="/categories/">
+          
+        
+        
+        
+          
+        
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-tags">
+        
+          
+            <a href="/tags/">
+          
+        
+        
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">tags</span>
+        </a>
+      </div>
+    
+  </nav>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zzt</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.9.0</div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">Theme – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v7.4.0</div>
+
+        
+
+
+
+
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+
+
+  <script src="/lib/anime.min.js?v=3.1.0"></script>
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+<script src="/js/utils.js?v=7.4.0"></script><script src="/js/motion.js?v=7.4.0"></script>
+<script src="/js/schemes/muse.js?v=7.4.0"></script>
+<script src="/js/next-boot.js?v=7.4.0"></script>
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+
+
+
+
+
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.4.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.4.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.4.0">
+  <link rel="mask-icon" href="/images/logo.svg?v=7.4.0" color="#222">
+
+<link rel="stylesheet" href="/css/main.css?v=7.4.0">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '7.4.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: 'Copy',
+      copy_success: 'Copied',
+      copy_failure: 'Copy failed'
+    },
+    sidebarPadding: 40
+  };
+</script>
+
+  <meta name="description" content="[toc] 第10章 Python虚拟机中的控制流 keyword  控制流程 异常机制  10.1 Python虚拟机中的if控制流10.1.1 研究对象–if_control.py1234567891011a = 1if a &amp;gt; 10:    print(&amp;quot;a&amp;gt;10&amp;quot;)elif a &amp;lt;= -2:    print(&amp;quot;a&amp;lt;=-2&amp;quot;)">
+<meta name="keywords" content="源码,python">
+<meta property="og:type" content="article">
+<meta property="og:title" content=" 第10章 Python虚拟机中的控制流">
+<meta property="og:url" content="https://ztzheng100.github.io.git/2019/09/08/第10章-Python虚拟机中的控制流/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="[toc] 第10章 Python虚拟机中的控制流 keyword  控制流程 异常机制  10.1 Python虚拟机中的if控制流10.1.1 研究对象–if_control.py1234567891011a = 1if a &amp;gt; 10:    print(&amp;quot;a&amp;gt;10&amp;quot;)elif a &amp;lt;= -2:    print(&amp;quot;a&amp;lt;=-2&amp;quot;)">
+<meta property="og:locale" content="en">
+<meta property="og:updated_time" content="2019-09-08T12:14:25.547Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content=" 第10章 Python虚拟机中的控制流">
+<meta name="twitter:description" content="[toc] 第10章 Python虚拟机中的控制流 keyword  控制流程 异常机制  10.1 Python虚拟机中的if控制流10.1.1 研究对象–if_control.py1234567891011a = 1if a &amp;gt; 10:    print(&amp;quot;a&amp;gt;10&amp;quot;)elif a &amp;lt;= -2:    print(&amp;quot;a&amp;lt;=-2&amp;quot;)">
+  <link rel="canonical" href="https://ztzheng100.github.io.git/2019/09/08/第10章-Python虚拟机中的控制流/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title> 第10章 Python虚拟机中的控制流 | Hexo</title>
+  <meta name="generator" content="Hexo 3.9.0">
+  
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="en">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Hexo</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+      
+      
+      
+        
+        <li class="menu-item menu-item-home">
+      
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Home</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-tags">
+      
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>Tags</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-categories">
+      
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>Categories</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-archives">
+      
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archives</a>
+
+  </li>
+  </ul>
+
+    
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+      <article itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block post">
+    <link itemprop="mainEntityOfPage" href="https://ztzheng100.github.io.git/2019/09/08/第10章-Python虚拟机中的控制流/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zzt">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Hexo">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline"> 第10章 Python虚拟机中的控制流
+
+          
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              
+                
+              
+
+              <time title="Created: 2019-09-08 20:13:58 / Modified: 20:14:25" itemprop="dateCreated datePublished" datetime="2019-09-08T20:13:58+08:00">2019-09-08</time>
+            </span>
+          
+            
+
+            
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/python源码剖析/" itemprop="url" rel="index"><span itemprop="name">python源码剖析</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>[toc]</p>
+<h1 id="第10章-Python虚拟机中的控制流"><a href="#第10章-Python虚拟机中的控制流" class="headerlink" title="第10章 Python虚拟机中的控制流"></a>第10章 Python虚拟机中的控制流</h1><ul>
+<li>keyword<br>  <em>控制流程 异常机制</em></li>
+</ul>
+<h2 id="10-1-Python虚拟机中的if控制流"><a href="#10-1-Python虚拟机中的if控制流" class="headerlink" title="10.1 Python虚拟机中的if控制流"></a>10.1 Python虚拟机中的if控制流</h2><h3 id="10-1-1-研究对象–if-control-py"><a href="#10-1-1-研究对象–if-control-py" class="headerlink" title="10.1.1 研究对象–if_control.py"></a>10.1.1 研究对象–if_control.py</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">a = 1</span><br><span class="line">if a &gt; 10:</span><br><span class="line">    print(&quot;a&gt;10&quot;)</span><br><span class="line">elif a &lt;= -2:</span><br><span class="line">    print(&quot;a&lt;=-2&quot;)</span><br><span class="line">elif a != 1:</span><br><span class="line">    print(&quot;a!=1&quot;)</span><br><span class="line">elif a == 1:</span><br><span class="line">    print(&quot;a==1&quot;)</span><br><span class="line">else:</span><br><span class="line">    print(&quot;Unknown a&quot;)</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>符号表和常量表</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; source = open(&quot;D:\\test.py&quot;).read()</span><br><span class="line">&gt;&gt;&gt; co = compile(source, &quot;test.py&quot;, &quot;exec&quot;)</span><br><span class="line">&gt;&gt;&gt; co.co_names</span><br><span class="line">(&apos;a&apos;,)</span><br><span class="line">&gt;&gt;&gt; co.co_consts</span><br><span class="line">(1, 10, &apos;a&gt;10&apos;, -2, &apos;a&lt;=-2&apos;, &apos;a!=1&apos;, &apos;a==1&apos;, &apos;Unknown a&apos;, None)</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>字节码和源码对应</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; dis.dis(co)</span><br><span class="line">//a = 1</span><br><span class="line">  1           0 LOAD_CONST               0 (1)</span><br><span class="line">              3 STORE_NAME               0 (a)</span><br><span class="line">//if a &gt; 10:</span><br><span class="line">  2           6 LOAD_NAME                0 (a)</span><br><span class="line">              9 LOAD_CONST               1 (10)</span><br><span class="line">             12 COMPARE_OP               4 (&gt;)  //大于号等价为4 的枚举类型，</span><br><span class="line">             15 POP_JUMP_IF_FALSE       26</span><br><span class="line">    //   print(&quot;a&gt;10&quot;)</span><br><span class="line">  3          18 LOAD_CONST               2 (&apos;a&gt;10&apos;)</span><br><span class="line">             21 PRINT_ITEM          </span><br><span class="line">             22 PRINT_NEWLINE       </span><br><span class="line">             23 JUMP_FORWARD            65 (to 91)</span><br><span class="line"></span><br><span class="line">  4     &gt;&gt;   26 LOAD_NAME                0 (a)</span><br><span class="line">             29 LOAD_CONST               3 (-2)</span><br><span class="line">             32 COMPARE_OP               1 (&lt;=)</span><br><span class="line">             35 POP_JUMP_IF_FALSE       46</span><br><span class="line"></span><br><span class="line">  5          38 LOAD_CONST               4 (&apos;a&lt;=-2&apos;)</span><br><span class="line">             41 PRINT_ITEM          </span><br><span class="line">             42 PRINT_NEWLINE       </span><br><span class="line">             43 JUMP_FORWARD            45 (to 91)</span><br><span class="line"></span><br><span class="line">  6     &gt;&gt;   46 LOAD_NAME                0 (a)</span><br><span class="line">             49 LOAD_CONST               0 (1)</span><br><span class="line">             52 COMPARE_OP               3 (!=)</span><br><span class="line">             55 POP_JUMP_IF_FALSE       66</span><br><span class="line"></span><br><span class="line">  7          58 LOAD_CONST               5 (&apos;a!=1&apos;)</span><br><span class="line">             61 PRINT_ITEM          </span><br><span class="line">             62 PRINT_NEWLINE       </span><br><span class="line">             63 JUMP_FORWARD            25 (to 91)</span><br><span class="line"></span><br><span class="line">  8     &gt;&gt;   66 LOAD_NAME                0 (a)</span><br><span class="line">             69 LOAD_CONST               0 (1)</span><br><span class="line">             72 COMPARE_OP               2 (==)</span><br><span class="line">             75 POP_JUMP_IF_FALSE       86</span><br><span class="line"></span><br><span class="line">  9          78 LOAD_CONST               6 (&apos;a==1&apos;)</span><br><span class="line">             81 PRINT_ITEM          </span><br><span class="line">             82 PRINT_NEWLINE       </span><br><span class="line">             83 JUMP_FORWARD             5 (to 91)</span><br><span class="line"></span><br><span class="line"> 11     &gt;&gt;   86 LOAD_CONST               7 (&apos;Unknown a&apos;)</span><br><span class="line">             89 PRINT_ITEM          </span><br><span class="line">             90 PRINT_NEWLINE       </span><br><span class="line">        &gt;&gt;   91 LOAD_CONST               8 (None)</span><br><span class="line">             94 RETURN_VALUE        </span><br><span class="line">&gt;&gt;&gt;</span><br></pre></td></tr></table></figure>
+
+<h3 id="10-2-2-1-COMPARE-OP指令"><a href="#10-2-2-1-COMPARE-OP指令" class="headerlink" title="10.2.2.1  COMPARE_OP指令"></a>10.2.2.1  COMPARE_OP指令</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line">case COMPARE_OP:</span><br><span class="line">            w = POP();</span><br><span class="line">            v = TOP();</span><br><span class="line">            //[1]：PyIntObject 对象的快速通道</span><br><span class="line">            if (PyInt_CheckExact(w) &amp;&amp; PyInt_CheckExact(v)) &#123;</span><br><span class="line">                /* INLINE: cmp(int, int) */</span><br><span class="line">                register long a, b;</span><br><span class="line">                register int res;</span><br><span class="line">                a = PyInt_AS_LONG(v);</span><br><span class="line">                b = PyInt_AS_LONG(w);</span><br><span class="line">                switch (oparg) &#123;</span><br><span class="line">                case PyCmp_LT: res = a &lt;  b; break;</span><br><span class="line">                case PyCmp_LE: res = a &lt;= b; break;</span><br><span class="line">                case PyCmp_EQ: res = a == b; break;</span><br><span class="line">                case PyCmp_NE: res = a != b; break;</span><br><span class="line">                case PyCmp_GT: res = a &gt;  b; break;</span><br><span class="line">                case PyCmp_GE: res = a &gt;= b; break;</span><br><span class="line">                case PyCmp_IS: res = v == w; break;</span><br><span class="line">                case PyCmp_IS_NOT: res = v != w; break;</span><br><span class="line">                default: goto slow_compare;</span><br><span class="line">                &#125;</span><br><span class="line">                x = res ? Py_True : Py_False;</span><br><span class="line">                Py_INCREF(x);</span><br><span class="line">            &#125;</span><br><span class="line">            //[2]:一般对象的慢速通道</span><br><span class="line">            else &#123;</span><br><span class="line">              slow_compare:</span><br><span class="line">                x = cmp_outcome(oparg, v, w);</span><br><span class="line">            &#125;</span><br><span class="line">            Py_DECREF(v);</span><br><span class="line">            Py_DECREF(w);</span><br><span class="line">            //将比较结果压入运行时栈中</span><br><span class="line">            SET_TOP(x);     //#define SET_TOP(v) (stack_pointer[-1] = (v))</span><br><span class="line">            if (x == NULL) break;</span><br><span class="line">            PREDICT(POP_JUMP_IF_FALSE);</span><br><span class="line">            PREDICT(POP_JUMP_IF_TRUE);</span><br><span class="line">            continue;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>一般对象的慢速通道 slow_compare<ul>
+<li>当参与比较的两个对象不全是PyIntObject对象时，Python虚拟机只能进入比较操作的慢速通道，调用cmp_outcome方法进行常规的比较，性能远不如为PyIntObject建立的快速通道</li>
+<li>++通常意义上的两个对象之间的大小关系的比较操作，<code>cmp_outcome</code>委托给<code>PyObject_RichCompare</code>进行++</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br></pre></td><td class="code"><pre><span class="line">static PyObject *</span><br><span class="line">cmp_outcome(int op, register PyObject *v, register PyObject *w)</span><br><span class="line">&#123;</span><br><span class="line">    int res = 0;</span><br><span class="line">    switch (op) &#123;</span><br><span class="line">    case PyCmp_IS:</span><br><span class="line">        res = (v == w);</span><br><span class="line">        break;</span><br><span class="line">    case PyCmp_IS_NOT:</span><br><span class="line">        res = (v != w);</span><br><span class="line">        break;</span><br><span class="line">    case PyCmp_IN:</span><br><span class="line">        res = PySequence_Contains(w, v);</span><br><span class="line">        if (res &lt; 0)</span><br><span class="line">            return NULL;</span><br><span class="line">        break;</span><br><span class="line">    case PyCmp_NOT_IN:</span><br><span class="line">        res = PySequence_Contains(w, v);</span><br><span class="line">        if (res &lt; 0)</span><br><span class="line">            return NULL;</span><br><span class="line">        res = !res;</span><br><span class="line">        break;</span><br><span class="line">    case PyCmp_EXC_MATCH:</span><br><span class="line">        if (PyTuple_Check(w)) &#123;</span><br><span class="line">            Py_ssize_t i, length;</span><br><span class="line">            length = PyTuple_Size(w);</span><br><span class="line">            for (i = 0; i &lt; length; i += 1) &#123;</span><br><span class="line">                PyObject *exc = PyTuple_GET_ITEM(w, i);</span><br><span class="line">                if (PyString_Check(exc)) &#123;</span><br><span class="line">                    int ret_val;</span><br><span class="line">                    ret_val = PyErr_WarnEx(</span><br><span class="line">                        PyExc_DeprecationWarning,</span><br><span class="line">                        &quot;catching of string &quot;</span><br><span class="line">                        &quot;exceptions is deprecated&quot;, 1);</span><br><span class="line">                    if (ret_val &lt; 0)</span><br><span class="line">                        return NULL;</span><br><span class="line">                &#125;</span><br><span class="line">                else if (Py_Py3kWarningFlag  &amp;&amp;</span><br><span class="line">                         !PyTuple_Check(exc) &amp;&amp;</span><br><span class="line">                         !Py3kExceptionClass_Check(exc))</span><br><span class="line">                &#123;</span><br><span class="line">                    int ret_val;</span><br><span class="line">                    ret_val = PyErr_WarnEx(</span><br><span class="line">                        PyExc_DeprecationWarning,</span><br><span class="line">                        CANNOT_CATCH_MSG, 1);</span><br><span class="line">                    if (ret_val &lt; 0)</span><br><span class="line">                        return NULL;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        else &#123;</span><br><span class="line">            if (PyString_Check(w)) &#123;</span><br><span class="line">                int ret_val;</span><br><span class="line">                ret_val = PyErr_WarnEx(</span><br><span class="line">                                PyExc_DeprecationWarning,</span><br><span class="line">                                &quot;catching of string &quot;</span><br><span class="line">                                &quot;exceptions is deprecated&quot;, 1);</span><br><span class="line">                if (ret_val &lt; 0)</span><br><span class="line">                    return NULL;</span><br><span class="line">            &#125;</span><br><span class="line">            else if (Py_Py3kWarningFlag  &amp;&amp;</span><br><span class="line">                     !PyTuple_Check(w) &amp;&amp;</span><br><span class="line">                     !Py3kExceptionClass_Check(w))</span><br><span class="line">            &#123;</span><br><span class="line">                int ret_val;</span><br><span class="line">                ret_val = PyErr_WarnEx(</span><br><span class="line">                    PyExc_DeprecationWarning,</span><br><span class="line">                    CANNOT_CATCH_MSG, 1);</span><br><span class="line">                if (ret_val &lt; 0)</span><br><span class="line">                    return NULL;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        res = PyErr_GivenExceptionMatches(v, w);</span><br><span class="line">        break;</span><br><span class="line">    default:</span><br><span class="line">        return PyObject_RichCompare(v, w, op);</span><br><span class="line">    &#125;</span><br><span class="line">    v = res ? Py_True : Py_False;</span><br><span class="line">    Py_INCREF(v);</span><br><span class="line">    return v;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<pre><code>* `cmp_outcome实际上主要是处理这些广义上的比较操作，甚至还包括is操作符的实现。对于PyCmp_IN操作，cmp_outcome会委托给PySequence_Contains来判断在序列对象w中是否存在对象v，而对于通常意义上的两个对象之间的大小关系的比较操作，`
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">lst = [1, 2, 3]</span><br><span class="line">if 1 in lst:</span><br><span class="line">    print(&quot;Found&quot;)</span><br><span class="line">//if 1 in lst:编译后字节码</span><br><span class="line">2          15 LOAD_CONST               0 (1)</span><br><span class="line">         18 LOAD_NAME                0 (lst)</span><br><span class="line">         21 COMPARE_OP               6 (in)</span><br><span class="line">         24 JUMP_IF_FALSE            9 (to 36)</span><br><span class="line">         27 POP_TOP</span><br></pre></td></tr></table></figure>
+
+* ++通常意义上的两个对象之间的大小关系的比较操作，`cmp_outcome`委托给`PyObject_RichCompare`进行++
+    + `在PyObject_RichCompare中，首先会确保执行的比较操作介于Py_LT和Py_GE之间，即常规意义上的比较操作。如果进行比较操作的两个对象类型相同，且这两个对象不是用户自定义的类的实例对象，那么首先会选择对象对应的PyTypeObject对象中所定义的tp_richcompare操作。在Python中，无论是Python内建对象，还是用户自定义的类的实例对象，其比较操作都是在各自对应的类型对象中的tp_richcompare或tp_compare中定义的。如果这两个操作都没有成功，Python还会调用do_richcmp进行比较`</code></pre><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line">#define RICHCOMPARE(t) (PyType_HasFeature((t), Py_TPFLAGS_HAVE_RICHCOMPARE) \</span><br><span class="line">                         ? (t)-&gt;tp_richcompare : NULL)</span><br><span class="line">                          </span><br><span class="line">PyObject *</span><br><span class="line">PyObject_RichCompare(PyObject *v, PyObject *w, int op)</span><br><span class="line">&#123;</span><br><span class="line">    PyObject *res;</span><br><span class="line"> //首先会确保执行的比较操作介于Py_LT和Py_GE之间，即常规意义上的比较操作。</span><br><span class="line">    assert(Py_LT &lt;= op &amp;&amp; op &lt;= Py_GE);</span><br><span class="line">    if (Py_EnterRecursiveCall(&quot; in cmp&quot;))</span><br><span class="line">        return NULL;</span><br><span class="line">     /*如果进行比较操作的两个对象类型相同，且这两个对象不是用户自定义的类的实例对象，那么首先会选择对象对应的PyTypeObject对象中所定义的tp_richcompare操作。*/</span><br><span class="line">    /* If the types are equal, and not old-style instances, try to</span><br><span class="line">       get out cheap (don&apos;t bother with coercions etc.). */</span><br><span class="line">    if (v-&gt;ob_type == w-&gt;ob_type &amp;&amp; !PyInstance_Check(v)) &#123;</span><br><span class="line">        cmpfunc fcmp;</span><br><span class="line">        richcmpfunc frich = RICHCOMPARE(v-&gt;ob_type);</span><br><span class="line">        /* If the type has richcmp, try it first.  try_rich_compare</span><br><span class="line">           tries it two-sided, which is not needed since we&apos;ve a</span><br><span class="line">           single type only. */</span><br><span class="line">        if (frich != NULL) &#123;</span><br><span class="line">            res = (*frich)(v, w, op);</span><br><span class="line">            if (res != Py_NotImplemented)</span><br><span class="line">                goto Done;</span><br><span class="line">            Py_DECREF(res);</span><br><span class="line">        &#125;</span><br><span class="line">        /*在Python中，无论是Python内建对象，还是用户自定义的类的实例对象，其比较操作都是在各自对应的类型对象中的tp_richcompare或tp_compare中定义的。*/</span><br><span class="line">        /* No richcmp, or this particular richmp not implemented.</span><br><span class="line">           Try 3-way cmp. */</span><br><span class="line">        fcmp = v-&gt;ob_type-&gt;tp_compare;</span><br><span class="line">        if (fcmp != NULL) &#123;</span><br><span class="line">            int c = (*fcmp)(v, w);</span><br><span class="line">            c = adjust_tp_compare(c);</span><br><span class="line">            if (c == -2) &#123;</span><br><span class="line">                res = NULL;</span><br><span class="line">                goto Done;</span><br><span class="line">            &#125;</span><br><span class="line">            res = convert_3way_to_object(op, c);</span><br><span class="line">            goto Done;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    /*如果这两个操作都没有成功，Python还会调用do_richcmp进行比较*/</span><br><span class="line">    /* Fast path not taken, or couldn&apos;t deliver a useful result. */</span><br><span class="line">    res = do_richcmp(v, w, op);</span><br><span class="line">Done:</span><br><span class="line">    Py_LeaveRecursiveCall();</span><br><span class="line">    return res;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="10-1-2-2-比较操作的结果——Python中的bool对象"><a href="#10-1-2-2-比较操作的结果——Python中的bool对象" class="headerlink" title="10.1.2.2 比较操作的结果——Python中的bool对象"></a>10.1.2.2 比较操作的结果——Python中的bool对象</h3><ul>
+<li>代表成功或失败的PyObject对象：Py_True和Py_False。注意，这两个对象确实是PyObject对象</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">[boolobject.h]</span><br><span class="line">/* Don&apos;t use these directly */</span><br><span class="line">PyAPI_DATA(PyIntObject) _Py_ZeroStruct, _Py_TrueStruct;</span><br><span class="line"> </span><br><span class="line">/* Use these macros */</span><br><span class="line">#define Py_False ((PyObject *) &amp;_Py_ZeroStruct)</span><br><span class="line">#define Py_True ((PyObject *) &amp;_Py_TrueStruct)</span><br><span class="line"></span><br><span class="line">/* Named Zero for link-level compatibility */</span><br><span class="line">PyIntObject _Py_ZeroStruct = &#123;</span><br><span class="line">    PyObject_HEAD_INIT(&amp;PyBool_Type)</span><br><span class="line">    0</span><br><span class="line">&#125;;</span><br><span class="line"> </span><br><span class="line">PyIntObject _Py_TrueStruct = &#123;</span><br><span class="line">    PyObject_HEAD_INIT(&amp;PyBool_Type)</span><br><span class="line">    1</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<h3 id="10-1-3-指令跳跃"><a href="#10-1-3-指令跳跃" class="headerlink" title="10.1.3 指令跳跃"></a>10.1.3 指令跳跃</h3><h2 id="10-2-Python虚拟机中的for循环控制流"><a href="#10-2-Python虚拟机中的for循环控制流" class="headerlink" title="10.2 Python虚拟机中的for循环控制流"></a>10.2 Python虚拟机中的for循环控制流</h2><h2 id="10-3-Python虚拟机中的while循环控制结构"><a href="#10-3-Python虚拟机中的while循环控制结构" class="headerlink" title="10.3 Python虚拟机中的while循环控制结构"></a>10.3 Python虚拟机中的while循环控制结构</h2><h2 id="10-4-Python虚拟机中的异常控制流"><a href="#10-4-Python虚拟机中的异常控制流" class="headerlink" title="10.4 Python虚拟机中的异常控制流"></a>10.4 Python虚拟机中的异常控制流</h2><h2 id="疑惑"><a href="#疑惑" class="headerlink" title="疑惑"></a>疑惑</h2><ul>
+<li><code>(next_instr[2]&lt;&lt;8) + next_instr[1]))</code> 移动三个字节？<h2 id="参考文件"><a href="#参考文件" class="headerlink" title="参考文件"></a>参考文件</h2><a href="https://www.cnblogs.com/beiluowuzheng/p/9489922.html" target="_blank" rel="noopener">Python虚拟机中的if控制流</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+        
+      
+
+      <footer class="post-footer">
+          
+            
+          
+          <div class="post-tags">
+            
+              <a href="/tags/源码/" rel="tag"># 源码</a>
+            
+              <a href="/tags/python/" rel="tag"># python</a>
+            
+          </div>
+        
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+              
+                <a href="/2019/09/08/python源码剖析/第10章-Python虚拟机中的控制流/" rel="next" title=" 第10章 Python虚拟机中的控制流">
+                  <i class="fa fa-chevron-left"></i>  第10章 Python虚拟机中的控制流
+                </a>
+              
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+              
+                <a href="/2019/09/08/python源码剖析/第8章-Python虚拟机框架/" rel="prev" title=" 第8章 Python虚拟机框架">
+                   第8章 Python虚拟机框架 <i class="fa fa-chevron-right"></i>
+                </a>
+              
+            </div>
+          </div>
+        
+      </footer>
+    
+  </div>
+  
+  
+  
+  </article>
+
+  </div>
+
+
+          </div>
+          
+
+        </div>
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+        
+        
+        
+        
+      
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#第10章-Python虚拟机中的控制流"><span class="nav-number">1.</span> <span class="nav-text">第10章 Python虚拟机中的控制流</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#10-1-Python虚拟机中的if控制流"><span class="nav-number">1.1.</span> <span class="nav-text">10.1 Python虚拟机中的if控制流</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#10-1-1-研究对象–if-control-py"><span class="nav-number">1.1.1.</span> <span class="nav-text">10.1.1 研究对象–if_control.py</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#10-2-2-1-COMPARE-OP指令"><span class="nav-number">1.1.2.</span> <span class="nav-text">10.2.2.1  COMPARE_OP指令</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#10-1-2-2-比较操作的结果——Python中的bool对象"><span class="nav-number">1.1.3.</span> <span class="nav-text">10.1.2.2 比较操作的结果——Python中的bool对象</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#10-1-3-指令跳跃"><span class="nav-number">1.1.4.</span> <span class="nav-text">10.1.3 指令跳跃</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#10-2-Python虚拟机中的for循环控制流"><span class="nav-number">1.2.</span> <span class="nav-text">10.2 Python虚拟机中的for循环控制流</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#10-3-Python虚拟机中的while循环控制结构"><span class="nav-number">1.3.</span> <span class="nav-text">10.3 Python虚拟机中的while循环控制结构</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#10-4-Python虚拟机中的异常控制流"><span class="nav-number">1.4.</span> <span class="nav-text">10.4 Python虚拟机中的异常控制流</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#疑惑"><span class="nav-number">1.5.</span> <span class="nav-text">疑惑</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文件"><span class="nav-number">1.6.</span> <span class="nav-text">参考文件</span></a></li></ol></li></ol></div>
+        
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">zzt</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+  <nav class="site-state motion-element">
+      <div class="site-state-item site-state-posts">
+        
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">40</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-categories">
+        
+          
+            <a href="/categories/">
+          
+        
+        
+        
+          
+        
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-tags">
+        
+          
+            <a href="/tags/">
+          
+        
+        
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">tags</span>
+        </a>
+      </div>
+    
+  </nav>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zzt</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.9.0</div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">Theme – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v7.4.0</div>
+
+        
+
+
+
+
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+
+
+  <script src="/lib/anime.min.js?v=3.1.0"></script>
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+<script src="/js/utils.js?v=7.4.0"></script><script src="/js/motion.js?v=7.4.0"></script>
+<script src="/js/schemes/muse.js?v=7.4.0"></script>
+<script src="/js/next-boot.js?v=7.4.0"></script>
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+</body>
+</html>

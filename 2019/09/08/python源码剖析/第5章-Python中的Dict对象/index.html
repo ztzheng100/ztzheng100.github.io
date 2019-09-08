@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+
+
+
+
+
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.4.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.4.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.4.0">
+  <link rel="mask-icon" href="/images/logo.svg?v=7.4.0" color="#222">
+
+<link rel="stylesheet" href="/css/main.css?v=7.4.0">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '7.4.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: 'Copy',
+      copy_success: 'Copied',
+      copy_failure: 'Copy failed'
+    },
+    sidebarPadding: 40
+  };
+</script>
+
+  <meta name="description" content="[toc] 第5章 Python中的Dict对象5.1 散列表概述5.2 PyDictObject5.2.1 关联容器的entry PyDictEntry 用于存储键值对信息 Py_ssize_t me_hash：存储了me_key计算得到的hash值, 不重复计算 PyObject *me_key;:键值，PyObject对象 PyObject *me_value;:内容    12345typ">
+<meta name="keywords" content="源码,python">
+<meta property="og:type" content="article">
+<meta property="og:title" content="# 第5章 Python中的Dict对象">
+<meta property="og:url" content="https://ztzheng100.github.io.git/2019/09/08/python源码剖析/第5章-Python中的Dict对象/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="[toc] 第5章 Python中的Dict对象5.1 散列表概述5.2 PyDictObject5.2.1 关联容器的entry PyDictEntry 用于存储键值对信息 Py_ssize_t me_hash：存储了me_key计算得到的hash值, 不重复计算 PyObject *me_key;:键值，PyObject对象 PyObject *me_value;:内容    12345typ">
+<meta property="og:locale" content="en">
+<meta property="og:image" content="http://jbcdn2.b0.upaiyun.com/2015/11/2d6785ab2fbbee2947286e74a14589a91.png">
+<meta property="og:image" content="http://jbcdn2.b0.upaiyun.com/2015/11/2339d754547bbede91190414c7ec38261.png">
+<meta property="og:image" content="https://img-blog.csdn.net/20130704215647062">
+<meta property="og:image" content="http://jbcdn2.b0.upaiyun.com/2015/11/9837da974dc47350f093fe06657185f11.png">
+<meta property="og:updated_time" content="2019-09-08T12:11:18.877Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="# 第5章 Python中的Dict对象">
+<meta name="twitter:description" content="[toc] 第5章 Python中的Dict对象5.1 散列表概述5.2 PyDictObject5.2.1 关联容器的entry PyDictEntry 用于存储键值对信息 Py_ssize_t me_hash：存储了me_key计算得到的hash值, 不重复计算 PyObject *me_key;:键值，PyObject对象 PyObject *me_value;:内容    12345typ">
+<meta name="twitter:image" content="http://jbcdn2.b0.upaiyun.com/2015/11/2d6785ab2fbbee2947286e74a14589a91.png">
+  <link rel="canonical" href="https://ztzheng100.github.io.git/2019/09/08/python源码剖析/第5章-Python中的Dict对象/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title># 第5章 Python中的Dict对象 | Hexo</title>
+  <meta name="generator" content="Hexo 3.9.0">
+  
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="en">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Hexo</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+      
+      
+      
+        
+        <li class="menu-item menu-item-home">
+      
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Home</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-tags">
+      
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>Tags</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-categories">
+      
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>Categories</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-archives">
+      
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archives</a>
+
+  </li>
+  </ul>
+
+    
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+      <article itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block post">
+    <link itemprop="mainEntityOfPage" href="https://ztzheng100.github.io.git/2019/09/08/python源码剖析/第5章-Python中的Dict对象/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zzt">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Hexo">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline"># 第5章 Python中的Dict对象
+
+          
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              
+                
+              
+
+              <time title="Created: 2019-09-08 20:10:50 / Modified: 20:11:18" itemprop="dateCreated datePublished" datetime="2019-09-08T20:10:50+08:00">2019-09-08</time>
+            </span>
+          
+            
+
+            
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/python源码剖析/" itemprop="url" rel="index"><span itemprop="name">python源码剖析</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>[toc]</p>
+<h1 id="第5章-Python中的Dict对象"><a href="#第5章-Python中的Dict对象" class="headerlink" title="第5章 Python中的Dict对象"></a>第5章 Python中的Dict对象</h1><h2 id="5-1-散列表概述"><a href="#5-1-散列表概述" class="headerlink" title="5.1 散列表概述"></a>5.1 散列表概述</h2><h2 id="5-2-PyDictObject"><a href="#5-2-PyDictObject" class="headerlink" title="5.2 PyDictObject"></a>5.2 PyDictObject</h2><h3 id="5-2-1-关联容器的entry"><a href="#5-2-1-关联容器的entry" class="headerlink" title="5.2.1 关联容器的entry"></a>5.2.1 关联容器的entry</h3><ul>
+<li>PyDictEntry 用于存储键值对信息<ul>
+<li><code>Py_ssize_t me_hash</code>：存储了me_key计算得到的hash值, 不重复计算</li>
+<li><code>PyObject *me_key;</code>:键值，PyObject对象</li>
+<li><code>PyObject *me_value;</code>:内容</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">typedef struct &#123;</span><br><span class="line">    Py_ssize_t me_hash;</span><br><span class="line">    PyObject *me_key;</span><br><span class="line">    PyObject *me_value;</span><br><span class="line">&#125; PyDictEntry;</span><br></pre></td></tr></table></figure>
+
+<p><img src="http://jbcdn2.b0.upaiyun.com/2015/11/2d6785ab2fbbee2947286e74a14589a91.png" alt="结构"></p>
+<ul>
+<li>PyDictEntry的三种状态  <ul>
+<li>Unused态：当一个entry的<code>me_key和me_value</code>都是NULL时，entry处于Unused态。表明该entry中并没有存储（key, value）对，而且在此之前，也没有存储过。</li>
+<li>Active态：当entry中存储了一个（key，value）对时，entry便转换到了Active态。在Active态下，<code>me_key和me_value</code>都不能为NULL。更进一步，me_key不能是dummy。</li>
+<li>Dummy态： 当entry中存储的(key,value)对被删除后，entry中的me_key将指向dummy,entry的状态不是直接从Active态转为Unused，而是进行了伪删除，是为了保证冲突的探测序列不会在这里被中断。<br><img src="http://jbcdn2.b0.upaiyun.com/2015/11/2339d754547bbede91190414c7ec38261.png" alt="PyDictEntry的三个状态(图片引自-Python源码剖析)"></li>
+</ul>
+</li>
+</ul>
+<h3 id="5-2-2-关联容器的实现"><a href="#5-2-2-关联容器的实现" class="headerlink" title="5.2.2 关联容器的实现"></a>5.2.2 关联容器的实现</h3><ul>
+<li><p><code>ma_fill</code>:曾经处于Active态的entry个数，# Active + # Dummy</p>
+</li>
+<li><p><code>ma_used</code>:当前处于于Active态的entry个数，# Active </p>
+</li>
+<li><p><code>ma_mask</code>:记录了一个PyDictObject对象中有entry的数量</p>
+</li>
+<li><p><code>PyDictEntry *ma_table;</code>:指向PyDictEntry集合的内存的开始位置。</p>
+<ul>
+<li><p>PyDict_MINSIZE默认设定为8<br>当 PyDictObject对象的entry数量少于8个， <code>ma_table将指向 ma_smalltable</code></p>
+</li>
+<li><p>当 PyDictObject对象的entry数量大于8个， ma_table将指向额外申请的内存空间</p>
+<p><img src="https://img-blog.csdn.net/20130704215647062" alt="ma_table的策略"></p>
+</li>
+</ul>
+<ul>
+<li><code>ma_lookup</code>：指定了PyDictObject在entry集合中搜索某一特定entry时要进行的动作，它是PyDictObject的搜索策略，</li>
+<li><code>ma_smalltable</code>:PyDictEntry数组 </li>
+</ul>
+</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">#define PyDict_MINSIZE 8</span><br><span class="line">typedef struct _dictobject PyDictObject;</span><br><span class="line">struct _dictobject &#123;</span><br><span class="line">	PyObject_HEAD</span><br><span class="line">	Py_ssize_t ma_fill;  /* # Active + # Dummy */</span><br><span class="line">	Py_ssize_t ma_used;  /* # Active */</span><br><span class="line"></span><br><span class="line">	/* The table contains ma_mask + 1 slots, and that&apos;s a power of 2.</span><br><span class="line">	 * We store the mask instead of the size because the mask is more</span><br><span class="line">	 * frequently needed.</span><br><span class="line">	 */</span><br><span class="line">	Py_ssize_t ma_mask;</span><br><span class="line"></span><br><span class="line">	/* ma_table points to ma_smalltable for small tables, else to</span><br><span class="line">	 * additional malloc&apos;ed memory.  ma_table is never NULL!  This rule</span><br><span class="line">	 * saves repeated runtime null-tests in the workhorse getitem and</span><br><span class="line">	 * setitem calls.</span><br><span class="line">	 */</span><br><span class="line">	PyDictEntry *ma_table;</span><br><span class="line">	PyDictEntry *(*ma_lookup)(PyDictObject *mp, PyObject *key, long hash);</span><br><span class="line">	PyDictEntry ma_smalltable[PyDict_MINSIZE];</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p><img src="http://jbcdn2.b0.upaiyun.com/2015/11/9837da974dc47350f093fe06657185f11.png" alt="dict的结构"></p>
+<h2 id="5-3-PyDictObject的创建和维护"><a href="#5-3-PyDictObject的创建和维护" class="headerlink" title="5.3 PyDictObject的创建和维护"></a>5.3 PyDictObject的创建和维护</h2><h3 id="PyDictObject的创建"><a href="#PyDictObject的创建" class="headerlink" title="PyDictObject的创建"></a>PyDictObject的创建</h3><ul>
+<li><p>创建过程</p>
+<ol>
+<li><p>初始化dummy对象</p>
+</li>
+<li><p>如果缓冲池还有可用的对象，则从缓冲池中读取，否则，新建一个dictobject对象，并把其属性slot设置为PyDict_MINSIZE - 1</p>
+<blockquote>
+<p>因为一个key的哈希值很可能超过slot总数，所以作为索引时得把它约束在slot总数的范围内。而slot总数在定义的时候必须是2的乘幂(2^n)，比如0x1000，所以减1之后就成了mask：0x111。再和hash做个&amp;操作就能把索引之限制在0~0x111之间，即slot总数0x1000个，比较巧妙：）  </p>
+</blockquote>
+</li>
+<li><p>分配内存空间，创建PyDictObject对象，初始化对象</p>
+</li>
+<li><p>指定添加字典元素时的探测函数，元素的搜索策略</p>
+</li>
+</ol>
+</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br></pre></td><td class="code"><pre><span class="line">#define EMPTY_TO_MINSIZE(mp) do &#123;					\</span><br><span class="line">	memset((mp)-&gt;ma_smalltable, 0, sizeof((mp)-&gt;ma_smalltable));	\</span><br><span class="line">	(mp)-&gt;ma_used = (mp)-&gt;ma_fill = 0;				\</span><br><span class="line">	INIT_NONZERO_DICT_SLOTS(mp);					\</span><br><span class="line">    &#125; while(0)</span><br><span class="line"></span><br><span class="line">#define INIT_NONZERO_DICT_SLOTS(mp) do &#123;				\</span><br><span class="line">	(mp)-&gt;ma_table = (mp)-&gt;ma_smalltable;				\</span><br><span class="line">	(mp)-&gt;ma_mask = PyDict_MINSIZE - 1;				\</span><br><span class="line">    &#125; while(0)</span><br><span class="line">    </span><br><span class="line">PyObject *</span><br><span class="line">PyDict_New(void)</span><br><span class="line">&#123;</span><br><span class="line">	register dictobject *mp;</span><br><span class="line">	//[1] 自动创建dummy对象</span><br><span class="line">	if (dummy == NULL) &#123; /* Auto-initialize dummy */</span><br><span class="line">		dummy = PyString_FromString(&quot;&lt;dummy key&gt;&quot;);</span><br><span class="line">		if (dummy == NULL)</span><br><span class="line">			return NULL;</span><br><span class="line">#ifdef SHOW_CONVERSION_COUNTS</span><br><span class="line">		Py_AtExit(show_counts);</span><br><span class="line">#endif</span><br><span class="line">	&#125;</span><br><span class="line">	if (num_free_dicts) &#123;</span><br><span class="line">		mp = free_dicts[--num_free_dicts];</span><br><span class="line">		assert (mp != NULL);</span><br><span class="line">		assert (mp-&gt;ob_type == &amp;PyDict_Type);</span><br><span class="line">		_Py_NewReference((PyObject *)mp);</span><br><span class="line">		if (mp-&gt;ma_fill) &#123;</span><br><span class="line">			EMPTY_TO_MINSIZE(mp);</span><br><span class="line">		&#125; else &#123;</span><br><span class="line">			/* At least set ma_table and ma_mask; these are wrong</span><br><span class="line">			   if an empty but presized dict is added to freelist */</span><br><span class="line">			INIT_NONZERO_DICT_SLOTS(mp);</span><br><span class="line">		&#125;</span><br><span class="line">		assert (mp-&gt;ma_used == 0);</span><br><span class="line">		assert (mp-&gt;ma_table == mp-&gt;ma_smalltable);</span><br><span class="line">		assert (mp-&gt;ma_mask == PyDict_MINSIZE - 1);</span><br><span class="line">	&#125; else &#123;</span><br><span class="line">	    //[2] 创建dictobject对象，使用缓冲池，将ma_smalltable数组初始化为0</span><br><span class="line">		mp = PyObject_GC_New(dictobject, &amp;PyDict_Type);</span><br><span class="line">		if (mp == NULL)</span><br><span class="line">			return NULL;</span><br><span class="line">		EMPTY_TO_MINSIZE(mp);</span><br><span class="line">	&#125;</span><br><span class="line">	mp-&gt;ma_lookup = lookdict_string;</span><br><span class="line">#ifdef SHOW_CONVERSION_COUNTS</span><br><span class="line">	++created;</span><br><span class="line">#endif</span><br><span class="line">	_PyObject_GC_TRACK(mp);</span><br><span class="line">	return (PyObject *)mp;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="PyDictObject元素搜索"><a href="#PyDictObject元素搜索" class="headerlink" title="PyDictObject元素搜索"></a>PyDictObject元素搜索</h3><ul>
+<li><p>lookdict<br>  [1]：根据hash值获得entry的序号。</p>
+<p>  [2]：如果ep-&gt;me_key为NULL，且与key相同，搜索失败。</p>
+<p>  [3]：若当前entry处于Dummy态，设置freeslot。</p>
+<p>  [4]：检查当前Active的entry中的key与待查找的key是否相同，如果相同，则立即返回，搜索成功。</p>
+<p>  在[4]中，需要注意那个PyObject_RichCompareBool，它的函数原形为：</p>
+<p>  <code>int PyObject_RichCompareBool(PyObject *v, PyObject *w, int op)</code></p>
+<p>  [5]：获得探测序列中的下一个待探测的entry。</p>
+<p>  [6]：ep到达一个Unused态entry，表明搜索结束。这是如果freeslot不为空，则返回freeslot所指entry。</p>
+<p>  [7]：entry与待查找的key匹配，搜索成功。</p>
+<p>  [8]：在探测序列中发现Dummy态entry，设置freeslot。  </p>
+</li>
+<li><p>lookdict_string</p>
+<ul>
+<li>在lookdict中，<code>使用的是非常通用的PyObject_RichCompareBool，而lookdict_string使用的是_PyString_Eq，比要简单很多</code><h3 id="插入与更新"><a href="#插入与更新" class="headerlink" title="插入与更新"></a>插入与更新</h3></li>
+</ul>
+</li>
+<li><p>insertdict</p>
+<ol>
+<li>搜索成功，返回处于Active态的 entry，直接替换 me_value</li>
+<li>搜索失败，返回 Unused态或 Dummy态的entry，完整设置 <code>me_key,me_hash,me_value</code></li>
+</ol>
+</li>
+<li><p>在调用insertdict之前会调用<code>PyDict_SetItem，是由 PyDict_SetItem</code>调用 insertdict的  </p>
+<ol>
+<li>计算hash值</li>
+<li>插入(key, value)元素对 //在这里调用insertdict</li>
+<li>必要时调整dict的内存空间 //当搜索失败且装载率大于或等于2/3时就调整dict的内存空间</li>
+</ol>
+</li>
+<li><p>调用 dictresize改变dict的table大小</p>
+<ol>
+<li>确定新的table的大小</li>
+<li>假设新的table大小为8，就能够直接使用ma_smalltable</li>
+<li>否则，须要在堆上申请空间</li>
+<li>设置新的table</li>
+<li>处理旧table中的entry:<br>Active态entry，搬移到新的table中<br>Dummy态的entry，调整 key的引用计数，丢弃该entry</li>
+<li>必要时释放旧table所维护的内存空间</li>
+</ol>
+</li>
+<li><p>PyDict_DelItem</p>
+<ol>
+<li>获得hash值</li>
+<li>搜索entry</li>
+<li>删除 entry所维护的元素，将 entry的状态转为 dummy态<h2 id="5-4-PyDictObject对象缓冲池"><a href="#5-4-PyDictObject对象缓冲池" class="headerlink" title="5.4 PyDictObject对象缓冲池"></a>5.4 PyDictObject对象缓冲池</h2><h2 id="5-5-Hack-PyDictObject"><a href="#5-5-Hack-PyDictObject" class="headerlink" title="5.5 Hack PyDictObject"></a>5.5 Hack PyDictObject</h2></li>
+</ol>
+</li>
+</ul>
+<h2 id="参考文件"><a href="#参考文件" class="headerlink" title="参考文件"></a>参考文件</h2><p><a href="https://www.cnblogs.com/mengfanrong/p/3808783.html" target="_blank" rel="noopener">《python源代码剖析》笔记 python中的Dict对象</a></p>
+<p><a href="https://www.cnblogs.com/GO-NO-1/p/6516795.html" target="_blank" rel="noopener">Python 源码剖析（五）【DICT对象】</a></p>
+
+    </div>
+
+    
+    
+    
+        
+      
+
+      <footer class="post-footer">
+          
+            
+          
+          <div class="post-tags">
+            
+              <a href="/tags/源码/" rel="tag"># 源码</a>
+            
+              <a href="/tags/python/" rel="tag"># python</a>
+            
+          </div>
+        
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+              
+                <a href="/2019/09/08/第3章-Python中的字符串对象/" rel="next" title="第3章 Python中的字符串对象">
+                  <i class="fa fa-chevron-left"></i> 第3章 Python中的字符串对象
+                </a>
+              
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+              
+                <a href="/2019/09/08/第5章-Python中的Dict对象/" rel="prev" title="# 第5章 Python中的Dict对象">
+                  # 第5章 Python中的Dict对象 <i class="fa fa-chevron-right"></i>
+                </a>
+              
+            </div>
+          </div>
+        
+      </footer>
+    
+  </div>
+  
+  
+  
+  </article>
+
+  </div>
+
+
+          </div>
+          
+
+        </div>
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+        
+        
+        
+        
+      
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#第5章-Python中的Dict对象"><span class="nav-number">1.</span> <span class="nav-text">第5章 Python中的Dict对象</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#5-1-散列表概述"><span class="nav-number">1.1.</span> <span class="nav-text">5.1 散列表概述</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-2-PyDictObject"><span class="nav-number">1.2.</span> <span class="nav-text">5.2 PyDictObject</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#5-2-1-关联容器的entry"><span class="nav-number">1.2.1.</span> <span class="nav-text">5.2.1 关联容器的entry</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-2-2-关联容器的实现"><span class="nav-number">1.2.2.</span> <span class="nav-text">5.2.2 关联容器的实现</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-3-PyDictObject的创建和维护"><span class="nav-number">1.3.</span> <span class="nav-text">5.3 PyDictObject的创建和维护</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#PyDictObject的创建"><span class="nav-number">1.3.1.</span> <span class="nav-text">PyDictObject的创建</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#PyDictObject元素搜索"><span class="nav-number">1.3.2.</span> <span class="nav-text">PyDictObject元素搜索</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#插入与更新"><span class="nav-number">1.3.3.</span> <span class="nav-text">插入与更新</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-4-PyDictObject对象缓冲池"><span class="nav-number">1.4.</span> <span class="nav-text">5.4 PyDictObject对象缓冲池</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-5-Hack-PyDictObject"><span class="nav-number">1.5.</span> <span class="nav-text">5.5 Hack PyDictObject</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文件"><span class="nav-number">1.6.</span> <span class="nav-text">参考文件</span></a></li></ol></li></ol></div>
+        
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">zzt</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+  <nav class="site-state motion-element">
+      <div class="site-state-item site-state-posts">
+        
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">40</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-categories">
+        
+          
+            <a href="/categories/">
+          
+        
+        
+        
+          
+        
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-tags">
+        
+          
+            <a href="/tags/">
+          
+        
+        
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">tags</span>
+        </a>
+      </div>
+    
+  </nav>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zzt</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.9.0</div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">Theme – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v7.4.0</div>
+
+        
+
+
+
+
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+
+
+  <script src="/lib/anime.min.js?v=3.1.0"></script>
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+<script src="/js/utils.js?v=7.4.0"></script><script src="/js/motion.js?v=7.4.0"></script>
+<script src="/js/schemes/muse.js?v=7.4.0"></script>
+<script src="/js/next-boot.js?v=7.4.0"></script>
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+</body>
+</html>

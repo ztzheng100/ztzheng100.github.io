@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+
+
+
+
+
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.4.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.4.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.4.0">
+  <link rel="mask-icon" href="/images/logo.svg?v=7.4.0" color="#222">
+
+<link rel="stylesheet" href="/css/main.css?v=7.4.0">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Muse',
+    version: '7.4.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: 'Copy',
+      copy_success: 'Copied',
+      copy_failure: 'Copy failed'
+    },
+    sidebarPadding: 40
+  };
+</script>
+
+  <meta name="description" content="第3章 Python中的字符串对象 keyword  *字符串对象 * 可变对象和不可变对象  （list和string，tuple）（定义之后不能修改） 定长对象和变长对象（int 和 list）（定义的时候）  3.1 PyStringObject与PyString_Type PyStringObject对象  ob_size变量：保存着对象中维护的可变长度内存的大小 ob_sval是一个字符">
+<meta name="keywords" content="源码,python">
+<meta property="og:type" content="article">
+<meta property="og:title" content="第3章 Python中的字符串对象">
+<meta property="og:url" content="https://ztzheng100.github.io.git/2019/09/08/python源码剖析/第3章-Python中的字符串对象/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="第3章 Python中的字符串对象 keyword  *字符串对象 * 可变对象和不可变对象  （list和string，tuple）（定义之后不能修改） 定长对象和变长对象（int 和 list）（定义的时候）  3.1 PyStringObject与PyString_Type PyStringObject对象  ob_size变量：保存着对象中维护的可变长度内存的大小 ob_sval是一个字符">
+<meta property="og:locale" content="en">
+<meta property="og:updated_time" content="2019-09-08T12:10:12.370Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="第3章 Python中的字符串对象">
+<meta name="twitter:description" content="第3章 Python中的字符串对象 keyword  *字符串对象 * 可变对象和不可变对象  （list和string，tuple）（定义之后不能修改） 定长对象和变长对象（int 和 list）（定义的时候）  3.1 PyStringObject与PyString_Type PyStringObject对象  ob_size变量：保存着对象中维护的可变长度内存的大小 ob_sval是一个字符">
+  <link rel="canonical" href="https://ztzheng100.github.io.git/2019/09/08/python源码剖析/第3章-Python中的字符串对象/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>第3章 Python中的字符串对象 | Hexo</title>
+  <meta name="generator" content="Hexo 3.9.0">
+  
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="en">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Hexo</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="Toggle navigation bar">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+      
+      
+      
+        
+        <li class="menu-item menu-item-home">
+      
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Home</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-tags">
+      
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>Tags</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-categories">
+      
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>Categories</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-archives">
+      
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archives</a>
+
+  </li>
+  </ul>
+
+    
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+      <article itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block post">
+    <link itemprop="mainEntityOfPage" href="https://ztzheng100.github.io.git/2019/09/08/python源码剖析/第3章-Python中的字符串对象/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zzt">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Hexo">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">第3章 Python中的字符串对象
+
+          
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              
+                
+              
+
+              <time title="Created: 2019-09-08 20:09:53 / Modified: 20:10:12" itemprop="dateCreated datePublished" datetime="2019-09-08T20:09:53+08:00">2019-09-08</time>
+            </span>
+          
+            
+
+            
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">In</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/python源码剖析/" itemprop="url" rel="index"><span itemprop="name">python源码剖析</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="第3章-Python中的字符串对象"><a href="#第3章-Python中的字符串对象" class="headerlink" title="第3章 Python中的字符串对象"></a>第3章 Python中的字符串对象</h1><ul>
+<li>keyword<br>  *字符串对象 *</li>
+<li>可变对象和不可变对象  （list和string，tuple）（定义之后不能修改）</li>
+<li>定长对象和变长对象（int 和 list）（定义的时候）</li>
+</ul>
+<h2 id="3-1-PyStringObject与PyString-Type"><a href="#3-1-PyStringObject与PyString-Type" class="headerlink" title="3.1 PyStringObject与PyString_Type"></a>3.1 PyStringObject与PyString_Type</h2><ul>
+<li><p>PyStringObject对象</p>
+<ul>
+<li><code>ob_size</code>变量：保存着对象中维护的可变长度内存的大小</li>
+<li><code>ob_sval</code>是一个字符的字符数组，但是<code>ob_sval</code>实际上是作为一个字符指针指向一段内存的,(<code>char ob_sval[1]</code>只是存储开始第一个字符的位置，长度由<code>ob_size</code>记录)</li>
+<li><code>ob_shash</code>变量之作用是缓存该对象的hash值，这样可以避免每一次都重新计算该字符串对象的hash值。<code>ob_shash</code>的初始值是―1。 </li>
+<li><code>ob_sstate</code>变量标记了该对象是否已经过intern机制的处理<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">typedef struct &#123;</span><br><span class="line">    PyObject_VAR_HEAD</span><br><span class="line">    long ob_shash;</span><br><span class="line">    int ob_sstate;</span><br><span class="line">    char ob_sval[1];</span><br><span class="line"></span><br><span class="line">    /* Invariants:</span><br><span class="line">     *     ob_sval contains space for &apos;ob_size+1&apos; elements.</span><br><span class="line">     *     ob_sval[ob_size] == 0.</span><br><span class="line">     *     ob_shash is the hash of the string or -1 if not computed yet.</span><br><span class="line">     *     ob_sstate != 0 iff the string object is in stringobject.c&apos;s</span><br><span class="line">     *       &apos;interned&apos; dictionary; in this case the two references</span><br><span class="line">     *       from &apos;interned&apos; to this object are *not counted* in ob_refcnt.</span><br><span class="line">     */</span><br><span class="line">&#125; PyStringObject;</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+<li><p>类型对象PyString_Type</p>
+<ul>
+<li><code>tp_itemsize</code>：指明了由变长对象保存的元素（item）的单位长度，所谓单位长度即是指一个元素在内存中的长度。这个<code>tp_itemsize</code>和<code>ob_size</code>共同决定了应该额外申请的内存之总大小是多少。 </li>
+<li><code>tp_as_number、tp_as_sequence、tp_as_mapping</code>，三个域都被设置了。这表示PyStringObject对数值操作、序列操作和映射操作都支持。</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">PyTypeObject PyString_Type = &#123;</span><br><span class="line">    PyObject_HEAD_INIT(&amp;PyType_Type)</span><br><span class="line">    0,</span><br><span class="line">    &quot;str&quot;,</span><br><span class="line">    sizeof(PyStringObject), //tp_basicsize</span><br><span class="line">    sizeof(char),       //tp_itemsize</span><br><span class="line">    ……</span><br><span class="line">    (reprfunc)string_repr,          /* tp_repr */</span><br><span class="line">    &amp;string_as_number,               /* tp_as_number */</span><br><span class="line">    &amp;string_as_sequence,            /* tp_as_sequence */</span><br><span class="line">    &amp;string_as_mapping,             /* tp_as_mapping */</span><br><span class="line">    (hashfunc)string_hash,          /* tp_hash */</span><br><span class="line">    0,                  /* tp_call */</span><br><span class="line">    ……</span><br><span class="line">    string_new,             /* tp_new */</span><br><span class="line">    PyObject_Del,                       /* tp_free */</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<h2 id="3-2-创建PyStringObject对象"><a href="#3-2-创建PyStringObject对象" class="headerlink" title="3.2 创建PyStringObject对象"></a>3.2 创建PyStringObject对象</h2><ul>
+<li><p>创建PyStringObject对象的两种方式</p>
+</li>
+<li><p>PyString_FromString</p>
+<ol>
+<li>计算长度</li>
+<li>长度0, 空字符串, 是返回已定义好的nullstring</li>
+<li>长度1, 字符, 返回字符缓冲池里面的</li>
+<li>都不是, 分配内存, 初始化</li>
+</ol>
+</li>
+<li><p>PyString_FromStringAndSize</p>
+</li>
+<li></li>
+</ul>
+<h2 id="3-3-字符串对象的intern机制"><a href="#3-3-字符串对象的intern机制" class="headerlink" title="3.3 字符串对象的intern机制"></a>3.3 字符串对象的intern机制</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line">void</span><br><span class="line">PyString_InternInPlace(PyObject **p)</span><br><span class="line">&#123;</span><br><span class="line">	register PyStringObject *s = (PyStringObject *)(*p);</span><br><span class="line">	PyObject *t;</span><br><span class="line">	if (s == NULL || !PyString_Check(s))</span><br><span class="line">		Py_FatalError(&quot;PyString_InternInPlace: strings only please!&quot;);</span><br><span class="line">	/* If it&apos;s a string subclass, we don&apos;t really know what putting</span><br><span class="line">	   it in the interned dict might do. */</span><br><span class="line">	if (!PyString_CheckExact(s))</span><br><span class="line">		return;</span><br><span class="line">	if (PyString_CHECK_INTERNED(s))</span><br><span class="line">		return;</span><br><span class="line">	 //创建记录经intern机制处理后的PyStringObject的dict</span><br><span class="line">	if (interned == NULL) &#123;</span><br><span class="line">		interned = PyDict_New();</span><br><span class="line">		if (interned == NULL) &#123;</span><br><span class="line">			PyErr_Clear(); /* Don&apos;t leave an exception */</span><br><span class="line">			return;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	t = PyDict_GetItem(interned, (PyObject *)s);</span><br><span class="line">	if (t) &#123;</span><br><span class="line">		Py_INCREF(t);</span><br><span class="line">		Py_DECREF(*p);</span><br><span class="line">		*p = t;</span><br><span class="line">		return;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	if (PyDict_SetItem(interned, (PyObject *)s, (PyObject *)s) &lt; 0) &#123;</span><br><span class="line">		PyErr_Clear();</span><br><span class="line">		return;</span><br><span class="line">	&#125;</span><br><span class="line">	/* The two references in interned are not counted by refcnt.</span><br><span class="line">	   The string deallocator will take care of this */</span><br><span class="line">	s-&gt;ob_refcnt -= 2;</span><br><span class="line">	PyString_CHECK_INTERNED(s) = SSTATE_INTERNED_MORTAL;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="3-4-字符缓冲池"><a href="#3-4-字符缓冲池" class="headerlink" title="3.4 字符缓冲池"></a>3.4 字符缓冲池</h2><h2 id="3-5-PyStringObject效率相关问题"><a href="#3-5-PyStringObject效率相关问题" class="headerlink" title="3.5 PyStringObject效率相关问题"></a>3.5 PyStringObject效率相关问题</h2><h2 id="3-6-Hack-PyStringObject"><a href="#3-6-Hack-PyStringObject" class="headerlink" title="3.6 Hack PyStringObject"></a>3.6 Hack PyStringObject</h2><h2 id="参考文件"><a href="#参考文件" class="headerlink" title="参考文件"></a>参考文件</h2><p><a href="https://blog.csdn.net/Ohmyberry/article/details/78310544" target="_blank" rel="noopener">Python源码剖析(03 Python中的字符串对象)</a></p>
+<p><a href="http://www.wklken.me/posts/2014/08/08/python-source-string.html#chuang-jian-guo-cheng-pystring_fromstring" target="_blank" rel="noopener">PYTHON 源码阅读 - STRING</a></p>
+
+    </div>
+
+    
+    
+    
+        
+      
+
+      <footer class="post-footer">
+          
+            
+          
+          <div class="post-tags">
+            
+              <a href="/tags/源码/" rel="tag"># 源码</a>
+            
+              <a href="/tags/python/" rel="tag"># python</a>
+            
+          </div>
+        
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+              
+                <a href="/2019/09/08/第4章-Python中的List对象/" rel="next" title="第4章 Python中的List对象">
+                  <i class="fa fa-chevron-left"></i> 第4章 Python中的List对象
+                </a>
+              
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+              
+                <a href="/2019/09/08/第3章-Python中的字符串对象/" rel="prev" title="第3章 Python中的字符串对象">
+                  第3章 Python中的字符串对象 <i class="fa fa-chevron-right"></i>
+                </a>
+              
+            </div>
+          </div>
+        
+      </footer>
+    
+  </div>
+  
+  
+  
+  </article>
+
+  </div>
+
+
+          </div>
+          
+
+        </div>
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+        
+        
+        
+        
+      
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#第3章-Python中的字符串对象"><span class="nav-number">1.</span> <span class="nav-text">第3章 Python中的字符串对象</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#3-1-PyStringObject与PyString-Type"><span class="nav-number">1.1.</span> <span class="nav-text">3.1 PyStringObject与PyString_Type</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-2-创建PyStringObject对象"><span class="nav-number">1.2.</span> <span class="nav-text">3.2 创建PyStringObject对象</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-3-字符串对象的intern机制"><span class="nav-number">1.3.</span> <span class="nav-text">3.3 字符串对象的intern机制</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-4-字符缓冲池"><span class="nav-number">1.4.</span> <span class="nav-text">3.4 字符缓冲池</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-5-PyStringObject效率相关问题"><span class="nav-number">1.5.</span> <span class="nav-text">3.5 PyStringObject效率相关问题</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-6-Hack-PyStringObject"><span class="nav-number">1.6.</span> <span class="nav-text">3.6 Hack PyStringObject</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文件"><span class="nav-number">1.7.</span> <span class="nav-text">参考文件</span></a></li></ol></li></ol></div>
+        
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">zzt</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+  <nav class="site-state motion-element">
+      <div class="site-state-item site-state-posts">
+        
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">40</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-categories">
+        
+          
+            <a href="/categories/">
+          
+        
+        
+        
+          
+        
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">categories</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-tags">
+        
+          
+            <a href="/tags/">
+          
+        
+        
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">tags</span>
+        </a>
+      </div>
+    
+  </nav>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zzt</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.9.0</div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">Theme – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Muse</a> v7.4.0</div>
+
+        
+
+
+
+
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+
+
+  <script src="/lib/anime.min.js?v=3.1.0"></script>
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+<script src="/js/utils.js?v=7.4.0"></script><script src="/js/motion.js?v=7.4.0"></script>
+<script src="/js/schemes/muse.js?v=7.4.0"></script>
+<script src="/js/next-boot.js?v=7.4.0"></script>
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+</body>
+</html>
