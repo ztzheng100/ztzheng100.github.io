@@ -55,18 +55,18 @@
   };
 </script>
 
-  <meta name="description" content="[toc] 第15章 PYTHON多线程机制 key   python线程机制的实现15.1 GIL与线程调度   GIL: Global Interpreter Lock (全局解释器锁)  Python中的GIL是一个非常霸道的互斥实现，在一个线程拥有了解释器的访问权之后，其它的所有线程都必须等待它释放解释器的访问权，即使这些线程的下一条指令并不会互相影响。这样的说法也就意味着，无论如何，在同">
+  <meta name="description" content="[toc]第15章 PYTHON多线程机制 key   python线程机制的实现15.1 GIL与线程调度   GIL: Global Interpreter Lock (全局解释器锁)  Python中的GIL是一个非常霸道的互斥实现，在一个线程拥有了解释器的访问权之后，其它的所有线程都必须等待它释放解释器的访问权，即使这些线程的下一条指令并不会互相影响。这样的说法也就意味着，无论如何，在同一">
 <meta name="keywords" content="源码,python">
 <meta property="og:type" content="article">
 <meta property="og:title" content="第15章 PYTHON多线程机制">
 <meta property="og:url" content="https://ztzheng100.github.io.git/2019/09/08/python源码剖析/第15章-PYTHON多线程机制/index.html">
 <meta property="og:site_name" content="ZZT_blog">
-<meta property="og:description" content="[toc] 第15章 PYTHON多线程机制 key   python线程机制的实现15.1 GIL与线程调度   GIL: Global Interpreter Lock (全局解释器锁)  Python中的GIL是一个非常霸道的互斥实现，在一个线程拥有了解释器的访问权之后，其它的所有线程都必须等待它释放解释器的访问权，即使这些线程的下一条指令并不会互相影响。这样的说法也就意味着，无论如何，在同">
+<meta property="og:description" content="[toc]第15章 PYTHON多线程机制 key   python线程机制的实现15.1 GIL与线程调度   GIL: Global Interpreter Lock (全局解释器锁)  Python中的GIL是一个非常霸道的互斥实现，在一个线程拥有了解释器的访问权之后，其它的所有线程都必须等待它释放解释器的访问权，即使这些线程的下一条指令并不会互相影响。这样的说法也就意味着，无论如何，在同一">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:updated_time" content="2019-09-08T12:21:54.036Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="第15章 PYTHON多线程机制">
-<meta name="twitter:description" content="[toc] 第15章 PYTHON多线程机制 key   python线程机制的实现15.1 GIL与线程调度   GIL: Global Interpreter Lock (全局解释器锁)  Python中的GIL是一个非常霸道的互斥实现，在一个线程拥有了解释器的访问权之后，其它的所有线程都必须等待它释放解释器的访问权，即使这些线程的下一条指令并不会互相影响。这样的说法也就意味着，无论如何，在同">
+<meta name="twitter:description" content="[toc]第15章 PYTHON多线程机制 key   python线程机制的实现15.1 GIL与线程调度   GIL: Global Interpreter Lock (全局解释器锁)  Python中的GIL是一个非常霸道的互斥实现，在一个线程拥有了解释器的访问权之后，其它的所有线程都必须等待它释放解释器的访问权，即使这些线程的下一条指令并不会互相影响。这样的说法也就意味着，无论如何，在同一">
   <link rel="canonical" href="https://ztzheng100.github.io.git/2019/09/08/python源码剖析/第15章-PYTHON多线程机制/">
 
 
@@ -290,8 +290,7 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <p>[toc]</p>
-<h1 id="第15章-PYTHON多线程机制"><a href="#第15章-PYTHON多线程机制" class="headerlink" title="第15章 PYTHON多线程机制"></a>第15章 PYTHON多线程机制</h1><ul>
+        <p>[toc]</p><h1 id="第15章-PYTHON多线程机制"><a href="#第15章-PYTHON多线程机制" class="headerlink" title="第15章 PYTHON多线程机制"></a>第15章 PYTHON多线程机制</h1><ul>
 <li><p>key </p>
 <ul>
 <li><em>python线程机制的实现</em><h2 id="15-1-GIL与线程调度"><a href="#15-1-GIL与线程调度" class="headerlink" title="15.1 GIL与线程调度"></a>15.1 GIL与线程调度</h2></li>
@@ -332,7 +331,8 @@
 </li>
 <li><p>最终，在各不相同的原生线程的基础之上，Python提供了一套统一的抽象机制，给Python的使用者一个简单方便的多线程工具箱（thread、threading）。</p>
 </li>
-</ul>
+</ul><a id="more"></a>
+
 <h2 id="15-2-初见PYTHON-THREAD"><a href="#15-2-初见PYTHON-THREAD" class="headerlink" title="15.2 初见PYTHON THREAD"></a>15.2 初见PYTHON THREAD</h2><ul>
 <li>Thread module :C语言实现，最基础的多线程机制接口。python对操作系统的原生线程机制所做的精巧的包装。</li>
 <li>threading module ： Python语言实现，为用户提供了更加方便的多线程机制接口。</li>

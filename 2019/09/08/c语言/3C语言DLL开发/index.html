@@ -55,19 +55,19 @@
   };
 </script>
 
-  <meta name="description" content="静态链接库和动态链接库1) 静态库函数和数据被编译进一个二进制文件（通常扩展名为.LIB）。在使用静态库的情况下， 在编译链接可执行文件时，链接器从库中复制这些函数和数据并把它们和应用程序的其他模块组合起来创建最终的可执行文件（.EXE文件）。++当发布产品时，只需要发布这个可执行文件，并不需要发布被使用的静态库。++ 2) 动态库在使用动态库的时候，往往提供两个文件：一个引入库(.lib)文件和">
+  <meta name="description" content="静态链接库和动态链接库1) 静态库函数和数据被编译进一个二进制文件（通常扩展名为.LIB）。在使用静态库的情况下， 在编译链接可执行文件时，链接器从库中复制这些函数和数据并把它们和应用程序的其他模块组合起来创建最终的可执行文件（.EXE文件）。++当发布产品时，只需要发布这个可执行文件，并不需要发布被使用的静态库。++">
 <meta name="keywords" content="链接库">
 <meta property="og:type" content="article">
 <meta property="og:title" content="3 C语言DLL开发">
 <meta property="og:url" content="https://ztzheng100.github.io.git/2019/09/08/c语言/3C语言DLL开发/index.html">
 <meta property="og:site_name" content="ZZT_blog">
-<meta property="og:description" content="静态链接库和动态链接库1) 静态库函数和数据被编译进一个二进制文件（通常扩展名为.LIB）。在使用静态库的情况下， 在编译链接可执行文件时，链接器从库中复制这些函数和数据并把它们和应用程序的其他模块组合起来创建最终的可执行文件（.EXE文件）。++当发布产品时，只需要发布这个可执行文件，并不需要发布被使用的静态库。++ 2) 动态库在使用动态库的时候，往往提供两个文件：一个引入库(.lib)文件和">
+<meta property="og:description" content="静态链接库和动态链接库1) 静态库函数和数据被编译进一个二进制文件（通常扩展名为.LIB）。在使用静态库的情况下， 在编译链接可执行文件时，链接器从库中复制这些函数和数据并把它们和应用程序的其他模块组合起来创建最终的可执行文件（.EXE文件）。++当发布产品时，只需要发布这个可执行文件，并不需要发布被使用的静态库。++">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="http://c.biancheng.net/cpp/uploads/allimg/140805/1-140P515160L29.png">
 <meta property="og:updated_time" content="2019-09-08T14:07:24.829Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="3 C语言DLL开发">
-<meta name="twitter:description" content="静态链接库和动态链接库1) 静态库函数和数据被编译进一个二进制文件（通常扩展名为.LIB）。在使用静态库的情况下， 在编译链接可执行文件时，链接器从库中复制这些函数和数据并把它们和应用程序的其他模块组合起来创建最终的可执行文件（.EXE文件）。++当发布产品时，只需要发布这个可执行文件，并不需要发布被使用的静态库。++ 2) 动态库在使用动态库的时候，往往提供两个文件：一个引入库(.lib)文件和">
+<meta name="twitter:description" content="静态链接库和动态链接库1) 静态库函数和数据被编译进一个二进制文件（通常扩展名为.LIB）。在使用静态库的情况下， 在编译链接可执行文件时，链接器从库中复制这些函数和数据并把它们和应用程序的其他模块组合起来创建最终的可执行文件（.EXE文件）。++当发布产品时，只需要发布这个可执行文件，并不需要发布被使用的静态库。++">
 <meta name="twitter:image" content="http://c.biancheng.net/cpp/uploads/allimg/140805/1-140P515160L29.png">
   <link rel="canonical" href="https://ztzheng100.github.io.git/2019/09/08/c语言/3C语言DLL开发/">
 
@@ -292,7 +292,7 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <h2 id="静态链接库和动态链接库"><a href="#静态链接库和动态链接库" class="headerlink" title="静态链接库和动态链接库"></a>静态链接库和动态链接库</h2><h3 id="1-静态库"><a href="#1-静态库" class="headerlink" title="1) 静态库"></a>1) 静态库</h3><p>函数和数据被编译进一个二进制文件（通常扩展名为.LIB）。在使用静态库的情况下， 在编译链接可执行文件时，链接器从库中复制这些函数和数据并把它们和应用程序的其他模块组合起来创建最终的可执行文件（.EXE文件）。++当发布产品时，只需要发布这个可执行文件，并不需要发布被使用的静态库。++</p>
+        <h2 id="静态链接库和动态链接库"><a href="#静态链接库和动态链接库" class="headerlink" title="静态链接库和动态链接库"></a>静态链接库和动态链接库</h2><h3 id="1-静态库"><a href="#1-静态库" class="headerlink" title="1) 静态库"></a>1) 静态库</h3><p>函数和数据被编译进一个二进制文件（通常扩展名为.LIB）。在使用静态库的情况下， 在编译链接可执行文件时，链接器从库中复制这些函数和数据并把它们和应用程序的其他模块组合起来创建最终的可执行文件（.EXE文件）。++当发布产品时，只需要发布这个可执行文件，并不需要发布被使用的静态库。++</p><a id="more"></a>
 <h3 id="2-动态库"><a href="#2-动态库" class="headerlink" title="2) 动态库"></a>2) 动态库</h3><p>在使用动态库的时候，往往提供两个文件：一个引入库(.lib)文件和一个DLL (.dll) 文件。虽然引入库的后缀名也是“lib”，但是，动态库的引入库文件和静态库文件有着本质上的区别，++对一个DLL来说，其引入库文件(.lib)包含该DLL导出的函数和变量的符号名，而.dll文件包含该DLL实际的函数和数据++。在使用动态库的情况下，在编译链接可执行文件时，只需要链接该DLL的引入库文件，该DLL中的函数代码和数据并不复制到可执行文件中，++直到可执行程序运行时，才去加载所需的DLL++，将该DLL映射到进程的地址空间中，然后访问DLL中导出的函数。++这时，在发布产品时，除了发布可执行文件以外，同时还要发布该程序将要调用的动态链接库。++</p>
 <h3 id="第一个demo"><a href="#第一个demo" class="headerlink" title="第一个demo"></a>第一个demo</h3><ul>
 <li>hModule 表示本DLL程序的句柄。</li>
@@ -378,8 +378,8 @@
           <div class="post-nav">
             <div class="post-nav-next post-nav-item">
               
-                <a href="/2019/09/08/c语言/1 指针/" rel="next" title="指针">
-                  <i class="fa fa-chevron-left"></i> 指针
+                <a href="/2019/09/08/c语言/4多线程编程/" rel="next" title="多线程编程">
+                  <i class="fa fa-chevron-left"></i> 多线程编程
                 </a>
               
             </div>
@@ -387,6 +387,10 @@
             <span class="post-nav-divider"></span>
 
             <div class="post-nav-prev post-nav-item">
+              
+                <a href="/2019/09/08/c语言/1 指针/" rel="prev" title="指针">
+                  指针 <i class="fa fa-chevron-right"></i>
+                </a>
               
             </div>
           </div>

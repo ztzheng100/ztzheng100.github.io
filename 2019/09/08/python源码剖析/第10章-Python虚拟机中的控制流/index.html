@@ -55,18 +55,18 @@
   };
 </script>
 
-  <meta name="description" content="[toc] 第10章 Python虚拟机中的控制流 keyword  控制流程 异常机制  10.1 Python虚拟机中的if控制流10.1.1 研究对象–if_control.py1234567891011a = 1if a &amp;gt; 10:    print(&amp;quot;a&amp;gt;10&amp;quot;)elif a &amp;lt;= -2:    print(&amp;quot;a&amp;lt;=-2&amp;quot;)">
+  <meta name="description" content="[toc]第10章 Python虚拟机中的控制流 keyword  控制流程 异常机制 10.1 Python虚拟机中的if控制流10.1.1 研究对象–if_control.py1234567891011a = 1if a &amp;gt; 10:    print(&amp;quot;a&amp;gt;10&amp;quot;)elif a &amp;lt;= -2:    print(&amp;quot;a&amp;lt;=-2&amp;quot;)el">
 <meta name="keywords" content="源码,python">
 <meta property="og:type" content="article">
 <meta property="og:title" content=" 第10章 Python虚拟机中的控制流">
 <meta property="og:url" content="https://ztzheng100.github.io.git/2019/09/08/python源码剖析/第10章-Python虚拟机中的控制流/index.html">
 <meta property="og:site_name" content="ZZT_blog">
-<meta property="og:description" content="[toc] 第10章 Python虚拟机中的控制流 keyword  控制流程 异常机制  10.1 Python虚拟机中的if控制流10.1.1 研究对象–if_control.py1234567891011a = 1if a &amp;gt; 10:    print(&amp;quot;a&amp;gt;10&amp;quot;)elif a &amp;lt;= -2:    print(&amp;quot;a&amp;lt;=-2&amp;quot;)">
+<meta property="og:description" content="[toc]第10章 Python虚拟机中的控制流 keyword  控制流程 异常机制 10.1 Python虚拟机中的if控制流10.1.1 研究对象–if_control.py1234567891011a = 1if a &amp;gt; 10:    print(&amp;quot;a&amp;gt;10&amp;quot;)elif a &amp;lt;= -2:    print(&amp;quot;a&amp;lt;=-2&amp;quot;)el">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:updated_time" content="2019-09-08T12:14:25.547Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content=" 第10章 Python虚拟机中的控制流">
-<meta name="twitter:description" content="[toc] 第10章 Python虚拟机中的控制流 keyword  控制流程 异常机制  10.1 Python虚拟机中的if控制流10.1.1 研究对象–if_control.py1234567891011a = 1if a &amp;gt; 10:    print(&amp;quot;a&amp;gt;10&amp;quot;)elif a &amp;lt;= -2:    print(&amp;quot;a&amp;lt;=-2&amp;quot;)">
+<meta name="twitter:description" content="[toc]第10章 Python虚拟机中的控制流 keyword  控制流程 异常机制 10.1 Python虚拟机中的if控制流10.1.1 研究对象–if_control.py1234567891011a = 1if a &amp;gt; 10:    print(&amp;quot;a&amp;gt;10&amp;quot;)elif a &amp;lt;= -2:    print(&amp;quot;a&amp;lt;=-2&amp;quot;)el">
   <link rel="canonical" href="https://ztzheng100.github.io.git/2019/09/08/python源码剖析/第10章-Python虚拟机中的控制流/">
 
 
@@ -290,11 +290,11 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <p>[toc]</p>
-<h1 id="第10章-Python虚拟机中的控制流"><a href="#第10章-Python虚拟机中的控制流" class="headerlink" title="第10章 Python虚拟机中的控制流"></a>第10章 Python虚拟机中的控制流</h1><ul>
+        <p>[toc]</p><h1 id="第10章-Python虚拟机中的控制流"><a href="#第10章-Python虚拟机中的控制流" class="headerlink" title="第10章 Python虚拟机中的控制流"></a>第10章 Python虚拟机中的控制流</h1><ul>
 <li>keyword<br>  <em>控制流程 异常机制</em></li>
-</ul>
-<h2 id="10-1-Python虚拟机中的if控制流"><a href="#10-1-Python虚拟机中的if控制流" class="headerlink" title="10.1 Python虚拟机中的if控制流"></a>10.1 Python虚拟机中的if控制流</h2><h3 id="10-1-1-研究对象–if-control-py"><a href="#10-1-1-研究对象–if-control-py" class="headerlink" title="10.1.1 研究对象–if_control.py"></a>10.1.1 研究对象–if_control.py</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">a = 1</span><br><span class="line">if a &gt; 10:</span><br><span class="line">    print(&quot;a&gt;10&quot;)</span><br><span class="line">elif a &lt;= -2:</span><br><span class="line">    print(&quot;a&lt;=-2&quot;)</span><br><span class="line">elif a != 1:</span><br><span class="line">    print(&quot;a!=1&quot;)</span><br><span class="line">elif a == 1:</span><br><span class="line">    print(&quot;a==1&quot;)</span><br><span class="line">else:</span><br><span class="line">    print(&quot;Unknown a&quot;)</span><br></pre></td></tr></table></figure>
+</ul><h2 id="10-1-Python虚拟机中的if控制流"><a href="#10-1-Python虚拟机中的if控制流" class="headerlink" title="10.1 Python虚拟机中的if控制流"></a>10.1 Python虚拟机中的if控制流</h2><h3 id="10-1-1-研究对象–if-control-py"><a href="#10-1-1-研究对象–if-control-py" class="headerlink" title="10.1.1 研究对象–if_control.py"></a>10.1.1 研究对象–if_control.py</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">a = 1</span><br><span class="line">if a &gt; 10:</span><br><span class="line">    print(&quot;a&gt;10&quot;)</span><br><span class="line">elif a &lt;= -2:</span><br><span class="line">    print(&quot;a&lt;=-2&quot;)</span><br><span class="line">elif a != 1:</span><br><span class="line">    print(&quot;a!=1&quot;)</span><br><span class="line">elif a == 1:</span><br><span class="line">    print(&quot;a==1&quot;)</span><br><span class="line">else:</span><br><span class="line">    print(&quot;Unknown a&quot;)</span><br></pre></td></tr></table></figure><a id="more"></a>
+
+
 
 <ul>
 <li>符号表和常量表</li>

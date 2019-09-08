@@ -55,13 +55,13 @@
   };
 </script>
 
-  <meta name="description" content="[toc] 第5章 Python中的Dict对象5.1 散列表概述5.2 PyDictObject5.2.1 关联容器的entry PyDictEntry 用于存储键值对信息 Py_ssize_t me_hash：存储了me_key计算得到的hash值, 不重复计算 PyObject *me_key;:键值，PyObject对象 PyObject *me_value;:内容    12345typ">
+  <meta name="description" content="[toc]第5章 Python中的Dict对象5.1 散列表概述5.2 PyDictObject5.2.1 关联容器的entry PyDictEntry 用于存储键值对信息 Py_ssize_t me_hash：存储了me_key计算得到的hash值, 不重复计算 PyObject *me_key;:键值，PyObject对象 PyObject *me_value;:内容">
 <meta name="keywords" content="源码,python">
 <meta property="og:type" content="article">
 <meta property="og:title" content="# 第5章 Python中的Dict对象">
 <meta property="og:url" content="https://ztzheng100.github.io.git/2019/09/08/python源码剖析/第5章-Python中的Dict对象/index.html">
 <meta property="og:site_name" content="ZZT_blog">
-<meta property="og:description" content="[toc] 第5章 Python中的Dict对象5.1 散列表概述5.2 PyDictObject5.2.1 关联容器的entry PyDictEntry 用于存储键值对信息 Py_ssize_t me_hash：存储了me_key计算得到的hash值, 不重复计算 PyObject *me_key;:键值，PyObject对象 PyObject *me_value;:内容    12345typ">
+<meta property="og:description" content="[toc]第5章 Python中的Dict对象5.1 散列表概述5.2 PyDictObject5.2.1 关联容器的entry PyDictEntry 用于存储键值对信息 Py_ssize_t me_hash：存储了me_key计算得到的hash值, 不重复计算 PyObject *me_key;:键值，PyObject对象 PyObject *me_value;:内容">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="http://jbcdn2.b0.upaiyun.com/2015/11/2d6785ab2fbbee2947286e74a14589a91.png">
 <meta property="og:image" content="http://jbcdn2.b0.upaiyun.com/2015/11/2339d754547bbede91190414c7ec38261.png">
@@ -70,7 +70,7 @@
 <meta property="og:updated_time" content="2019-09-08T12:11:18.877Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="# 第5章 Python中的Dict对象">
-<meta name="twitter:description" content="[toc] 第5章 Python中的Dict对象5.1 散列表概述5.2 PyDictObject5.2.1 关联容器的entry PyDictEntry 用于存储键值对信息 Py_ssize_t me_hash：存储了me_key计算得到的hash值, 不重复计算 PyObject *me_key;:键值，PyObject对象 PyObject *me_value;:内容    12345typ">
+<meta name="twitter:description" content="[toc]第5章 Python中的Dict对象5.1 散列表概述5.2 PyDictObject5.2.1 关联容器的entry PyDictEntry 用于存储键值对信息 Py_ssize_t me_hash：存储了me_key计算得到的hash值, 不重复计算 PyObject *me_key;:键值，PyObject对象 PyObject *me_value;:内容">
 <meta name="twitter:image" content="http://jbcdn2.b0.upaiyun.com/2015/11/2d6785ab2fbbee2947286e74a14589a91.png">
   <link rel="canonical" href="https://ztzheng100.github.io.git/2019/09/08/python源码剖析/第5章-Python中的Dict对象/">
 
@@ -295,15 +295,15 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <p>[toc]</p>
-<h1 id="第5章-Python中的Dict对象"><a href="#第5章-Python中的Dict对象" class="headerlink" title="第5章 Python中的Dict对象"></a>第5章 Python中的Dict对象</h1><h2 id="5-1-散列表概述"><a href="#5-1-散列表概述" class="headerlink" title="5.1 散列表概述"></a>5.1 散列表概述</h2><h2 id="5-2-PyDictObject"><a href="#5-2-PyDictObject" class="headerlink" title="5.2 PyDictObject"></a>5.2 PyDictObject</h2><h3 id="5-2-1-关联容器的entry"><a href="#5-2-1-关联容器的entry" class="headerlink" title="5.2.1 关联容器的entry"></a>5.2.1 关联容器的entry</h3><ul>
+        <p>[toc]</p><h1 id="第5章-Python中的Dict对象"><a href="#第5章-Python中的Dict对象" class="headerlink" title="第5章 Python中的Dict对象"></a>第5章 Python中的Dict对象</h1><h2 id="5-1-散列表概述"><a href="#5-1-散列表概述" class="headerlink" title="5.1 散列表概述"></a>5.1 散列表概述</h2><h2 id="5-2-PyDictObject"><a href="#5-2-PyDictObject" class="headerlink" title="5.2 PyDictObject"></a>5.2 PyDictObject</h2><h3 id="5-2-1-关联容器的entry"><a href="#5-2-1-关联容器的entry" class="headerlink" title="5.2.1 关联容器的entry"></a>5.2.1 关联容器的entry</h3><ul>
 <li>PyDictEntry 用于存储键值对信息<ul>
 <li><code>Py_ssize_t me_hash</code>：存储了me_key计算得到的hash值, 不重复计算</li>
 <li><code>PyObject *me_key;</code>:键值，PyObject对象</li>
 <li><code>PyObject *me_value;</code>:内容</li>
 </ul>
 </li>
-</ul>
+</ul><a id="more"></a>
+
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">typedef struct &#123;</span><br><span class="line">    Py_ssize_t me_hash;</span><br><span class="line">    PyObject *me_key;</span><br><span class="line">    PyObject *me_value;</span><br><span class="line">&#125; PyDictEntry;</span><br></pre></td></tr></table></figure>
 
 <p><img src="http://jbcdn2.b0.upaiyun.com/2015/11/2d6785ab2fbbee2947286e74a14589a91.png" alt="结构"></p>

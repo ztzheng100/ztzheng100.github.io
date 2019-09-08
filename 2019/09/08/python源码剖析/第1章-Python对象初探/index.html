@@ -55,13 +55,13 @@
   };
 </script>
 
-  <meta name="description" content="[toc] 第1部分 Python内建对象13 keyword  ++对象在c层面的实现方式  类型对象的作用  类型对象和实例的关系++  第1章 Python对象初探1.1 Python内的对象 python中所有对象共有信息的定义   对象：是数据以及基于这些数据的操作的集合 python所有内建的类型对象都是被静态初始化的。而c结构体是在堆申请一块内存 https://www.cnblog">
+  <meta name="description" content="[toc]第1部分 Python内建对象13 keyword  ++对象在c层面的实现方式  类型对象的作用  类型对象和实例的关系++ 第1章 Python对象初探1.1 Python内的对象 python中所有对象共有信息的定义   对象：是数据以及基于这些数据的操作的集合 python所有内建的类型对象都是被静态初始化的。而c结构体是在堆申请一块内存 https://www.cnblogs.">
 <meta name="keywords" content="源码,python">
 <meta property="og:type" content="article">
 <meta property="og:title" content="第1章 Python对象初探">
 <meta property="og:url" content="https://ztzheng100.github.io.git/2019/09/08/python源码剖析/第1章-Python对象初探/index.html">
 <meta property="og:site_name" content="ZZT_blog">
-<meta property="og:description" content="[toc] 第1部分 Python内建对象13 keyword  ++对象在c层面的实现方式  类型对象的作用  类型对象和实例的关系++  第1章 Python对象初探1.1 Python内的对象 python中所有对象共有信息的定义   对象：是数据以及基于这些数据的操作的集合 python所有内建的类型对象都是被静态初始化的。而c结构体是在堆申请一块内存 https://www.cnblog">
+<meta property="og:description" content="[toc]第1部分 Python内建对象13 keyword  ++对象在c层面的实现方式  类型对象的作用  类型对象和实例的关系++ 第1章 Python对象初探1.1 Python内的对象 python中所有对象共有信息的定义   对象：是数据以及基于这些数据的操作的集合 python所有内建的类型对象都是被静态初始化的。而c结构体是在堆申请一块内存 https://www.cnblogs.">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="http://new.51cto.com/files/uploadimg/20080723/144411249.jpg">
 <meta property="og:image" content="http://new.51cto.com/files/uploadimg/20080723/1456420.jpg">
@@ -70,7 +70,7 @@
 <meta property="og:updated_time" content="2019-09-08T11:59:45.612Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="第1章 Python对象初探">
-<meta name="twitter:description" content="[toc] 第1部分 Python内建对象13 keyword  ++对象在c层面的实现方式  类型对象的作用  类型对象和实例的关系++  第1章 Python对象初探1.1 Python内的对象 python中所有对象共有信息的定义   对象：是数据以及基于这些数据的操作的集合 python所有内建的类型对象都是被静态初始化的。而c结构体是在堆申请一块内存 https://www.cnblog">
+<meta name="twitter:description" content="[toc]第1部分 Python内建对象13 keyword  ++对象在c层面的实现方式  类型对象的作用  类型对象和实例的关系++ 第1章 Python对象初探1.1 Python内的对象 python中所有对象共有信息的定义   对象：是数据以及基于这些数据的操作的集合 python所有内建的类型对象都是被静态初始化的。而c结构体是在堆申请一块内存 https://www.cnblogs.">
 <meta name="twitter:image" content="http://new.51cto.com/files/uploadimg/20080723/144411249.jpg">
   <link rel="canonical" href="https://ztzheng100.github.io.git/2019/09/08/python源码剖析/第1章-Python对象初探/">
 
@@ -295,11 +295,9 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <p>[toc]</p>
-<h1 id="第1部分-Python内建对象13"><a href="#第1部分-Python内建对象13" class="headerlink" title="第1部分 Python内建对象13"></a>第1部分 Python内建对象13</h1><ul>
+        <p>[toc]</p><h1 id="第1部分-Python内建对象13"><a href="#第1部分-Python内建对象13" class="headerlink" title="第1部分 Python内建对象13"></a>第1部分 Python内建对象13</h1><ul>
 <li>keyword<br>  ++对象在c层面的实现方式  类型对象的作用  类型对象和实例的关系++</li>
-</ul>
-<h1 id="第1章-Python对象初探"><a href="#第1章-Python对象初探" class="headerlink" title="第1章 Python对象初探"></a>第1章 Python对象初探</h1><h2 id="1-1-Python内的对象"><a href="#1-1-Python内的对象" class="headerlink" title="1.1 Python内的对象"></a>1.1 Python内的对象</h2><ul>
+</ul><h1 id="第1章-Python对象初探"><a href="#第1章-Python对象初探" class="headerlink" title="第1章 Python对象初探"></a>第1章 Python对象初探</h1><h2 id="1-1-Python内的对象"><a href="#1-1-Python内的对象" class="headerlink" title="1.1 Python内的对象"></a>1.1 Python内的对象</h2><ul>
 <li>python中所有对象共有信息的定义  </li>
 <li>对象：是数据以及基于这些数据的操作的集合</li>
 <li>python所有内建的类型对象都是被静态初始化的。而c结构体是在堆申请一块内存<blockquote>
@@ -307,7 +305,9 @@
 </blockquote>
 </li>
 <li>python中，对象A一旦被创建，它在内存中的大小就不变了。一旦对象是可变长度的数据的对象，就在对象内维护一个指向可变大小的内存区域</li>
-</ul>
+</ul><a id="more"></a>
+
+
 <h3 id="1-1-1-对象机制的基石-PyObject"><a href="#1-1-1-对象机制的基石-PyObject" class="headerlink" title="1.1.1 对象机制的基石__PyObject"></a>1.1.1 对象机制的基石__PyObject</h3><ul>
 <li><p>_object对象</p>
   <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[object.h] #简化</span><br><span class="line">typedef struct _object &#123;</span><br><span class="line">int ob_refcnt;</span><br><span class="line">struct _typeobject *ob_type;</span><br><span class="line">&#125; PyObject;</span><br></pre></td></tr></table></figure>

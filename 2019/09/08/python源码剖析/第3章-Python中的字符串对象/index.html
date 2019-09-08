@@ -55,18 +55,18 @@
   };
 </script>
 
-  <meta name="description" content="第3章 Python中的字符串对象 keyword  *字符串对象 * 可变对象和不可变对象  （list和string，tuple）（定义之后不能修改） 定长对象和变长对象（int 和 list）（定义的时候）  3.1 PyStringObject与PyString_Type PyStringObject对象  ob_size变量：保存着对象中维护的可变长度内存的大小 ob_sval是一个字符">
+  <meta name="description" content="第3章 Python中的字符串对象 keyword  *字符串对象 * 可变对象和不可变对象  （list和string，tuple）（定义之后不能修改） 定长对象和变长对象（int 和 list）（定义的时候） 3.1 PyStringObject与PyString_Type PyStringObject对象  ob_size变量：保存着对象中维护的可变长度内存的大小 ob_sval是一个字符的">
 <meta name="keywords" content="源码,python">
 <meta property="og:type" content="article">
 <meta property="og:title" content="第3章 Python中的字符串对象">
 <meta property="og:url" content="https://ztzheng100.github.io.git/2019/09/08/python源码剖析/第3章-Python中的字符串对象/index.html">
 <meta property="og:site_name" content="ZZT_blog">
-<meta property="og:description" content="第3章 Python中的字符串对象 keyword  *字符串对象 * 可变对象和不可变对象  （list和string，tuple）（定义之后不能修改） 定长对象和变长对象（int 和 list）（定义的时候）  3.1 PyStringObject与PyString_Type PyStringObject对象  ob_size变量：保存着对象中维护的可变长度内存的大小 ob_sval是一个字符">
+<meta property="og:description" content="第3章 Python中的字符串对象 keyword  *字符串对象 * 可变对象和不可变对象  （list和string，tuple）（定义之后不能修改） 定长对象和变长对象（int 和 list）（定义的时候） 3.1 PyStringObject与PyString_Type PyStringObject对象  ob_size变量：保存着对象中维护的可变长度内存的大小 ob_sval是一个字符的">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:updated_time" content="2019-09-08T12:10:12.370Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="第3章 Python中的字符串对象">
-<meta name="twitter:description" content="第3章 Python中的字符串对象 keyword  *字符串对象 * 可变对象和不可变对象  （list和string，tuple）（定义之后不能修改） 定长对象和变长对象（int 和 list）（定义的时候）  3.1 PyStringObject与PyString_Type PyStringObject对象  ob_size变量：保存着对象中维护的可变长度内存的大小 ob_sval是一个字符">
+<meta name="twitter:description" content="第3章 Python中的字符串对象 keyword  *字符串对象 * 可变对象和不可变对象  （list和string，tuple）（定义之后不能修改） 定长对象和变长对象（int 和 list）（定义的时候） 3.1 PyStringObject与PyString_Type PyStringObject对象  ob_size变量：保存着对象中维护的可变长度内存的大小 ob_sval是一个字符的">
   <link rel="canonical" href="https://ztzheng100.github.io.git/2019/09/08/python源码剖析/第3章-Python中的字符串对象/">
 
 
@@ -294,8 +294,7 @@
 <li>keyword<br>  *字符串对象 *</li>
 <li>可变对象和不可变对象  （list和string，tuple）（定义之后不能修改）</li>
 <li>定长对象和变长对象（int 和 list）（定义的时候）</li>
-</ul>
-<h2 id="3-1-PyStringObject与PyString-Type"><a href="#3-1-PyStringObject与PyString-Type" class="headerlink" title="3.1 PyStringObject与PyString_Type"></a>3.1 PyStringObject与PyString_Type</h2><ul>
+</ul><h2 id="3-1-PyStringObject与PyString-Type"><a href="#3-1-PyStringObject与PyString-Type" class="headerlink" title="3.1 PyStringObject与PyString_Type"></a>3.1 PyStringObject与PyString_Type</h2><ul>
 <li><p>PyStringObject对象</p>
 <ul>
 <li><code>ob_size</code>变量：保存着对象中维护的可变长度内存的大小</li>
@@ -311,7 +310,8 @@
 <li><code>tp_as_number、tp_as_sequence、tp_as_mapping</code>，三个域都被设置了。这表示PyStringObject对数值操作、序列操作和映射操作都支持。</li>
 </ul>
 </li>
-</ul>
+</ul><a id="more"></a>
+
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">PyTypeObject PyString_Type = &#123;</span><br><span class="line">    PyObject_HEAD_INIT(&amp;PyType_Type)</span><br><span class="line">    0,</span><br><span class="line">    &quot;str&quot;,</span><br><span class="line">    sizeof(PyStringObject), //tp_basicsize</span><br><span class="line">    sizeof(char),       //tp_itemsize</span><br><span class="line">    ……</span><br><span class="line">    (reprfunc)string_repr,          /* tp_repr */</span><br><span class="line">    &amp;string_as_number,               /* tp_as_number */</span><br><span class="line">    &amp;string_as_sequence,            /* tp_as_sequence */</span><br><span class="line">    &amp;string_as_mapping,             /* tp_as_mapping */</span><br><span class="line">    (hashfunc)string_hash,          /* tp_hash */</span><br><span class="line">    0,                  /* tp_call */</span><br><span class="line">    ……</span><br><span class="line">    string_new,             /* tp_new */</span><br><span class="line">    PyObject_Del,                       /* tp_free */</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
 
 <h2 id="3-2-创建PyStringObject对象"><a href="#3-2-创建PyStringObject对象" class="headerlink" title="3.2 创建PyStringObject对象"></a>3.2 创建PyStringObject对象</h2><ul>
