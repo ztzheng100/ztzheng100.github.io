@@ -4,7 +4,7 @@
 
 
 
-<html lang="zh-Hans">
+<html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
@@ -47,9 +47,9 @@
     path: '',
     motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
     translation: {
-      copy_button: 'Kopieren',
-      copy_success: 'Kopiert',
-      copy_failure: 'Kopieren fehlgeschlagen'
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
     },
     sidebarPadding: 40
   };
@@ -62,7 +62,7 @@
 <meta property="og:url" content="https://ztzheng100.github.io.git/2019/09/08/python源码剖析/第2章-Python中的整数对象/index.html">
 <meta property="og:site_name" content="Hexo">
 <meta property="og:description" content="[TOC] 第2章 Python中的整数对象292.1 初识PyIntObject对象 整数对象池 PyIntObject 对于python中的对象，与对象相关的元信息实际上都是保存在与对象对应的类型对象中的，对于PyIntObject，这个类型的对象是PyInt_Type    12345[intobject.h]typedef struct &amp;#123;    PyObject_HEAD">
-<meta property="og:locale" content="zh-Hans">
+<meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="https://timgsa.baidu.com/timg?image&quality=80&size=b10000_10000&sec=1492690821&di=7ec6a3c056f38924422809aae9db3cdc&imgtype=jpg&src=http://h.hiphotos.baidu.com/image/pic/item/dbb44aed2e738bd46cfcaf01ab8b87d6277ff925.jpg">
 <meta property="og:image" content="http://jbcdn2.b0.upaiyun.com/2015/11/3d370e34e2b546575d29f1d27ff3e0ec.png">
 <meta property="og:image" content="https://timgsa.baidu.com/timg?image&quality=80&size=b10000_10000&sec=1492693489&di=efee89c9ae3a5226686e2457fe50f13e&imgtype=jpg&src=http://e.hiphotos.baidu.com/image/pic/item/eac4b74543a9822673a527178082b9014a90eb9e.jpg">
@@ -122,7 +122,7 @@
 
 </head>
 
-<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
   <div class="container use-motion">
     <div class="headband"></div>
 
@@ -140,7 +140,7 @@
   </div>
 
   <div class="site-nav-toggle">
-    <button aria-label="Navigationsleiste an/ausschalten">
+    <button aria-label="切换导航栏">
       <span class="btn-bar"></span>
       <span class="btn-bar"></span>
       <span class="btn-bar"></span>
@@ -160,7 +160,7 @@
       
     
 
-    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>Startseite</a>
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
 
   </li>
       
@@ -171,7 +171,7 @@
       
     
 
-    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>Schlagwörter</a>
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
 
   </li>
       
@@ -182,7 +182,7 @@
       
     
 
-    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>Kategorien</a>
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
 
   </li>
       
@@ -193,7 +193,18 @@
       
     
 
-    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>Archiv</a>
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-guestbook">
+      
+    
+
+    <a href="/guestbook" rel="section"><i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br>guestbook</a>
 
   </li>
   </ul>
@@ -245,13 +256,13 @@
               <span class="post-meta-item-icon">
                 <i class="fa fa-calendar-o"></i>
               </span>
-              <span class="post-meta-item-text">Veröffentlicht am</span>
+              <span class="post-meta-item-text">发表于</span>
 
               
                 
               
 
-              <time title="Erstellt: 2019-09-08 20:02:57 / Geändert am: 20:04:47" itemprop="dateCreated datePublished" datetime="2019-09-08T20:02:57+08:00">2019-09-08</time>
+              <time title="创建时间：2019-09-08 20:02:57 / 修改时间：20:04:47" itemprop="dateCreated datePublished" datetime="2019-09-08T20:02:57+08:00">2019-09-08</time>
             </span>
           
             
@@ -262,7 +273,7 @@
               <span class="post-meta-item-icon">
                 <i class="fa fa-folder-o"></i>
               </span>
-              <span class="post-meta-item-text">in</span>
+              <span class="post-meta-item-text">分类于</span>
               
                 <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/python源码剖析/" itemprop="url" rel="index"><span itemprop="name">python源码剖析</span></a></span>
 
@@ -487,10 +498,10 @@
 
       <ul class="sidebar-nav motion-element">
         <li class="sidebar-nav-toc">
-          Inhaltsverzeichnis
+          文章目录
         </li>
         <li class="sidebar-nav-overview">
-          Übersicht
+          站点概览
         </li>
       </ul>
 
@@ -512,7 +523,7 @@
           <a href="/archives/">
         
           <span class="site-state-item-count">20</span>
-          <span class="site-state-item-name">Artikel</span>
+          <span class="site-state-item-name">日志</span>
         </a>
       </div>
     
@@ -529,7 +540,7 @@
           
         
         <span class="site-state-item-count">1</span>
-        <span class="site-state-item-name">Kategorien</span>
+        <span class="site-state-item-name">分类</span>
         </a>
       </div>
     
@@ -548,7 +559,7 @@
           
         
         <span class="site-state-item-count">2</span>
-        <span class="site-state-item-name">schlagwörter</span>
+        <span class="site-state-item-name">标签</span>
         </a>
       </div>
     
@@ -574,9 +585,9 @@
   </span>
   <span class="author" itemprop="copyrightHolder">zzt</span>
 </div>
-  <div class="powered-by">Erstellt mit  <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> v3.9.0</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.9.0</div>
   <span class="post-meta-divider">|</span>
-  <div class="theme-info">Design – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.4.0</div>
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.4.0</div>
 
         
 
