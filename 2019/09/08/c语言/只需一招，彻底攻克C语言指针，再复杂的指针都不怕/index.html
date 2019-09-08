@@ -55,18 +55,18 @@
   };
 </script>
 
-  <meta name="description" content="只需一招，彻底攻克C语言指针，再复杂的指针都不怕规则 ++从名字开始,关键定义都是普通的定义格式，只是定义格式缺少的部分被层层嵌套++。  指针：int *p 数组： int arr[10] 函数指针： int (* p)(int) example: int (*p3)[6];  (*p3): 定义p3指针，但不知道指针类型 int (*p3)[6]:指针类型为 int [6]的数组，所以p3指针">
+  <meta name="description" content="只需一招，彻底攻克C语言指针，再复杂的指针都不怕">
 <meta name="keywords" content="指针">
 <meta property="og:type" content="article">
 <meta property="og:title" content="1.1 只需一招，彻底攻克C语言指针，再复杂的指针都不怕">
 <meta property="og:url" content="https://ztzheng100.github.io.git/2019/09/08/c语言/只需一招，彻底攻克C语言指针，再复杂的指针都不怕/index.html">
 <meta property="og:site_name" content="ZZT_blog">
-<meta property="og:description" content="只需一招，彻底攻克C语言指针，再复杂的指针都不怕规则 ++从名字开始,关键定义都是普通的定义格式，只是定义格式缺少的部分被层层嵌套++。  指针：int *p 数组： int arr[10] 函数指针： int (* p)(int) example: int (*p3)[6];  (*p3): 定义p3指针，但不知道指针类型 int (*p3)[6]:指针类型为 int [6]的数组，所以p3指针">
+<meta property="og:description" content="只需一招，彻底攻克C语言指针，再复杂的指针都不怕">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:updated_time" content="2019-09-08T14:06:31.768Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="1.1 只需一招，彻底攻克C语言指针，再复杂的指针都不怕">
-<meta name="twitter:description" content="只需一招，彻底攻克C语言指针，再复杂的指针都不怕规则 ++从名字开始,关键定义都是普通的定义格式，只是定义格式缺少的部分被层层嵌套++。  指针：int *p 数组： int arr[10] 函数指针： int (* p)(int) example: int (*p3)[6];  (*p3): 定义p3指针，但不知道指针类型 int (*p3)[6]:指针类型为 int [6]的数组，所以p3指针">
+<meta name="twitter:description" content="只需一招，彻底攻克C语言指针，再复杂的指针都不怕">
   <link rel="canonical" href="https://ztzheng100.github.io.git/2019/09/08/c语言/只需一招，彻底攻克C语言指针，再复杂的指针都不怕/">
 
 
@@ -290,7 +290,7 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <h1 id="只需一招，彻底攻克C语言指针，再复杂的指针都不怕"><a href="#只需一招，彻底攻克C语言指针，再复杂的指针都不怕" class="headerlink" title="只需一招，彻底攻克C语言指针，再复杂的指针都不怕"></a>只需一招，彻底攻克C语言指针，再复杂的指针都不怕</h1><h2 id="规则"><a href="#规则" class="headerlink" title="规则"></a>规则</h2><ul>
+        <h1 id="只需一招，彻底攻克C语言指针，再复杂的指针都不怕"><a href="#只需一招，彻底攻克C语言指针，再复杂的指针都不怕" class="headerlink" title="只需一招，彻底攻克C语言指针，再复杂的指针都不怕"></a>只需一招，彻底攻克C语言指针，再复杂的指针都不怕</h1><a id="more"></a><h2 id="规则"><a href="#规则" class="headerlink" title="规则"></a>规则</h2><ul>
 <li><p>++从名字开始,关键定义都是普通的定义格式，只是定义格式缺少的部分被层层嵌套++。</p>
 <ul>
 <li>指针：int *p</li>
@@ -324,7 +324,7 @@
 </li>
 <li><p>前缀操作符：星号*表示“指向xxx的指针”。</p>
 <h2 id="例子"><a href="#例子" class="headerlink" title="例子"></a>例子</h2></li>
-</ul><a id="more"></a>
+</ul>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">int *p1[6]; //指针数组</span><br><span class="line">int *(p2[6]); //指针数组，和上面的形式等价</span><br><span class="line">int (*p3)[6]; //二维数组指针</span><br><span class="line">int (*p4)(int, int); //函数指针</span><br></pre></td></tr></table></figure>
 
 <h2 id="例子详解"><a href="#例子详解" class="headerlink" title="例子详解"></a>例子详解</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">char *(* c[10])(int **p);</span><br><span class="line">int (*(*(*pfunc)(int *))[5])(int *);</span><br></pre></td></tr></table></figure>
@@ -459,7 +459,7 @@
         
           <a href="/archives/">
         
-          <span class="site-state-item-count">27</span>
+          <span class="site-state-item-count">29</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -480,7 +480,9 @@
         
           
         
-        <span class="site-state-item-count">3</span>
+          
+        
+        <span class="site-state-item-count">4</span>
         <span class="site-state-item-name">分类</span>
         </a>
       </div>
@@ -511,7 +513,9 @@
         
           
         
-        <span class="site-state-item-count">8</span>
+          
+        
+        <span class="site-state-item-count">9</span>
         <span class="site-state-item-name">标签</span>
         </a>
       </div>

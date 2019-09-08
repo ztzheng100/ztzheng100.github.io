@@ -55,18 +55,18 @@
   };
 </script>
 
-  <meta name="description" content="[toc]第14章 PYTHON模块的动态加载机制 多模块之间的引用和交互 一个模块是如何加载、引用另一个模块中的功能   python中一个module如何从硬盘中被加载到内存中">
+  <meta name="description" content="[toc]第14章 PYTHON模块的动态加载机制">
 <meta name="keywords" content="源码,python">
 <meta property="og:type" content="article">
 <meta property="og:title" content="第14章 PYTHON模块的动态加载机制">
 <meta property="og:url" content="https://ztzheng100.github.io.git/2019/09/08/python源码剖析/第14章-PYTHON模块的动态加载机制/index.html">
 <meta property="og:site_name" content="ZZT_blog">
-<meta property="og:description" content="[toc]第14章 PYTHON模块的动态加载机制 多模块之间的引用和交互 一个模块是如何加载、引用另一个模块中的功能   python中一个module如何从硬盘中被加载到内存中">
+<meta property="og:description" content="[toc]第14章 PYTHON模块的动态加载机制">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:updated_time" content="2019-09-08T12:21:21.453Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="第14章 PYTHON模块的动态加载机制">
-<meta name="twitter:description" content="[toc]第14章 PYTHON模块的动态加载机制 多模块之间的引用和交互 一个模块是如何加载、引用另一个模块中的功能   python中一个module如何从硬盘中被加载到内存中">
+<meta name="twitter:description" content="[toc]第14章 PYTHON模块的动态加载机制">
   <link rel="canonical" href="https://ztzheng100.github.io.git/2019/09/08/python源码剖析/第14章-PYTHON模块的动态加载机制/">
 
 
@@ -290,12 +290,12 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <p>[toc]</p><h1 id="第14章-PYTHON模块的动态加载机制"><a href="#第14章-PYTHON模块的动态加载机制" class="headerlink" title="第14章 PYTHON模块的动态加载机制"></a>第14章 PYTHON模块的动态加载机制</h1><ul>
+        <p>[toc]</p><h1 id="第14章-PYTHON模块的动态加载机制"><a href="#第14章-PYTHON模块的动态加载机制" class="headerlink" title="第14章 PYTHON模块的动态加载机制"></a>第14章 PYTHON模块的动态加载机制</h1><a id="more"></a>
+<ul>
 <li>多模块之间的引用和交互</li>
 <li>一个模块是如何加载、引用另一个模块中的功能  </li>
 <li>python中一个module如何从硬盘中被加载到内存中</li>
-</ul><a id="more"></a>
-
+</ul>
 <h2 id="14-1-IMPORT前奏曲"><a href="#14-1-IMPORT前奏曲" class="headerlink" title="14.1 IMPORT前奏曲"></a>14.1 IMPORT前奏曲</h2><h2 id="14-2-PYTHON中IMPORT机制的黑盒探测"><a href="#14-2-PYTHON中IMPORT机制的黑盒探测" class="headerlink" title="14.2 PYTHON中IMPORT机制的黑盒探测"></a>14.2 PYTHON中IMPORT机制的黑盒探测</h2><h3 id="14-2-1-标准import"><a href="#14-2-1-标准import" class="headerlink" title="14.2.1 标准import"></a>14.2.1 标准import</h3><h3 id="14-2-2-嵌套import"><a href="#14-2-2-嵌套import" class="headerlink" title="14.2.2 嵌套import"></a>14.2.2 嵌套import</h3><h3 id="14-2-3-import-package"><a href="#14-2-3-import-package" class="headerlink" title="14.2.3 import package"></a>14.2.3 import package</h3><h3 id="14-2-4-from与import"><a href="#14-2-4-from与import" class="headerlink" title="14.2.4 from与import"></a>14.2.4 from与import</h3><h3 id="14-2-5-符号重命名"><a href="#14-2-5-符号重命名" class="headerlink" title="14.2.5 符号重命名"></a>14.2.5 符号重命名</h3><h3 id="14-2-6-符号的销毁与重载"><a href="#14-2-6-符号的销毁与重载" class="headerlink" title="14.2.6 符号的销毁与重载"></a>14.2.6 符号的销毁与重载</h3><h2 id="14-3-IMPORT机制的实现"><a href="#14-3-IMPORT机制的实现" class="headerlink" title="14.3 IMPORT机制的实现"></a>14.3 IMPORT机制的实现</h2><h3 id="14-3-1-解析module-package树状结构"><a href="#14-3-1-解析module-package树状结构" class="headerlink" title="14.3.1 解析module/package树状结构"></a>14.3.1 解析module/package树状结构</h3><ul>
 <li><code>import_module_level</code>函数的代码主要实现了对++x.y.z++这样的树状结构的遍历，遍历的规则是把x.y.z看做是一个二叉树，然后遍历整个二叉树，对每个节点都只访问其右子树。</li>
 </ul>
@@ -420,7 +420,7 @@
         
           <a href="/archives/">
         
-          <span class="site-state-item-count">27</span>
+          <span class="site-state-item-count">29</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -441,7 +441,9 @@
         
           
         
-        <span class="site-state-item-count">3</span>
+          
+        
+        <span class="site-state-item-count">4</span>
         <span class="site-state-item-name">分类</span>
         </a>
       </div>
@@ -472,7 +474,9 @@
         
           
         
-        <span class="site-state-item-count">8</span>
+          
+        
+        <span class="site-state-item-count">9</span>
         <span class="site-state-item-name">标签</span>
         </a>
       </div>

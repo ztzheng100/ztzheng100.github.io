@@ -55,20 +55,20 @@
   };
 </script>
 
-  <meta name="description" content="第11章 Python虚拟机中的函数机制 keyword 11.1 PyFunctionObject对象">
+  <meta name="description" content="第11章 Python虚拟机中的函数机制 keyword">
 <meta name="keywords" content="源码,python">
 <meta property="og:type" content="article">
 <meta property="og:title" content=" 第11章 Python虚拟机中的函数机制">
 <meta property="og:url" content="https://ztzheng100.github.io.git/2019/09/08/python源码剖析/第11章-Python虚拟机中的函数机制/index.html">
 <meta property="og:site_name" content="ZZT_blog">
-<meta property="og:description" content="第11章 Python虚拟机中的函数机制 keyword 11.1 PyFunctionObject对象">
+<meta property="og:description" content="第11章 Python虚拟机中的函数机制 keyword">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="https://images2018.cnblogs.com/blog/1334023/201808/1334023-20180822181407352-1000678095.png">
 <meta property="og:image" content="https://images2018.cnblogs.com/blog/1334023/201808/1334023-20180824213115322-1814505168.png">
 <meta property="og:updated_time" content="2019-09-08T12:16:31.193Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content=" 第11章 Python虚拟机中的函数机制">
-<meta name="twitter:description" content="第11章 Python虚拟机中的函数机制 keyword 11.1 PyFunctionObject对象">
+<meta name="twitter:description" content="第11章 Python虚拟机中的函数机制 keyword">
 <meta name="twitter:image" content="https://images2018.cnblogs.com/blog/1334023/201808/1334023-20180822181407352-1000678095.png">
   <link rel="canonical" href="https://ztzheng100.github.io.git/2019/09/08/python源码剖析/第11章-Python虚拟机中的函数机制/">
 
@@ -295,8 +295,8 @@
       
         <h1 id="第11章-Python虚拟机中的函数机制"><a href="#第11章-Python虚拟机中的函数机制" class="headerlink" title="第11章 Python虚拟机中的函数机制"></a>第11章 Python虚拟机中的函数机制</h1><ul>
 <li>keyword</li>
-</ul><h2 id="11-1-PyFunctionObject对象"><a href="#11-1-PyFunctionObject对象" class="headerlink" title="11.1 PyFunctionObject对象"></a>11.1 PyFunctionObject对象</h2><a id="more"></a>
-<ul>
+</ul><a id="more"></a>
+<h2 id="11-1-PyFunctionObject对象"><a href="#11-1-PyFunctionObject对象" class="headerlink" title="11.1 PyFunctionObject对象"></a>11.1 PyFunctionObject对象</h2><ul>
 <li>函数这种抽象机制，是通过一个Python对象——PyFunctionObject来实现的</li>
 </ul>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">typedef struct &#123;</span><br><span class="line">    PyObject_HEAD</span><br><span class="line">    PyObject *func_code;    //编译后的PyCodeObject对象</span><br><span class="line">    PyObject *func_globals; //函数运行时的global名字空间</span><br><span class="line">    PyObject *func_defaults;    //默认参数（tupple或NULL）</span><br><span class="line">    PyObject *func_closure; //NULL or a tuple of cell objects，用于实现closure(闭包)</span><br><span class="line">    PyObject *func_doc;     //函数的文档（PyStringObject）</span><br><span class="line">    PyObject *func_name;    //函数名称，函数的__name__属性，（PyStringObject）</span><br><span class="line">    PyObject *func_dict;    //函数的__dict__属性（PyDictObject或NULL）</span><br><span class="line">    PyObject *func_weakreflist;</span><br><span class="line">    PyObject *func_module;  //函数的__module__，可以是任何对象</span><br><span class="line">&#125; PyFunctionObject;</span><br></pre></td></tr></table></figure>
@@ -492,7 +492,7 @@
         
           <a href="/archives/">
         
-          <span class="site-state-item-count">27</span>
+          <span class="site-state-item-count">29</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -513,7 +513,9 @@
         
           
         
-        <span class="site-state-item-count">3</span>
+          
+        
+        <span class="site-state-item-count">4</span>
         <span class="site-state-item-name">分类</span>
         </a>
       </div>
@@ -544,7 +546,9 @@
         
           
         
-        <span class="site-state-item-count">8</span>
+          
+        
+        <span class="site-state-item-count">9</span>
         <span class="site-state-item-name">标签</span>
         </a>
       </div>

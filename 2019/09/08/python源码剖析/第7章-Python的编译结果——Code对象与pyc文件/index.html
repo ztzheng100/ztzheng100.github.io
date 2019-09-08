@@ -55,13 +55,13 @@
   };
 </script>
 
-  <meta name="description" content="第7章 Python的编译结果——Code对象与pyc文件 keyword  虚拟机、字节码 7.1 Python程序的执行过程">
+  <meta name="description" content="第7章 Python的编译结果——Code对象与pyc文件">
 <meta name="keywords" content="源码,python">
 <meta property="og:type" content="article">
 <meta property="og:title" content="第7章 Python的编译结果——Code对象与pyc文件">
 <meta property="og:url" content="https://ztzheng100.github.io.git/2019/09/08/python源码剖析/第7章-Python的编译结果——Code对象与pyc文件/index.html">
 <meta property="og:site_name" content="ZZT_blog">
-<meta property="og:description" content="第7章 Python的编译结果——Code对象与pyc文件 keyword  虚拟机、字节码 7.1 Python程序的执行过程">
+<meta property="og:description" content="第7章 Python的编译结果——Code对象与pyc文件">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="https://img-blog.csdn.net/20130705202522734">
 <meta property="og:image" content="https://upload-images.jianshu.io/upload_images/413992-b2a985f0a79cbb47.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1000/format/webp">
@@ -70,7 +70,7 @@
 <meta property="og:updated_time" content="2019-09-08T12:12:57.947Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="第7章 Python的编译结果——Code对象与pyc文件">
-<meta name="twitter:description" content="第7章 Python的编译结果——Code对象与pyc文件 keyword  虚拟机、字节码 7.1 Python程序的执行过程">
+<meta name="twitter:description" content="第7章 Python的编译结果——Code对象与pyc文件">
 <meta name="twitter:image" content="https://img-blog.csdn.net/20130705202522734">
   <link rel="canonical" href="https://ztzheng100.github.io.git/2019/09/08/python源码剖析/第7章-Python的编译结果——Code对象与pyc文件/">
 
@@ -295,10 +295,10 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <h1 id="第7章-Python的编译结果——Code对象与pyc文件"><a href="#第7章-Python的编译结果——Code对象与pyc文件" class="headerlink" title="第7章 Python的编译结果——Code对象与pyc文件"></a>第7章 Python的编译结果——Code对象与pyc文件</h1><ul>
+        <h1 id="第7章-Python的编译结果——Code对象与pyc文件"><a href="#第7章-Python的编译结果——Code对象与pyc文件" class="headerlink" title="第7章 Python的编译结果——Code对象与pyc文件"></a>第7章 Python的编译结果——Code对象与pyc文件</h1><a id="more"></a><ul>
 <li>keyword<br>  <em>虚拟机、字节码</em></li>
-</ul><h2 id="7-1-Python程序的执行过程"><a href="#7-1-Python程序的执行过程" class="headerlink" title="7.1 Python程序的执行过程"></a>7.1 Python程序的执行过程</h2><a id="more"></a>
-<ul>
+</ul>
+<h2 id="7-1-Python程序的执行过程"><a href="#7-1-Python程序的执行过程" class="headerlink" title="7.1 Python程序的执行过程"></a>7.1 Python程序的执行过程</h2><ul>
 <li>一组python 的 byte code（字节码），然后将编译的结果交给python 的虚拟机，由虚拟机按照顺序一条一条的执行字节码。</li>
 <li>编译过程不仅生成字节码，还要包含常量、变量、占用栈的空间等，Pyton中编译过程生成code对象PyCodeObject。将PyCodeObject写入二进制文件，即.pyc。</li>
 <li>编译过程与虚拟机执行过程均在python25.dll中。<br><img src="https://img-blog.csdn.net/20130705202522734" alt="Python程序执行过程"></li>
@@ -532,7 +532,7 @@
         
           <a href="/archives/">
         
-          <span class="site-state-item-count">27</span>
+          <span class="site-state-item-count">29</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -553,7 +553,9 @@
         
           
         
-        <span class="site-state-item-count">3</span>
+          
+        
+        <span class="site-state-item-count">4</span>
         <span class="site-state-item-name">分类</span>
         </a>
       </div>
@@ -584,7 +586,9 @@
         
           
         
-        <span class="site-state-item-count">8</span>
+          
+        
+        <span class="site-state-item-count">9</span>
         <span class="site-state-item-name">标签</span>
         </a>
       </div>

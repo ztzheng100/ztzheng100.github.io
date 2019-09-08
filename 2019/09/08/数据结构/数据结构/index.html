@@ -1,0 +1,1241 @@
+<!DOCTYPE html>
+
+
+
+
+
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.4.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.4.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.4.0">
+  <link rel="mask-icon" href="/images/logo.svg?v=7.4.0" color="#222">
+
+<link rel="stylesheet" href="/css/main.css?v=7.4.0">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '7.4.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    },
+    sidebarPadding: 40
+  };
+</script>
+
+  <meta name="description" content="数据结构一、算法复杂度O(1)、O(log n),O(n),O(n log n),O(n2),O(n3),O(nn)">
+<meta name="keywords" content="python,数据结构">
+<meta property="og:type" content="article">
+<meta property="og:title" content="数据结构与算法">
+<meta property="og:url" content="https://ztzheng100.github.io.git/2019/09/08/数据结构/数据结构/index.html">
+<meta property="og:site_name" content="ZZT_blog">
+<meta property="og:description" content="数据结构一、算法复杂度O(1)、O(log n),O(n),O(n log n),O(n2),O(n3),O(nn)">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-09-08T16:09:23.236Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="数据结构与算法">
+<meta name="twitter:description" content="数据结构一、算法复杂度O(1)、O(log n),O(n),O(n log n),O(n2),O(n3),O(nn)">
+  <link rel="canonical" href="https://ztzheng100.github.io.git/2019/09/08/数据结构/数据结构/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>数据结构与算法 | ZZT_blog</title>
+  <meta name="generator" content="Hexo 3.9.0">
+  
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">ZZT_blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+      
+      
+      
+        
+        <li class="menu-item menu-item-home">
+      
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-tags">
+      
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-categories">
+      
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-archives">
+      
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-guestbook">
+      
+    
+
+    <a href="/guestbook" rel="section"><i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br>guestbook</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+            
+
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+      <article itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block post">
+    <link itemprop="mainEntityOfPage" href="https://ztzheng100.github.io.git/2019/09/08/数据结构/数据结构/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zzt">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ZZT_blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">数据结构与算法
+
+          
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              
+                
+              
+
+              <time title="创建时间：2019-09-08 20:24:35" itemprop="dateCreated datePublished" datetime="2019-09-08T20:24:35+08:00">2019-09-08</time>
+            </span>
+          
+            
+
+            
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2019-09-09 00:09:23" itemprop="dateModified" datetime="2019-09-09T00:09:23+08:00">2019-09-09</time>
+              </span>
+            
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/数据结构/" itemprop="url" rel="index"><span itemprop="name">数据结构</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="数据结构"><a href="#数据结构" class="headerlink" title="数据结构"></a>数据结构</h1><h1 id="一、算法复杂度"><a href="#一、算法复杂度" class="headerlink" title="一、算法复杂度"></a>一、算法复杂度</h1><p>O(1)、O(log n),O(n),O(n log n),O(n<sup>2</sup>),O(n<sup>3</sup>),O(n<sup>n</sup>)</p><a id="more"></a>
+<h2 id="计算规则"><a href="#计算规则" class="headerlink" title="计算规则"></a>计算规则</h2><p>1.基本循环程序：    </p>
+<ul>
+<li><p><strong>基本操作</strong>：复杂度O(1) ,如果是函数调用，将其时间复杂度代入，参与整体时间复杂度计算。   </p>
+</li>
+<li><p><strong>加法规则</strong>（顺序复合）：两部分（多部分）的顺序复合，复杂度是两部分的加和。<br>T(n)=T<sub>1</sub>(n)+T<sub>2</sub>(n)=O(T<sub>1</sub>(n))+O(T<sub>2</sub>(n)) = O(max()T<sub>1</sub>(n),T<sub>2</sub>(n))</p>
+</li>
+<li><p><strong>乘法规则</strong>（循环结构）：循环体执行T<sub>1</sub>(n)次，每次执行要T<sub>2</sub>(n)时间，那么：<br>T(n)=T<sub>1</sub>(n) * T<sub>2</sub>(n) = O(T<sub>1</sub>(n)) * O(T<sub>2</sub>(n)) = O(T<sub>1</sub>(n)*T<sub>2</sub>(n))</p>
+</li>
+<li><p><strong>取最大规则</strong>（分支结构）： 如果算法是条件分支，两个分支的时间复杂性分别为 T<sub>1</sub>(n)和T<sub>2</sub>(n) ，那么：<br>T(n) = O(max()T<sub>1</sub>(n),T<sub>2</sub>(n))</p>
+</li>
+</ul>
+<h2 id="2-python的计算代价"><a href="#2-python的计算代价" class="headerlink" title="2.python的计算代价"></a>2.python的计算代价</h2><ul>
+<li><p>时间开销:     </p>
+<ol>
+<li>基本算术运算和逻辑运算是常量时间运算,O(1)   <ol start="2">
+<li>组合对象的操作:<br>复制和切片操作O(n),与长度有关<br>list,tuple元素访问和赋值，是O(1)<br>dict操作比较复杂</li>
+<li>字符串看组合对象来定</li>
+<li>创建对象余姚辅助空间和时间，代价都与对象大小有关</li>
+<li>构造新结构，如list、tuple、set等包含n个元素，O(n)   </li>
+<li>dict平均复杂度O(1)，最坏情况O（n）</li>
+</ol>
+</li>
+</ol>
+</li>
+<li><p>空间开销：    </p>
+<ol>
+<li>一般而言，创建n个元素的数据结构，为O(n)</li>
+<li>python中没有预设最大元素个数，会自动扩充存储空间。</li>
+<li>注意python自动存储管理系统的影响</li>
+</ol>
+</li>
+</ul>
+<h1 id="二、抽象数据类型ADT"><a href="#二、抽象数据类型ADT" class="headerlink" title="二、抽象数据类型ADT"></a>二、抽象数据类型ADT</h1><p> 定义一个抽象数据类型，目的是要定义一类计算对象，它们具有某些特定功能，可以在计算中使用。   </p>
+<p> 构造有理数抽象数据类型,如下</p>
+<pre><code>ADT Rational:               #定义有理数抽象数据类型
+Rational(int num,int den)   #构造有理数num,den
++(Rational r1, Rational r2)  #r1+r2
+-(Rational r1, Rational r2)  #r1-r2
+*(Rational r1, Rational r2)     #r1*r2
+/(Rational r1, Rational r2)     #r1/r2</code></pre><p>日期抽象数据类型:</p>
+<pre><code>ADT Date:
+    Date(int year,int month,int day)    #定义年月日
+    difference(Date d1,Date d2)         #求d1和d2的日期差
+    plus(Date d,int n)                  #日期d后n天的日期
+    num_date(int year,int n)            #计算year年第n天的日期</code></pre><p><strong>ADT是一种思想</strong>，也是一种组织程序的技术：     </p>
+<ol>
+<li>围绕一类数据定义程序模块</li>
+<li>模块的接口和实现分离</li>
+<li>在需要实现的时候，采用合理的技术，选择合适的机制，实现这种ADT功能，包括具体的数据表示和操作。</li>
+</ol>
+<h1 id="三、类"><a href="#三、类" class="headerlink" title="三、类"></a>三、类</h1><ol>
+<li><p>类定义和使用：    </p>
+<pre><code>class &lt;类名&gt;:
+    &lt;语句组&gt;</code></pre><p> 类对象支持两种操作：<em>属性访问</em>和<em>实例化</em>。</p>
+</li>
+<li><p>实例对象：初始化和使用<br>使用<code>__init__</code>方法完成初始化，第一个参数<code>self</code>，其可以有更多的形式参数。</p>
+</li>
+<li><p>几点说明：   </p>
+<ul>
+<li>使用<code>_</code>，避免方法名字冲突,比如<code>_num</code> 和 <code>num</code></li>
+<li>如果在一个方法函数里需要调用在同类里的另一个方法函数，要使用<code>self.g(...)</code>，<code>g()</code>为 类的另一个函数  </li>
+<li>方法函数可以通过<code>global</code>和<code>nonlocal</code>声明来访问全局变量和函数.</li>
+<li>使用<code>isinstance(obj,cls)</code>检查类和对象的关系,检查<code>obj</code>对象是否是类<code>cls</code> 的实例</li>
+</ul>
+</li>
+<li><p>解调方法和类方法：   </p>
+</li>
+</ol>
+<ul>
+<li>在def行前加<code>@staticmethod</code>表示<strong>静态方法</strong>，不需要   <code>self</code>参数，通过类名或值为实例对象的变量，以属性引用的方式调用静态函数</li>
+<li>在def行前加<code>@classmethod</code>表示<strong>类方法</strong>，习惯用<code>cls</code>参数名</li>
+</ul>
+<ol start="5">
+<li><p>类定义的作用于规则：<br>类定义的标识符具有局部作用域，只能在类里使用。外部通过类名字的属性引用方式来访问。</p>
+</li>
+<li><p>私有变量</p>
+</li>
+</ol>
+<ul>
+<li>用<code>_</code>一个下划线开头作为实例对象内部的东西，不应该在类以外访问他们.</li>
+<li>用<code>__</code>开头，但不结尾，在类外访问不到这个对象。</li>
+<li>此外，具有<code>__add__</code>的形式表示特殊的魔法方法</li>
+</ul>
+<ol start="7">
+<li>继承<br>在class(object):括号里表示继承的父类，使用<code>issubclass（cls1，cls2）</code>来检查cls2是否为cls1 的基类</li>
+</ol>
+<p>8.方法查找：<br>在派生类里查找方法，根据继承关系来找，直到Attribute<br>Error异常为止。</p>
+<p>9.super（）<br>super.m1()表示调用父类的m1函数，而不是本类的m1.</p>
+<h1 id="四、线性表"><a href="#四、线性表" class="headerlink" title="四、线性表"></a>四、线性表</h1><p>list和tuple采用了顺序表的实现技术。</p>
+<ol>
+<li>基于下标的高效元素访问和更新，时间复杂度O(1)</li>
+<li>允许任意元素加入，表对象的标识(id值)不变</li>
+<li>要求操作为O（1），且保持顺序，只能采用<em>连续表技术</em>,表元素保存在一块连续存储区里。</li>
+<li>要求能容纳任意多的元素，且保持id不变，采用<em>分离式实现技术</em></li>
+</ol>
+<p>list实现策略：建立空表，分配容纳8个元素的存储区，如果区满换一块4倍大的存储区，如果表很大，改变策略，换存储区时容量加倍，目前值时5000。</p>
+<p>操 作性质：     </p>
+<ul>
+<li>len()是O(1)操作</li>
+<li>元素访问和赋值，尾端加入和尾端删除（尾端切片删除）为O(1),pop()</li>
+<li>一般位置的元素加入、切片替换、切片删除、表拼接（extend）是O(n）,pop(n)指定位置</li>
+<li>list.reverse()反转操作,O（n）<br>list.clear()是O（1）去除元素的操作，两种方法</li>
+<li>将表的元素计数值设置为0，变为空表。</li>
+<li>另外分配一个空表用的存储空间，原存储区有python解释器的存储管理器自动回收。</li>
+</ul>
+<h1 id="五、字符串"><a href="#五、字符串" class="headerlink" title="五、字符串"></a>五、字符串</h1><h2 id="1-python字符串相关概念："><a href="#1-python字符串相关概念：" class="headerlink" title="1. python字符串相关概念："></a>1. python字符串相关概念：</h2><ul>
+<li>字符串的长度：长度为0成为空串，长度为1的字符串。</li>
+<li>字符在字符串励按顺序排列，和线性表一样。</li>
+<li>字符串相等，说明长度相等，且两串的对应位置的个字符两两相同。</li>
+<li>字典序：字符串的一种序关系。就是从左往右看两个穿中下标相同的各对字符，相比大小。</li>
+<li>字符串拼接：用+来表示字符串拼接</li>
+<li>字串关系：串s1与串s2中的一个连续片段相同，称s1是s2的字串。</li>
+<li>前缀和后缀是两种特殊字串</li>
+</ul>
+<ul>
+<li>python字符串是不变数据类型，python没有字符类型</li>
+<li>统一Unicode编码字符集</li>
+</ul>
+<h2 id="2-字符串匹配（字串查找）"><a href="#2-字符串匹配（字串查找）" class="headerlink" title="2. 字符串匹配（字串查找）"></a>2. 字符串匹配（字串查找）</h2><ul>
+<li><strong>朴素的传匹配算法</strong>      </li>
+</ul>
+<ol>
+<li><p>从左往右逐个字符匹配</p>
+</li>
+<li><p>发现不匹配，到目标穿下一个位置开始匹配</p>
+</li>
+<li><p>算法复杂性O(m*n)</p>
+<pre><code>def navie_matching(t,p):
+    m,n = len(p),len(t)
+    i,j = 0,0
+    while i&lt;m and j&lt;n:
+        if p[i] == t[j]:
+            i,j=i+1,j+1
+        else:
+            i,j=0,j-i+1
+    if i == m:
+        return -1</code></pre></li>
+</ol>
+<ul>
+<li><strong>无回溯串匹配算法（KMP）</strong><br>详见博客 <a href="https://blog.csdn.net/v_july_v/article/details/7041827" target="_blank" rel="noopener">KMP算法</a><br>KMP时间复杂度:O(m+n)</li>
+</ul>
+<h2 id="3-正则表达式"><a href="#3-正则表达式" class="headerlink" title="3. 正则表达式"></a>3. 正则表达式</h2><ul>
+<li><h2 id="元字符（特殊字符）"><a href="#元字符（特殊字符）" class="headerlink" title="元字符（特殊字符）:"></a>元字符（特殊字符）:</h2><p>正则表达式包re14个元字符: <code>.  ^  $  *  +  ?  \  |  {  }  [ ] ( )</code> </p>
+</li>
+<li><p>主要操作：</p>
+</li>
+</ul>
+<ol>
+<li>生成表达式对象: re.compile(pattern,flag=0)</li>
+<li>检索 : <code>re.search(pattern,string,flag=0)</code>在里检索pattern，返回一个match类型的对象，否则返回None。</li>
+<li>匹配: <code>re.match(pattern,string,flag=0)</code>检查string是否存在一个与pattern匹配的前缀。成功返回match对象，否则None。</li>
+<li>分割：<code>re.split(pattern,string,maxsplit=0,flasg=0)</code>以pattern作为分割串，maxsplit指明最大分割数，用0表示要求处理完整个string。返回一个列表。</li>
+<li>找出所有匹配串：<code>re.findall(pattern,string,flags=0)</code>返回一个表，表中按顺序给出string里与pattern匹配的各个字串</li>
+<li>完全匹配: <code>re.fullmatch(string[,pos,[,endpos]])</code></li>
+<li></li>
+</ol>
+<ul>
+<li><h2 id="正则表达式构造"><a href="#正则表达式构造" class="headerlink" title="正则表达式构造"></a>正则表达式构造</h2></li>
+</ul>
+<ol>
+<li><p><strong>字符组描述</strong>：<code>[...]</code>与[]里的字符序列里的任意字符匹配。[abc]可以与字符a,b,c匹配。  </p>
+<ul>
+<li>区间形式:  [0-9a-zA-Z]</li>
+<li>特殊形式:  [^…],^表示对列出的字符组求补</li>
+</ul>
+</li>
+<li><p><strong>圆点字符(.)</strong>：通配符，匹配所有字符,a..b表示以a开头b结尾的所有字符串       </p>
+<ul>
+<li><code>\d</code>:匹配十进制数字等价于[0-9]</li>
+<li><code>\D</code>：匹配所有非十进制数字[^0-9]</li>
+<li><code>\s</code>:匹配所有空白字符  [\t\v\n\f\r]</li>
+<li><code>\S</code>:匹配所有非空字符  [^ \t\v\n\f\r] </li>
+<li><code>\w</code>:匹配字母数字  [0-9a-zA-Z]</li>
+<li><code>\W</code>:非字母数字   [^0-9a-zA-Z]</li>
+</ul>
+</li>
+<li><p><strong>重复</strong>：       </p>
+<ul>
+<li><p>贪婪匹配:用 * 匹配0次或任意多次。</p>
+<pre><code>re.split(&apos;[,]*&apos;,str)      </code></pre></li>
+<li><p>非贪婪匹配 ： 用 + 匹配1次或任意多。<code>\d+</code>等价于<code>\d\d*</code></p>
+</li>
+</ul>
+</li>
+</ol>
+<ol start="4">
+<li><p><strong>可选描述符</strong>:  <code>?</code><br><code>a?</code>要求与a匹配的字符串的0或1次重复匹配</p>
+</li>
+<li><p><strong>重复次数描述符</strong>: <code>{n}</code><br>a{n}与a匹配的串n次重复</p>
+</li>
+<li><p><strong>重复次数范围</strong>  <code>{n,m}</code><br>go{2,5}gle,匹配结构为：google,gooogle,goooogle,gooooogle.<br>a{n}等价于a{n,n},a?等价于a{0,1}     </p>
+</li>
+</ol>
+<p>*、+、?、{m,n}都采取贪婪匹配规则</p>
+<ol start="7">
+<li><p><strong>非贪婪匹配描述符</strong>:<br> *?,+?,??,{m,n}?表示非贪婪匹配策略，在后面加？</p>
+</li>
+<li><p><strong>选择</strong>     </p>
+<ul>
+<li>选择描述符  <code>|</code><br>表示两种或多种串匹配模式</li>
+</ul>
+</li>
+<li><p>首位描述符:</p>
+<ul>
+<li>行首描述符：以<code>^</code>开头的</li>
+<li>行尾描述符: 以<code>$</code>符号结尾</li>
+<li>串首描述符: <code>\A</code>开头的</li>
+<li>串尾描述符: <code>\Z</code>结尾的</li>
+</ul>
+</li>
+<li><p>单词边界<br><code>\b</code>描述单词边界，在实际单词边界位置匹配空串。单词是字母数字的任意连续序列，边界就是非字母数字的或者无字符.<br><code>\\</code>表示转义</p>
+</li>
+<li><p><strong>匹配对象(match对象)</strong><br>mat表示通过匹配得到的一个match对象</p>
+</li>
+</ol>
+<ul>
+<li>取得被匹配的子串:<code>mat.group()</code></li>
+<li>在目标串里的匹配位置: <code>mat.start()</code></li>
+<li>目标串里的被匹配子串的结束位置: <code>mat.end()</code></li>
+<li>目标串里被匹配的区间:  <code>mat.span()</code>得到匹配开始位置和结束位置组成的二元组</li>
+<li>其他mat.re和mat.string（是数据与访问，不是函数）分别取得match对象的正则表达式和目标串。</li>
+</ul>
+<ol start="12">
+<li><strong>模式里的组（group）</strong><br>被匹配的组。</li>
+</ol>
+<h1 id="六、栈和队列"><a href="#六、栈和队列" class="headerlink" title="六、栈和队列"></a>六、栈和队列</h1><p>存取关系:</p>
+<ul>
+<li>栈是保证元素后进先出(LIFO结构)</li>
+<li>队列先进先出(FIFO结构)</li>
+</ul>
+<h2 id="1-栈抽象数据类型"><a href="#1-栈抽象数据类型" class="headerlink" title="1.栈抽象数据类型"></a>1.栈抽象数据类型</h2><pre><code>ADT Stack：
+    Stack(self)         #创建空栈
+    is_empty(self)      #判断栈是否为空，空返回True否则False
+    push(self,elem)     #将元素elem加入栈，也常称压入或推入
+    pop(self)           #弹出
+    top(self)           #取得最后压入栈的元素</code></pre><p>python的list及其操作来实现栈：<br><strong>顺序表技术实现栈类</strong></p>
+<ul>
+<li><p>建立空栈对应于创建空表[]</p>
+<ul>
+<li><p>list使用动态顺序表技术（分离式），所以栈不会满</p>
+</li>
+<li><p>压入元素对应于list.append()</p>
+</li>
+<li><p>访问栈顶元素 :list[-1]</p>
+</li>
+<li><p>弹出操作: list.pop()无参，默认弹出表尾元素</p>
+<p>   class SStack():</p>
+<pre><code>def __init__(self):
+    self._elems= []
+
+def is_empty(self):
+    return self._elems == []
+
+def top(self):
+    if self._elems == []:
+        raise StackUnderflow(&apos;in SStack.top&apos;) 
+    return self._elems[-1]
+
+def push(self,elem):
+    drlf._elems.append()
+
+def pop(self):
+    if self._elems == []
+        raise StackUnderflow(&apos;in SStack.pop&apos;)
+    return self._elems.pop()</code></pre><p>   st1 = SStack()<br>   st1.push(3)<br>   st1.push(2)<br>   while not st1.is_empty():</p>
+<pre><code>print(st1.pop())</code></pre></li>
+</ul>
+</li>
+</ul>
+<p>栈的链接表实现:<br>所有栈操作都在一端进行，采用链接表技术，用表头作为栈顶，用表尾作为栈底。</p>
+<pre><code>class LStak():
+    def __init__(self):
+        self._top=None
+
+    def is_empty(self):
+        return self._top is None
+
+    def top(self):
+        if self._top is None:
+            raise StackUnderflow(&apos;in LStack.top&apos;)
+        return self._top[-1]
+
+    def push(self):
+        self._top = LNode(elem,self._top)
+
+    def pop(self):
+        if self._top is None:
+             raise StackUnderflow(&apos;in LStack.pop&apos;)
+        p = self._top
+        self._top = p.next
+        return p.elem</code></pre><h2 id="2-栈的应用"><a href="#2-栈的应用" class="headerlink" title="2.栈的应用:"></a>2.栈的应用:</h2><p>1.括号匹配问题:<br>三种括号[],(),{}</p>
+<pre><code>def check_parens(text):
+    &apos;&apos;&apos;括号配对检查函数，text是被检查的正文串
+    &apos;&apos;&apos;
+    parens = &quot;[](){}&quot;
+    open_parens=&quot;[({&quot;
+
+    def parenthese(text):
+        &quot;&quot;&quot;括号生成器，每次调用返回text的下一括号及其位置&quot;&quot;&quot;
+        i,text_len=0,len(text) 
+        while True:
+            while i &lt; text_len and text[i] not in parens:
+                i+=1
+            if i&gt;= text_len:
+                return
+            yield text[i],i
+            i+=1
+    st = SStack()
+    for pr,i in parentheses(text):
+        if pr in open_parens:
+            st.push(pr)
+        elif st.pop() != opposite[pr]:
+            print(&quot;Unmatching is found at&quot;,i,&quot;for&quot;,pr)
+            return False
+    print(&quot;All parentheses are correctly matched.&quot;)
+    return True</code></pre><h2 id="3-队列"><a href="#3-队列" class="headerlink" title="3.队列"></a>3.队列</h2><p>队列(queue),称为队，先进先出，队列没有位置的概念，只支持默认方式的元素存入和取出。</p>
+<pre><code>ADT Queue:
+    Queue(self)         #创建空队列
+    is_empty(self)      #判断队列是否为空
+    enqueue(self,elem)  #将elem加入队列，入队
+    dequeue(self)       #出队
+    peek(self)          #最早加入的元素，不删除</code></pre><p><strong>队列类的list实现</strong>    </p>
+<pre><code>class SQueue():
+    def __init__(self,init_len=8):
+        self._len = init_len        #存储区元素长度
+        self._elems = [0]*init_len  #元素存储
+        self._head = 0              #表头元素下标
+        self._num = 0               #元素个数
+
+    def is_empty(self):
+        return self._num == 0
+
+    def peek(self):
+        if self._num == 0:
+            raise QueueUnderflow
+        return self._elems[self._head]
+
+    def dequeue(self):
+        if self._num == 0:
+            raise QueueUnderflow
+        e = self._elems[self._head]
+        self._head = (self._head+1) % self._len
+        self._num -= 1
+        return e
+
+    def enqueue(self,e):
+        if self._num == self._len:
+            self.__extend()
+        self._elems[(self._head+self._num) % self._len] = e
+        self._num += 1
+
+    def __extend(self):
+        old_len = self._len
+        self._len *= 2
+        new_elems = [0]*self._len
+        for i in range(old_then):
+            new_elems[i] = self._elems[(self._head + i )% old_len]
+        self._elems,self._head = new_elems,0 </code></pre><h1 id="七、二叉树和树"><a href="#七、二叉树和树" class="headerlink" title="七、二叉树和树"></a>七、二叉树和树</h1><h2 id="1-二叉树"><a href="#1-二叉树" class="headerlink" title="1.二叉树"></a>1.二叉树</h2><p>是节点的有穷集合。包含一个根节点，其余节点分属两颗不相交的二叉树，分别是根节点的左子树和右子树</p>
+<ul>
+<li>路径，数从根节点到任意一个节点都有路径，且唯一。</li>
+<li>二叉树是层次结构，树根看作做高层元素，规定跟层数为0。</li>
+<li>高度（深度）：根节点高度为0。</li>
+</ul>
+<h2 id="2-二叉树性质"><a href="#2-二叉树性质" class="headerlink" title="2.二叉树性质"></a>2.二叉树性质</h2><ol>
+<li>在非空二叉树第i层至多有 <strong>2<sup>i</sup></strong> 个节点(i&gt;=0)</li>
+<li>高度为h的二叉树至多有 <strong>2<sup>h+1</sup>-1</strong> 个节点(h&gt;=0)</li>
+<li>对于任何非空二叉树T，其他节点个数为n<sub>0</sub>，度数为二的节点个数为n<sub>2</sub>，那么n<sub>0</sub> = n<sub>2</sub> +1</li>
+</ol>
+<h2 id="3-满二叉树，扩充二叉树"><a href="#3-满二叉树，扩充二叉树" class="headerlink" title="3.满二叉树，扩充二叉树"></a>3.满二叉树，扩充二叉树</h2><ol>
+<li><p>满二叉树：二叉树中所有分支节点度数为2，满二叉树是一般二叉树的一个子集。<br>满二叉树的节点比分支节点多一个</p>
+</li>
+<li><p>扩充二叉树：对二叉树T，加入足够多的节点，使其变为满二叉树T2。T2称为T的扩充二叉树。</p>
+</li>
+</ol>
+<p>3.完全二叉树：对一个高度h的二叉树，第0到h-1层的节点都满，而最后一层不满，且节点在左边，空位在右边。<br>性质：<br>1.n个节点的完全二叉树高度<strong>h=[log<sub>2</sub>n]</strong><br>2.n个节点的完全二叉树，按照从上到下从左到右的顺序从0开始编号，对任意节点i(0&lt;=i&lt;=n-1)都有</p>
+<ul>
+<li>序号为0的是根</li>
+<li>对i&gt;0，父节点编号为(i-1)/2</li>
+<li><code>2*i+1&lt;n</code>,左子节点序号为2*i+1,否则无左子节点</li>
+<li><code>2*i+2&lt;n</code>,右子节点序号为2*i+2，否则无右子节点</li>
+</ul>
+<h2 id="3-抽象数据类型"><a href="#3-抽象数据类型" class="headerlink" title="3.抽象数据类型"></a>3.抽象数据类型</h2><pre><code>ADT BinTree:
+    BinTree(self,data,left,right)       #构造操作，创建二叉树
+    is_empty(self)                      #判断是否为空
+    num_nodes(self)                     #求二叉树节点个数
+    data(self)                          #获取二叉树根存储的数据                     
+    left(self)                          #左子树
+    right(self)                         #右子树
+    set_left(self,btree)                #用btree代替原左子树
+    set_right(self,btree)               #用btree代替原右子树
+    traversal(self)                     #遍历二叉树中个节点数据的迭代器
+    forall(self,op)                     #对二叉树的每个节点进行op操作</code></pre><h2 id="4-遍历二叉树"><a href="#4-遍历二叉树" class="headerlink" title="4.遍历二叉树"></a>4.遍历二叉树</h2><ul>
+<li><p>深度优先:顺着一条路尽可能往下走，必要时回溯</p>
+<ul>
+<li>先根序遍历(DLR顺序)</li>
+<li>中根序遍历(LDR)</li>
+<li>后根序遍历(LRD)</li>
+</ul>
+</li>
+<li><p>宽度优先：按层次逐层访问树中各节点。</p>
+</li>
+</ul>
+<h2 id="5-二叉树的list实现"><a href="#5-二叉树的list实现" class="headerlink" title="5.二叉树的list实现"></a>5.二叉树的list实现</h2><p>二叉树是递归结构</p>
+<ul>
+<li><p>空树用None表示</p>
+</li>
+<li><p>非空二叉树用包含三个元素的表[d,l,r]表示,d表示根节点元素，l和r两颗子树<br>例如：</p>
+<pre><code>[&apos;A&apos;,
+    [&apos;B&apos;,None,None],
+    [&apos;C&apos;,
+        [&apos;D&apos;,[&apos;F&apos;,None,None],
+            [&apos;G&apos;,None,None]],
+        [&apos;E&apos;,[&apos;H&apos;,None,None],
+            [&apos;I&apos;,None,None]]
+        ]
+]</code></pre></li>
+</ul>
+<p>ptython二叉树实现       </p>
+<pre><code>from graphviz import Digraph
+import uuid
+from random import sample
+
+# 二叉树类
+class BTree(object):
+    # 初始化
+    def __init__(self, data=None, left=None, right=None):
+        self.data = data    # 数据域
+        self.left = left    # 左子树
+        self.right = right  # 右子树
+        self.dot = Digraph(comment=&apos;Binary Tree&apos;)
+
+    # 前序遍历
+    def preorder(self):
+
+        if self.data is not None:
+            print(self.data, end=&apos; &apos;)
+        if self.left is not None:
+            self.left.preorder()
+        if self.right is not None:
+            self.right.preorder()
+
+    # 中序遍历
+    def inorder(self):
+
+        if self.left is not None:
+            self.left.inorder()
+        if self.data is not None:
+            print(self.data, end=&apos; &apos;)
+        if self.right is not None:
+            self.right.inorder()
+
+    # 后序遍历
+    def postorder(self):
+
+        if self.left is not None:
+            self.left.postorder()
+        if self.right is not None:
+            self.right.postorder()
+        if self.data is not None:
+            print(self.data, end=&apos; &apos;)
+
+    # 层序遍历
+    def levelorder(self):
+
+        # 返回某个节点的左孩子
+        def LChild_Of_Node(node):
+            return node.left if node.left is not None else None
+        # 返回某个节点的右孩子
+        def RChild_Of_Node(node):
+            return node.right if node.right is not None else None
+
+        # 层序遍历列表
+        level_order = []
+        # 是否添加根节点中的数据
+        if self.data is not None:
+            level_order.append([self])
+
+        # 二叉树的高度
+        height = self.height()
+        if height &gt;= 1:
+            # 对第二层及其以后的层数进行操作, 在level_order中添加节点而不是数据
+            for _ in range(2, height + 1):
+                level = []  # 该层的节点
+                for node in level_order[-1]:
+                    # 如果左孩子非空，则添加左孩子
+                    if LChild_Of_Node(node):
+                        level.append(LChild_Of_Node(node))
+                    # 如果右孩子非空，则添加右孩子
+                    if RChild_Of_Node(node):
+                        level.append(RChild_Of_Node(node))
+                # 如果该层非空，则添加该层
+                if level:
+                    level_order.append(level)
+
+            # 取出每层中的数据
+            for i in range(0, height):  # 层数
+                for index in range(len(level_order[i])):
+                    level_order[i][index] = level_order[i][index].data
+
+        return level_order
+
+    # 二叉树的高度
+    def height(self):
+        # 空的树高度为0, 只有root节点的树高度为1
+        if self.data is None:
+            return 0
+        elif self.left is None and self.right is None:
+            return 1
+        elif self.left is None and self.right is not None:
+            return 1 + self.right.height()
+        elif self.left is not None and self.right is None:
+            return 1 + self.left.height()
+        else:
+            return 1 + max(self.left.height(), self.right.height())
+
+    # 二叉树的叶子节点
+    def leaves(self):
+
+        if self.data is None:
+            return None
+        elif self.left is None and self.right is None:
+            print(self.data, end=&apos; &apos;)
+        elif self.left is None and self.right is not None:
+            self.right.leaves()
+        elif self.right is None and self.left is not None:
+            self.left.leaves()
+        else:
+            self.left.leaves()
+            self.right.leaves()
+
+    # 利用Graphviz实现二叉树的可视化
+    def print_tree(self, save_path=&apos;./Binary_Tree.gv&apos;, label=False):
+
+        # colors for labels of nodes
+        colors = [&apos;skyblue&apos;, &apos;tomato&apos;, &apos;orange&apos;, &apos;purple&apos;, &apos;green&apos;, &apos;yellow&apos;, &apos;pink&apos;, &apos;red&apos;]
+
+        # 绘制以某个节点为根节点的二叉树
+        def print_node(node, node_tag):
+            # 节点颜色
+            color = sample(colors,1)[0]
+            if node.left is not None:
+                left_tag = str(uuid.uuid1())            # 左节点的数据
+                self.dot.node(left_tag, str(node.left.data), style=&apos;filled&apos;, color=color)    # 左节点
+                label_string = &apos;L&apos; if label else &apos;&apos;    # 是否在连接线上写上标签，表明为左子树
+                self.dot.edge(node_tag, left_tag, label=label_string)   # 左节点与其父节点的连线
+                print_node(node.left, left_tag)
+
+            if node.right is not None:
+                right_tag = str(uuid.uuid1())
+                self.dot.node(right_tag, str(node.right.data), style=&apos;filled&apos;, color=color)
+                label_string = &apos;R&apos; if label else &apos;&apos;  # 是否在连接线上写上标签，表明为右子树
+                self.dot.edge(node_tag, right_tag, label=label_string)
+                print_node(node.right, right_tag)
+
+        # 如果树非空
+        if self.data is not None:
+            root_tag = str(uuid.uuid1())                # 根节点标签
+            self.dot.node(root_tag, str(self.data), style=&apos;filled&apos;, color=sample(colors,1)[0])     # 创建根节点
+            print_node(self, root_tag)
+
+        self.dot.render(save_path)                              # 保存文件为指定文件</code></pre><h2 id="6-优先队列"><a href="#6-优先队列" class="headerlink" title="6. 优先队列"></a>6. 优先队列</h2><p>优先队列存入的每项数据都有附加的数值，表示由优先程度。任何时候的访问和弹出都按照优先级最高的顺序。</p>
+<p>list实现优先队列：</p>
+<pre><code>class PrioQue:
+    def __init__(self,elist=[]):
+        self._elems = list(elist)
+        self._elems.sort(reverse=True)   #从大到小排列
+
+    def enqueue(self,e):
+        i = len(self._elems) - 1
+        while i&gt;=0:
+            if self._elems[i] &lt;=e:
+                i -= 1
+            else:
+                break
+        self._elems.insert(i+1,e)
+
+    def is_empty(self):
+        return not self._elems
+
+    def peek(self):
+        if self.is_empty():
+            raise PrioQueueError(&quot;in top)
+        return self._elems[-1]
+
+    def dequeue(self):
+        if self.is_empty():
+            raise PrioQueueError(&quot;in pop)
+        return self._elems.pop()</code></pre><h2 id="7-采用树形结构实现优先队列的一种有效技术为堆。"><a href="#7-采用树形结构实现优先队列的一种有效技术为堆。" class="headerlink" title="7.采用树形结构实现优先队列的一种有效技术为堆。"></a>7.采用树形结构实现优先队列的一种有效技术为堆。</h2><ul>
+<li>在一个堆中从树根到任何一个叶节点的路径上，节点里存的数据按照优先关系递减。</li>
+<li>堆中最优元素必定位于二叉树根节点</li>
+<li>位于数不同路径上的元素不必关系优先级</li>
+</ul>
+<p>如果是最小元素优先，称为<em>小顶堆<em>，反之称为</em>大顶堆</em></p>
+<p><strong>基于堆的优先队列类</strong></p>
+<pre><code>class PrioQueue:
+    def __init__(self,elist=[]):
+        self._elems = list(elist)
+        if elist:
+            self.buildheap()
+    def is_empty(self):
+        return not self._elems
+
+    def peek(self):
+        if self.is_empty():
+            raise PrioQueueError(&apos;in peek&apos;)
+        return self._elems[0]
+
+    #入队操作，主要由siftup完成
+    def enqueue(self,e):
+        self._elems.append(None)
+        self.siftup(e,len(self._elems)-1)
+
+    def siftup(self,e,last):
+        elems,i,j = self._elems,last,(last-1)//2
+        while i&gt;0 and e &lt; elems[j]:
+            elems[i] = elems[j]
+            i,j=j,(j-1)//2
+        elems[i] = e
+
+    def dequeue(self):
+        if self.is_empty():
+            raise PrioQueueError(&apos;in dequeue&apos;)
+        elems = self._elems
+        e0 = elems[0]
+        e = elems.pop()
+        if len(elems) &gt; 0 :
+            self.siftdown(e,0,len(elems))
+        return e0
+
+    def dequeue(self,e,begin,end):
+        elems,i,j = self._elems,begin,begin*2+1
+        while j&lt; end:
+            if j+1 &lt; end and elems[j+1] &lt; elems[j]:         
+            #elems[j]不大于其他兄弟节点的数据
+                j +=1
+            if e&lt; elems[j]:
+                break
+            elems[i] = elems[j]
+            i,j = j,2*j+1
+        elems[i] = e
+
+    def buildheap(self):
+        end = len(self._elems)
+        for i in range(end//2,-1,-1):
+            self.siftdown(self._elems[i],i,end)</code></pre><p>堆构造复杂度为O（n），插入弹出操作为O(logn)，最坏情况O(n),其他操作O(1)。</p>
+<h1 id="八、字典和集合"><a href="#八、字典和集合" class="headerlink" title="八、字典和集合"></a>八、字典和集合</h1><h1 id="九、排序算法"><a href="#九、排序算法" class="headerlink" title="九、排序算法"></a>九、排序算法</h1><h2 id="1-插入排序"><a href="#1-插入排序" class="headerlink" title="1. 插入排序"></a>1. 插入排序</h2><p>平均复杂度O(n<sup>2</sup>)  ,稳定</p>
+<pre><code>def insert_sort(lst):
+    for i in range(1,len(lst)):     #开始时片段[0:1]已排序
+        x = lst[i]
+        j = i
+        while j&gt;0 and lst[j-1].key &gt;x.key:
+            lst[j] = lst[j-1]       #反序逐个后移元素，确定插入排序
+            j -= 1
+        lst[j] = x</code></pre><h2 id="2-选择排序"><a href="#2-选择排序" class="headerlink" title="2. 选择排序"></a>2. 选择排序</h2><pre><code>def select_sort(lst):
+    for i in range(len(lst)-1):   #只需循环len(lst)-1次
+        k=i                         #k是已知最小元素位置
+        for j in range(i,len(lst)): 
+            if lst[j].key &lt; lst[k].key:
+                k=j
+            if i != k:          #lst[k]确定最小的元素，检查是否需要交换
+                lst[i],lst[k] = lst[k],lst[i]</code></pre><h2 id="3-起泡排序"><a href="#3-起泡排序" class="headerlink" title="3.起泡排序"></a>3.起泡排序</h2><pre><code>def bubble_sort(lst=[]):
+    for i in rane(len(lst):
+        found = False
+        for j in range(1,len(lst)-i):
+            if lst[j-1].key &gt; lst[j].key :
+            lst[j-1],lst[j] = lst[j],lst[j-1]
+            found = True
+        if not found:
+            break</code></pre><h2 id="快速排序"><a href="#快速排序" class="headerlink" title="快速排序"></a>快速排序</h2><pre><code>def quick_sort(lst):
+    qsort_rec(lst,0,len(lst-1))
+
+def qsort_rec(lst,1,r):
+    if 1 &gt;= r:
+        return          #分段无记录或只有一个记录
+    i=1
+    j=r
+    pivot = lst[i]      #lst[i]是初始空位
+    while i&lt;j:          #找pivot的最终位置
+        while i&lt;j and lst[j].key &gt;= pivot.key:      #用j向左扫描小于pivot的记录
+            j-=1
+        if i&lt;j:
+            lst[i] = lst[j]
+            i+=1        #小记录移到右边
+        while i&lt;j and lst[i].key &lt;= pivot.key:
+            i+=1        #用i向右扫描找大于pivot的记录
+        if i&lt;j:
+            lst[j] = lst[i]
+            j-=1        #大记录移到右边
+        lst[i] = pivot  #将pivot存入其最终位置
+        qsort_rec(lst,1,i-1)    #递归处理左半区
+        qsort_rec(lst,i+1,r)    #递归处理右半区</code></pre>
+    </div>
+
+    
+    
+    
+        
+      
+
+      <footer class="post-footer">
+          
+            
+          
+          <div class="post-tags">
+            
+              <a href="/tags/python/" rel="tag"># python</a>
+            
+              <a href="/tags/数据结构/" rel="tag"># 数据结构</a>
+            
+          </div>
+        
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+              
+                <a href="/2019/09/08/数据结构/各自排序算法总结/" rel="next" title="数据结构与算法">
+                  <i class="fa fa-chevron-left"></i> 数据结构与算法
+                </a>
+              
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+              
+                <a href="/2019/09/08/python源码剖析/asyncio/" rel="prev" title="asyncio">
+                  asyncio <i class="fa fa-chevron-right"></i>
+                </a>
+              
+            </div>
+          </div>
+        
+      </footer>
+    
+  </div>
+  
+  
+  
+  </article>
+
+  </div>
+
+
+          </div>
+          
+
+        </div>
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+        
+        
+        
+        
+      
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#数据结构"><span class="nav-number">1.</span> <span class="nav-text">数据结构</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#一、算法复杂度"><span class="nav-number">2.</span> <span class="nav-text">一、算法复杂度</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#计算规则"><span class="nav-number">2.1.</span> <span class="nav-text">计算规则</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-python的计算代价"><span class="nav-number">2.2.</span> <span class="nav-text">2.python的计算代价</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#二、抽象数据类型ADT"><span class="nav-number">3.</span> <span class="nav-text">二、抽象数据类型ADT</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#三、类"><span class="nav-number">4.</span> <span class="nav-text">三、类</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#四、线性表"><span class="nav-number">5.</span> <span class="nav-text">四、线性表</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#五、字符串"><span class="nav-number">6.</span> <span class="nav-text">五、字符串</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-python字符串相关概念："><span class="nav-number">6.1.</span> <span class="nav-text">1. python字符串相关概念：</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-字符串匹配（字串查找）"><span class="nav-number">6.2.</span> <span class="nav-text">2. 字符串匹配（字串查找）</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-正则表达式"><span class="nav-number">6.3.</span> <span class="nav-text">3. 正则表达式</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#元字符（特殊字符）"><span class="nav-number">6.4.</span> <span class="nav-text">元字符（特殊字符）:</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#正则表达式构造"><span class="nav-number">6.5.</span> <span class="nav-text">正则表达式构造</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#六、栈和队列"><span class="nav-number">7.</span> <span class="nav-text">六、栈和队列</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-栈抽象数据类型"><span class="nav-number">7.1.</span> <span class="nav-text">1.栈抽象数据类型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-栈的应用"><span class="nav-number">7.2.</span> <span class="nav-text">2.栈的应用:</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-队列"><span class="nav-number">7.3.</span> <span class="nav-text">3.队列</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#七、二叉树和树"><span class="nav-number">8.</span> <span class="nav-text">七、二叉树和树</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-二叉树"><span class="nav-number">8.1.</span> <span class="nav-text">1.二叉树</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-二叉树性质"><span class="nav-number">8.2.</span> <span class="nav-text">2.二叉树性质</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-满二叉树，扩充二叉树"><span class="nav-number">8.3.</span> <span class="nav-text">3.满二叉树，扩充二叉树</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-抽象数据类型"><span class="nav-number">8.4.</span> <span class="nav-text">3.抽象数据类型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-遍历二叉树"><span class="nav-number">8.5.</span> <span class="nav-text">4.遍历二叉树</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-二叉树的list实现"><span class="nav-number">8.6.</span> <span class="nav-text">5.二叉树的list实现</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-优先队列"><span class="nav-number">8.7.</span> <span class="nav-text">6. 优先队列</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#7-采用树形结构实现优先队列的一种有效技术为堆。"><span class="nav-number">8.8.</span> <span class="nav-text">7.采用树形结构实现优先队列的一种有效技术为堆。</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#八、字典和集合"><span class="nav-number">9.</span> <span class="nav-text">八、字典和集合</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#九、排序算法"><span class="nav-number">10.</span> <span class="nav-text">九、排序算法</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-插入排序"><span class="nav-number">10.1.</span> <span class="nav-text">1. 插入排序</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-选择排序"><span class="nav-number">10.2.</span> <span class="nav-text">2. 选择排序</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-起泡排序"><span class="nav-number">10.3.</span> <span class="nav-text">3.起泡排序</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#快速排序"><span class="nav-number">10.4.</span> <span class="nav-text">快速排序</span></a></li></ol></li></ol></div>
+        
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">zzt</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+  <nav class="site-state motion-element">
+      <div class="site-state-item site-state-posts">
+        
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">29</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-categories">
+        
+          
+            <a href="/categories/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">4</span>
+        <span class="site-state-item-name">分类</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-tags">
+        
+          
+            <a href="/tags/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-name">标签</span>
+        </a>
+      </div>
+    
+  </nav>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zzt</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.9.0</div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.4.0</div>
+
+        
+
+
+
+
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+
+
+  <script src="/lib/anime.min.js?v=3.1.0"></script>
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+<script src="/js/utils.js?v=7.4.0"></script><script src="/js/motion.js?v=7.4.0"></script>
+<script src="/js/schemes/pisces.js?v=7.4.0"></script>
+<script src="/js/next-boot.js?v=7.4.0"></script>
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+</body>
+</html>

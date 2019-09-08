@@ -55,18 +55,18 @@
   };
 </script>
 
-  <meta name="description" content="第4章 Python中的List对象634.1 PyListObject对象 ob_item：指向元素列表所在内存块的首地址。 allocated:维护了当前列表中可容纳的元素的总数。 ob_size:实际被使用了的内存的数量则记录在ob_size">
+  <meta name="description" content="第4章 Python中的List对象634.1 PyListObject对象">
 <meta name="keywords" content="源码,python">
 <meta property="og:type" content="article">
 <meta property="og:title" content="第4章 Python中的List对象">
 <meta property="og:url" content="https://ztzheng100.github.io.git/2019/09/08/python源码剖析/第4章-Python中的List对象/index.html">
 <meta property="og:site_name" content="ZZT_blog">
-<meta property="og:description" content="第4章 Python中的List对象634.1 PyListObject对象 ob_item：指向元素列表所在内存块的首地址。 allocated:维护了当前列表中可容纳的元素的总数。 ob_size:实际被使用了的内存的数量则记录在ob_size">
+<meta property="og:description" content="第4章 Python中的List对象634.1 PyListObject对象">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:updated_time" content="2019-09-08T12:09:10.271Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="第4章 Python中的List对象">
-<meta name="twitter:description" content="第4章 Python中的List对象634.1 PyListObject对象 ob_item：指向元素列表所在内存块的首地址。 allocated:维护了当前列表中可容纳的元素的总数。 ob_size:实际被使用了的内存的数量则记录在ob_size">
+<meta name="twitter:description" content="第4章 Python中的List对象634.1 PyListObject对象">
   <link rel="canonical" href="https://ztzheng100.github.io.git/2019/09/08/python源码剖析/第4章-Python中的List对象/">
 
 
@@ -290,11 +290,11 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <h1 id="第4章-Python中的List对象63"><a href="#第4章-Python中的List对象63" class="headerlink" title="第4章 Python中的List对象63"></a>第4章 Python中的List对象63</h1><h2 id="4-1-PyListObject对象"><a href="#4-1-PyListObject对象" class="headerlink" title="4.1 PyListObject对象"></a>4.1 PyListObject对象</h2><ul>
+        <h1 id="第4章-Python中的List对象63"><a href="#第4章-Python中的List对象63" class="headerlink" title="第4章 Python中的List对象63"></a>第4章 Python中的List对象63</h1><h2 id="4-1-PyListObject对象"><a href="#4-1-PyListObject对象" class="headerlink" title="4.1 PyListObject对象"></a>4.1 PyListObject对象</h2><a id="more"></a><ul>
 <li><code>ob_item</code>：指向元素列表所在内存块的首地址。</li>
 <li><code>allocated</code>:维护了当前列表中可容纳的元素的总数。</li>
 <li><code>ob_size</code>:实际被使用了的内存的数量则记录在ob_size</li>
-</ul><a id="more"></a>
+</ul>
 <blockquote>
 <p>Python中的list是一个动态数组。所以，++在每一次需要申请内存时，PyListObject就会申请一大块内存++，这时申请内存的总大小记录在allocated中，而实际被使用了的内存的数量则记录在ob_size中。</p>
 </blockquote>
@@ -408,7 +408,7 @@
         
           <a href="/archives/">
         
-          <span class="site-state-item-count">27</span>
+          <span class="site-state-item-count">29</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -429,7 +429,9 @@
         
           
         
-        <span class="site-state-item-count">3</span>
+          
+        
+        <span class="site-state-item-count">4</span>
         <span class="site-state-item-name">分类</span>
         </a>
       </div>
@@ -460,7 +462,9 @@
         
           
         
-        <span class="site-state-item-count">8</span>
+          
+        
+        <span class="site-state-item-count">9</span>
         <span class="site-state-item-name">标签</span>
         </a>
       </div>
