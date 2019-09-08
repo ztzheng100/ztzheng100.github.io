@@ -424,7 +424,7 @@
 <li>多模块之间的引用和交互</li>
 <li>一个模块是如何加载、引用另一个模块中的功能  </li>
 <li>python中一个module如何从硬盘中被加载到内存中</li>
-</ul><h2 id="14-1-IMPORT前奏曲"><a href="#14-1-IMPORT前奏曲" class="headerlink" title="14.1 IMPORT前奏曲"></a>14.1 IMPORT前奏曲</h2><h2 id="14-2-PYTHON中IMPORT机制的黑盒探测"><a href="#14-2-PYTHON中IMPORT机制的黑盒探测" class="headerlink" title="14.2 PYTHON中IMPORT机制的黑盒探测"></a>14.2 PYTHON中IMPORT机制的黑盒探测</h2><h3 id="14-2-1-标准import"><a href="#14-2-1-标准import" class="headerlink" title="14.2.1 标准import"></a>14.2.1 标准import</h3><h3 id="14-2-2-嵌套import"><a href="#14-2-2-嵌套import" class="headerlink" title="14.2.2 嵌套import"></a>14.2.2 嵌套import</h3>
+</ul>
           <!--noindex-->
           
             <div class="post-button text-center">
@@ -518,12 +518,7 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h1 id="第13章-PYTHON运行环境初始化"><a href="#第13章-PYTHON运行环境初始化" class="headerlink" title="第13章 PYTHON运行环境初始化"></a>第13章 PYTHON运行环境初始化</h1><h2 id="13-1-线程环境初始化"><a href="#13-1-线程环境初始化" class="headerlink" title="13.1 线程环境初始化"></a>13.1 线程环境初始化</h2><h3 id="13-1-1-线程模型回顾"><a href="#13-1-1-线程模型回顾" class="headerlink" title="13.1.1 线程模型回顾"></a>13.1.1 线程模型回顾</h3><h3 id="13-1-2-初始化线程环境"><a href="#13-1-2-初始化线程环境" class="headerlink" title="13.1.2 初始化线程环境"></a>13.1.2 初始化线程环境</h3><h2 id="13-2-系统MODULE初始化"><a href="#13-2-系统MODULE初始化" class="headerlink" title="13.2 系统MODULE初始化"></a>13.2 系统MODULE初始化</h2><h3 id="13-2-1-创建builtin-module"><a href="#13-2-1-创建builtin-module" class="headerlink" title="13.2.1 创建builtin module"></a>13.2.1 创建<strong>builtin</strong> module</h3><h3 id="13-2-2-创建sys-module"><a href="#13-2-2-创建sys-module" class="headerlink" title="13.2.2 创建sys module"></a>13.2.2 创建sys module</h3><h3 id="13-2-3-创建main-module"><a href="#13-2-3-创建main-module" class="headerlink" title="13.2.3 创建main module"></a>13.2.3 创建<strong>main</strong> module</h3><ul>
-<li><p><code>当Python以python abc.py运行时，Python在沿着名字空间寻找__name__时，就会最终在__main__ module中发现__name__为&quot;__main__&quot;；而如果一个py文件是以import的方式加载的，则__name__不会为&quot;__main__&quot;。</code></p>
-  <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">// pythonrun.c</span><br><span class="line">/* Create __main__ module */</span><br><span class="line">static void</span><br><span class="line">initmain(void)</span><br><span class="line">&#123;</span><br><span class="line">    PyObject *m, *d;</span><br><span class="line">    // 创建__main__ module，并设置到interp-&gt;modules中</span><br><span class="line">    m = PyImport_AddModule(&quot;__main__&quot;);</span><br><span class="line">    if (m == NULL)</span><br><span class="line">        Py_FatalError(&quot;can&apos;t create __main__ module&quot;);</span><br><span class="line">    // 获得__main__ module中的dict</span><br><span class="line">    d = PyModule_GetDict(m);</span><br><span class="line">    if (PyDict_GetItemString(d, &quot;__builtins__&quot;) == NULL) &#123;</span><br><span class="line">        // 获得interp-&gt;modules中的__builtin__ module </span><br><span class="line">        PyObject *bimod = PyImport_ImportModule(&quot;__builtin__&quot;);</span><br><span class="line">        if (bimod == NULL ||</span><br><span class="line">            // 将（“__builtins__”, __builtin__ module）插入到__main__ module中</span><br><span class="line">            PyDict_SetItemString(d, &quot;__builtins__&quot;, bimod) != 0)</span><br><span class="line">            Py_FatalError(&quot;can&apos;t add __builtins__ to __main__&quot;);</span><br><span class="line">        Py_DECREF(bimod);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-</li>
-</ul>
+          <h1 id="第13章-PYTHON运行环境初始化"><a href="#第13章-PYTHON运行环境初始化" class="headerlink" title="第13章 PYTHON运行环境初始化"></a>第13章 PYTHON运行环境初始化</h1><h2 id="13-1-线程环境初始化"><a href="#13-1-线程环境初始化" class="headerlink" title="13.1 线程环境初始化"></a>13.1 线程环境初始化</h2><h3 id="13-1-1-线程模型回顾"><a href="#13-1-1-线程模型回顾" class="headerlink" title="13.1.1 线程模型回顾"></a>13.1.1 线程模型回顾</h3><h3 id="13-1-2-初始化线程环境"><a href="#13-1-2-初始化线程环境" class="headerlink" title="13.1.2 初始化线程环境"></a>13.1.2 初始化线程环境</h3>
           <!--noindex-->
           
             <div class="post-button text-center">
@@ -617,7 +612,7 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>[toc]</p><h1 id="10-4-Python虚拟机中的异常控制流"><a href="#10-4-Python虚拟机中的异常控制流" class="headerlink" title="10.4 Python虚拟机中的异常控制流"></a>10.4 Python虚拟机中的异常控制流</h1><h2 id="10-4-1-Python中的异常机制"><a href="#10-4-1-Python中的异常机制" class="headerlink" title="10.4.1 Python中的异常机制"></a>10.4.1 Python中的异常机制</h2><h3 id="10-4-1-1-Python自身抛出异常"><a href="#10-4-1-1-Python自身抛出异常" class="headerlink" title="10.4.1.1 Python自身抛出异常"></a>10.4.1.1 Python自身抛出异常</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"># cat demo5.py</span><br><span class="line">1 / 0</span><br><span class="line"> </span><br><span class="line"># python2.5</span><br><span class="line">……</span><br><span class="line">&gt;&gt;&gt; source = open(&quot;demo5.py&quot;).read()</span><br><span class="line">&gt;&gt;&gt; co = compile(source, &quot;demo5.py&quot;, &quot;exec&quot;)</span><br><span class="line">&gt;&gt;&gt; import dis</span><br><span class="line">&gt;&gt;&gt; dis.dis(co)</span><br><span class="line">  1           0 LOAD_CONST               0 (1)</span><br><span class="line">              3 LOAD_CONST               1 (0)</span><br><span class="line">              6 BINARY_DIVIDE      </span><br><span class="line">              7 POP_TOP            </span><br><span class="line">              8 LOAD_CONST               2 (None)</span><br><span class="line">             11 RETURN_VALUE</span><br></pre></td></tr></table></figure>
+          <p>[toc]</p><h1 id="10-4-Python虚拟机中的异常控制流"><a href="#10-4-Python虚拟机中的异常控制流" class="headerlink" title="10.4 Python虚拟机中的异常控制流"></a>10.4 Python虚拟机中的异常控制流</h1><h2 id="10-4-1-Python中的异常机制"><a href="#10-4-1-Python中的异常机制" class="headerlink" title="10.4.1 Python中的异常机制"></a>10.4.1 Python中的异常机制</h2><h3 id="10-4-1-1-Python自身抛出异常"><a href="#10-4-1-1-Python自身抛出异常" class="headerlink" title="10.4.1.1 Python自身抛出异常"></a>10.4.1.1 Python自身抛出异常</h3>
           <!--noindex-->
           
             <div class="post-button text-center">
@@ -713,20 +708,7 @@
       
           <p>[toc]</p><h1 id="第12章-PYTHON虚拟机中的类机制"><a href="#第12章-PYTHON虚拟机中的类机制" class="headerlink" title="第12章 PYTHON虚拟机中的类机制."></a>第12章 PYTHON虚拟机中的类机制.</h1><ul>
 <li>经典类和新式类</li>
-</ul><h2 id="12-1-PYTHON中的对象模型"><a href="#12-1-PYTHON中的对象模型" class="headerlink" title="12.1 PYTHON中的对象模型"></a>12.1 PYTHON中的对象模型</h2><ul>
-<li><p>区别</p>
-<ul>
-<li>比如说，程序员定义了class A，又定义了class B，B可以继承于A，这是理所当然的。但是，Python的内置类却不能被继承。程序员不能创建一个类继承于int或者dict</li>
-</ul>
-</li>
-<li><p>Python2.2之前，Python中实际上存在三类对象：</p>
-<ul>
-<li>type对象：表示Python内置类型</li>
-<li>class对象：表示Python程序员自定义的类型</li>
-<li>instance对象（实例对象）：表示由class对象经实例化所创建的实例</li>
-</ul>
-</li>
-</ul>
+</ul><h2 id="12-1-PYTHON中的对象模型"><a href="#12-1-PYTHON中的对象模型" class="headerlink" title="12.1 PYTHON中的对象模型"></a>12.1 PYTHON中的对象模型</h2>
           <!--noindex-->
           
             <div class="post-button text-center">
@@ -822,9 +804,7 @@
       
           <h1 id="第11章-Python虚拟机中的函数机制"><a href="#第11章-Python虚拟机中的函数机制" class="headerlink" title="第11章 Python虚拟机中的函数机制"></a>第11章 Python虚拟机中的函数机制</h1><ul>
 <li>keyword</li>
-</ul><h2 id="11-1-PyFunctionObject对象"><a href="#11-1-PyFunctionObject对象" class="headerlink" title="11.1 PyFunctionObject对象"></a>11.1 PyFunctionObject对象</h2><ul>
-<li>函数这种抽象机制，是通过一个Python对象——PyFunctionObject来实现的</li>
-</ul><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">typedef struct &#123;</span><br><span class="line">    PyObject_HEAD</span><br><span class="line">    PyObject *func_code;    //编译后的PyCodeObject对象</span><br><span class="line">    PyObject *func_globals; //函数运行时的global名字空间</span><br><span class="line">    PyObject *func_defaults;    //默认参数（tupple或NULL）</span><br><span class="line">    PyObject *func_closure; //NULL or a tuple of cell objects，用于实现closure(闭包)</span><br><span class="line">    PyObject *func_doc;     //函数的文档（PyStringObject）</span><br><span class="line">    PyObject *func_name;    //函数名称，函数的__name__属性，（PyStringObject）</span><br><span class="line">    PyObject *func_dict;    //函数的__dict__属性（PyDictObject或NULL）</span><br><span class="line">    PyObject *func_weakreflist;</span><br><span class="line">    PyObject *func_module;  //函数的__module__，可以是任何对象</span><br><span class="line">&#125; PyFunctionObject;</span><br></pre></td></tr></table></figure>
+</ul><h2 id="11-1-PyFunctionObject对象"><a href="#11-1-PyFunctionObject对象" class="headerlink" title="11.1 PyFunctionObject对象"></a>11.1 PyFunctionObject对象</h2>
           <!--noindex-->
           
             <div class="post-button text-center">
@@ -1027,7 +1007,7 @@
       
           <p>[toc]</p><h1 id="第10章-Python虚拟机中的控制流"><a href="#第10章-Python虚拟机中的控制流" class="headerlink" title="第10章 Python虚拟机中的控制流"></a>第10章 Python虚拟机中的控制流</h1><ul>
 <li>keyword<br>  <em>控制流程 异常机制</em></li>
-</ul><h2 id="10-1-Python虚拟机中的if控制流"><a href="#10-1-Python虚拟机中的if控制流" class="headerlink" title="10.1 Python虚拟机中的if控制流"></a>10.1 Python虚拟机中的if控制流</h2><h3 id="10-1-1-研究对象–if-control-py"><a href="#10-1-1-研究对象–if-control-py" class="headerlink" title="10.1.1 研究对象–if_control.py"></a>10.1.1 研究对象–if_control.py</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">a = 1</span><br><span class="line">if a &gt; 10:</span><br><span class="line">    print(&quot;a&gt;10&quot;)</span><br><span class="line">elif a &lt;= -2:</span><br><span class="line">    print(&quot;a&lt;=-2&quot;)</span><br><span class="line">elif a != 1:</span><br><span class="line">    print(&quot;a!=1&quot;)</span><br><span class="line">elif a == 1:</span><br><span class="line">    print(&quot;a==1&quot;)</span><br><span class="line">else:</span><br><span class="line">    print(&quot;Unknown a&quot;)</span><br></pre></td></tr></table></figure>
+</ul><h2 id="10-1-Python虚拟机中的if控制流"><a href="#10-1-Python虚拟机中的if控制流" class="headerlink" title="10.1 Python虚拟机中的if控制流"></a>10.1 Python虚拟机中的if控制流</h2>
           <!--noindex-->
           
             <div class="post-button text-center">
@@ -1123,11 +1103,6 @@
       
           <p>[toc]</p><h1 id="第9章-Python虚拟机中的一般表达式"><a href="#第9章-Python虚拟机中的一般表达式" class="headerlink" title="第9章 Python虚拟机中的一般表达式"></a>第9章 Python虚拟机中的一般表达式</h1><ul>
 <li>keyword<br>  <em>对象创建 打印 if where</em></li>
-</ul><h2 id="9-1-简单内建对象的创建"><a href="#9-1-简单内建对象的创建" class="headerlink" title="9.1 简单内建对象的创建"></a>9.1 简单内建对象的创建</h2><ul>
-<li>字节码指令将如何影响当前活动的PyFrameObject对象中的运行时栈和local名字空间（f-&gt;f_locals）<ul>
-<li>++stack_pointer 指向一个内存，（0x0000也指向一个0x0000与0x0001之间的内存）++</li>
-</ul>
-</li>
 </ul>
           <!--noindex-->
           
@@ -1224,11 +1199,7 @@
       
           <h1 id="第7章-Python的编译结果——Code对象与pyc文件"><a href="#第7章-Python的编译结果——Code对象与pyc文件" class="headerlink" title="第7章 Python的编译结果——Code对象与pyc文件"></a>第7章 Python的编译结果——Code对象与pyc文件</h1><ul>
 <li>keyword<br>  <em>虚拟机、字节码</em></li>
-</ul><h2 id="7-1-Python程序的执行过程"><a href="#7-1-Python程序的执行过程" class="headerlink" title="7.1 Python程序的执行过程"></a>7.1 Python程序的执行过程</h2><ul>
-<li>一组python 的 byte code（字节码），然后将编译的结果交给python 的虚拟机，由虚拟机按照顺序一条一条的执行字节码。</li>
-<li>编译过程不仅生成字节码，还要包含常量、变量、占用栈的空间等，Pyton中编译过程生成code对象PyCodeObject。将PyCodeObject写入二进制文件，即.pyc。</li>
-<li>编译过程与虚拟机执行过程均在python25.dll中。<br><img src="https://img-blog.csdn.net/20130705202522734" alt="Python程序执行过程"></li>
-</ul>
+</ul><h2 id="7-1-Python程序的执行过程"><a href="#7-1-Python程序的执行过程" class="headerlink" title="7.1 Python程序的执行过程"></a>7.1 Python程序的执行过程</h2>
           <!--noindex-->
           
             <div class="post-button text-center">

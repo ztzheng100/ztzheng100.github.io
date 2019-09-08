@@ -285,13 +285,7 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h1 id="第6章-最简单的Python模拟——Small-Python"><a href="#第6章-最简单的Python模拟——Small-Python" class="headerlink" title="第6章 最简单的Python模拟——Small Python"></a>第6章 最简单的Python模拟——Small Python</h1><h2 id="6-1-Small-Python"><a href="#6-1-Small-Python" class="headerlink" title="6.1 Small Python"></a>6.1 Small Python</h2><h2 id="6-2-对象机制"><a href="#6-2-对象机制" class="headerlink" title="6.2 对象机制"></a>6.2 对象机制</h2><ul>
-<li>将所有对象的变量名和值通过m_LocalEnvironment字典数组来映射</li>
-</ul><h2 id="6-3-解释过程"><a href="#6-3-解释过程" class="headerlink" title="6.3 解释过程"></a>6.3 解释过程</h2><ul>
-<li>通过判断语句，实现赋值，加法和打印的操作</li>
-</ul><h2 id="6-4-交互式环境"><a href="#6-4-交互式环境" class="headerlink" title="6.4 交互式环境"></a>6.4 交互式环境</h2><ul>
-<li>在main()函数总循环获取命令行</li>
-</ul>
+          <h1 id="第6章-最简单的Python模拟——Small-Python"><a href="#第6章-最简单的Python模拟——Small-Python" class="headerlink" title="第6章 最简单的Python模拟——Small Python"></a>第6章 最简单的Python模拟——Small Python</h1><h2 id="6-1-Small-Python"><a href="#6-1-Small-Python" class="headerlink" title="6.1 Small Python"></a>6.1 Small Python</h2><h2 id="6-2-对象机制"><a href="#6-2-对象机制" class="headerlink" title="6.2 对象机制"></a>6.2 对象机制</h2>
           <!--noindex-->
           
             <div class="post-button text-center">
@@ -385,14 +379,7 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <p>[toc]</p><h1 id="第5章-Python中的Dict对象"><a href="#第5章-Python中的Dict对象" class="headerlink" title="第5章 Python中的Dict对象"></a>第5章 Python中的Dict对象</h1><h2 id="5-1-散列表概述"><a href="#5-1-散列表概述" class="headerlink" title="5.1 散列表概述"></a>5.1 散列表概述</h2><h2 id="5-2-PyDictObject"><a href="#5-2-PyDictObject" class="headerlink" title="5.2 PyDictObject"></a>5.2 PyDictObject</h2><h3 id="5-2-1-关联容器的entry"><a href="#5-2-1-关联容器的entry" class="headerlink" title="5.2.1 关联容器的entry"></a>5.2.1 关联容器的entry</h3><ul>
-<li>PyDictEntry 用于存储键值对信息<ul>
-<li><code>Py_ssize_t me_hash</code>：存储了me_key计算得到的hash值, 不重复计算</li>
-<li><code>PyObject *me_key;</code>:键值，PyObject对象</li>
-<li><code>PyObject *me_value;</code>:内容</li>
-</ul>
-</li>
-</ul>
+          <p>[toc]</p><h1 id="第5章-Python中的Dict对象"><a href="#第5章-Python中的Dict对象" class="headerlink" title="第5章 Python中的Dict对象"></a>第5章 Python中的Dict对象</h1><h2 id="5-1-散列表概述"><a href="#5-1-散列表概述" class="headerlink" title="5.1 散列表概述"></a>5.1 散列表概述</h2><h2 id="5-2-PyDictObject"><a href="#5-2-PyDictObject" class="headerlink" title="5.2 PyDictObject"></a>5.2 PyDictObject</h2><h3 id="5-2-1-关联容器的entry"><a href="#5-2-1-关联容器的entry" class="headerlink" title="5.2.1 关联容器的entry"></a>5.2.1 关联容器的entry</h3>
           <!--noindex-->
           
             <div class="post-button text-center">
@@ -490,22 +477,6 @@
 <li>keyword<br>  *字符串对象 *</li>
 <li>可变对象和不可变对象  （list和string，tuple）（定义之后不能修改）</li>
 <li>定长对象和变长对象（int 和 list）（定义的时候）</li>
-</ul><h2 id="3-1-PyStringObject与PyString-Type"><a href="#3-1-PyStringObject与PyString-Type" class="headerlink" title="3.1 PyStringObject与PyString_Type"></a>3.1 PyStringObject与PyString_Type</h2><ul>
-<li><p>PyStringObject对象</p>
-<ul>
-<li><code>ob_size</code>变量：保存着对象中维护的可变长度内存的大小</li>
-<li><code>ob_sval</code>是一个字符的字符数组，但是<code>ob_sval</code>实际上是作为一个字符指针指向一段内存的,(<code>char ob_sval[1]</code>只是存储开始第一个字符的位置，长度由<code>ob_size</code>记录)</li>
-<li><code>ob_shash</code>变量之作用是缓存该对象的hash值，这样可以避免每一次都重新计算该字符串对象的hash值。<code>ob_shash</code>的初始值是―1。 </li>
-<li><code>ob_sstate</code>变量标记了该对象是否已经过intern机制的处理<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">typedef struct &#123;</span><br><span class="line">    PyObject_VAR_HEAD</span><br><span class="line">    long ob_shash;</span><br><span class="line">    int ob_sstate;</span><br><span class="line">    char ob_sval[1];</span><br><span class="line"></span><br><span class="line">    /* Invariants:</span><br><span class="line">     *     ob_sval contains space for &apos;ob_size+1&apos; elements.</span><br><span class="line">     *     ob_sval[ob_size] == 0.</span><br><span class="line">     *     ob_shash is the hash of the string or -1 if not computed yet.</span><br><span class="line">     *     ob_sstate != 0 iff the string object is in stringobject.c&apos;s</span><br><span class="line">     *       &apos;interned&apos; dictionary; in this case the two references</span><br><span class="line">     *       from &apos;interned&apos; to this object are *not counted* in ob_refcnt.</span><br><span class="line">     */</span><br><span class="line">&#125; PyStringObject;</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-</li>
-<li><p>类型对象PyString_Type</p>
-<ul>
-<li><code>tp_itemsize</code>：指明了由变长对象保存的元素（item）的单位长度，所谓单位长度即是指一个元素在内存中的长度。这个<code>tp_itemsize</code>和<code>ob_size</code>共同决定了应该额外申请的内存之总大小是多少。 </li>
-<li><code>tp_as_number、tp_as_sequence、tp_as_mapping</code>，三个域都被设置了。这表示PyStringObject对数值操作、序列操作和映射操作都支持。</li>
-</ul>
-</li>
 </ul>
           <!--noindex-->
           
@@ -604,9 +575,7 @@
 <li><code>ob_item</code>：指向元素列表所在内存块的首地址。</li>
 <li><code>allocated</code>:维护了当前列表中可容纳的元素的总数。</li>
 <li><code>ob_size</code>:实际被使用了的内存的数量则记录在ob_size</li>
-</ul><blockquote>
-<p>Python中的list是一个动态数组。所以，++在每一次需要申请内存时，PyListObject就会申请一大块内存++，这时申请内存的总大小记录在allocated中，而实际被使用了的内存的数量则记录在ob_size中。</p>
-</blockquote>
+</ul>
           <!--noindex-->
           
             <div class="post-button text-center">
@@ -706,7 +675,7 @@
 <li>对于python中的对象，与对象相关的元信息实际上都是保存在与对象对应的类型对象中的，对于PyIntObject，这个类型的对象是PyInt_Type</li>
 </ul>
 </li>
-</ul><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[intobject.h]</span><br><span class="line">typedef struct &#123;</span><br><span class="line">    PyObject_HEAD</span><br><span class="line">    long ob_ival;</span><br><span class="line">&#125; PyIntObject;</span><br></pre></td></tr></table></figure>
+</ul>
           <!--noindex-->
           
             <div class="post-button text-center">
@@ -874,14 +843,6 @@
       
           <p>[toc]</p><h1 id="第1部分-Python内建对象13"><a href="#第1部分-Python内建对象13" class="headerlink" title="第1部分 Python内建对象13"></a>第1部分 Python内建对象13</h1><ul>
 <li>keyword<br>  ++对象在c层面的实现方式  类型对象的作用  类型对象和实例的关系++</li>
-</ul><h1 id="第1章-Python对象初探"><a href="#第1章-Python对象初探" class="headerlink" title="第1章 Python对象初探"></a>第1章 Python对象初探</h1><h2 id="1-1-Python内的对象"><a href="#1-1-Python内的对象" class="headerlink" title="1.1 Python内的对象"></a>1.1 Python内的对象</h2><ul>
-<li>python中所有对象共有信息的定义  </li>
-<li>对象：是数据以及基于这些数据的操作的集合</li>
-<li>python所有内建的类型对象都是被静态初始化的。而c结构体是在堆申请一块内存<blockquote>
-<p><a href="https://www.cnblogs.com/yechanglv/p/6941993.html" target="_blank" rel="noopener">https://www.cnblogs.com/yechanglv/p/6941993.html</a></p>
-</blockquote>
-</li>
-<li>python中，对象A一旦被创建，它在内存中的大小就不变了。一旦对象是可变长度的数据的对象，就在对象内维护一个指向可变大小的内存区域</li>
 </ul>
           <!--noindex-->
           

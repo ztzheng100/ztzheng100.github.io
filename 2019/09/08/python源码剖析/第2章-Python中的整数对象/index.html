@@ -55,13 +55,13 @@
   };
 </script>
 
-  <meta name="description" content="[TOC]第2章 Python中的整数对象292.1 初识PyIntObject对象 整数对象池 PyIntObject 对于python中的对象，与对象相关的元信息实际上都是保存在与对象对应的类型对象中的，对于PyIntObject，这个类型的对象是PyInt_Type   12345[intobject.h]typedef struct &amp;#123;    PyObject_HEAD    l">
+  <meta name="description" content="[TOC]第2章 Python中的整数对象292.1 初识PyIntObject对象 整数对象池 PyIntObject 对于python中的对象，与对象相关的元信息实际上都是保存在与对象对应的类型对象中的，对于PyIntObject，这个类型的对象是PyInt_Type">
 <meta name="keywords" content="源码,python">
 <meta property="og:type" content="article">
 <meta property="og:title" content="第2章 Python中的整数对象">
 <meta property="og:url" content="https://ztzheng100.github.io.git/2019/09/08/python源码剖析/第2章-Python中的整数对象/index.html">
 <meta property="og:site_name" content="ZZT_blog">
-<meta property="og:description" content="[TOC]第2章 Python中的整数对象292.1 初识PyIntObject对象 整数对象池 PyIntObject 对于python中的对象，与对象相关的元信息实际上都是保存在与对象对应的类型对象中的，对于PyIntObject，这个类型的对象是PyInt_Type   12345[intobject.h]typedef struct &amp;#123;    PyObject_HEAD    l">
+<meta property="og:description" content="[TOC]第2章 Python中的整数对象292.1 初识PyIntObject对象 整数对象池 PyIntObject 对于python中的对象，与对象相关的元信息实际上都是保存在与对象对应的类型对象中的，对于PyIntObject，这个类型的对象是PyInt_Type">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="https://timgsa.baidu.com/timg?image&quality=80&size=b10000_10000&sec=1492690821&di=7ec6a3c056f38924422809aae9db3cdc&imgtype=jpg&src=http://h.hiphotos.baidu.com/image/pic/item/dbb44aed2e738bd46cfcaf01ab8b87d6277ff925.jpg">
 <meta property="og:image" content="http://jbcdn2.b0.upaiyun.com/2015/11/3d370e34e2b546575d29f1d27ff3e0ec.png">
@@ -69,7 +69,7 @@
 <meta property="og:updated_time" content="2019-09-08T12:04:47.810Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="第2章 Python中的整数对象">
-<meta name="twitter:description" content="[TOC]第2章 Python中的整数对象292.1 初识PyIntObject对象 整数对象池 PyIntObject 对于python中的对象，与对象相关的元信息实际上都是保存在与对象对应的类型对象中的，对于PyIntObject，这个类型的对象是PyInt_Type   12345[intobject.h]typedef struct &amp;#123;    PyObject_HEAD    l">
+<meta name="twitter:description" content="[TOC]第2章 Python中的整数对象292.1 初识PyIntObject对象 整数对象池 PyIntObject 对于python中的对象，与对象相关的元信息实际上都是保存在与对象对应的类型对象中的，对于PyIntObject，这个类型的对象是PyInt_Type">
 <meta name="twitter:image" content="https://timgsa.baidu.com/timg?image&quality=80&size=b10000_10000&sec=1492690821&di=7ec6a3c056f38924422809aae9db3cdc&imgtype=jpg&src=http://h.hiphotos.baidu.com/image/pic/item/dbb44aed2e738bd46cfcaf01ab8b87d6277ff925.jpg">
   <link rel="canonical" href="https://ztzheng100.github.io.git/2019/09/08/python源码剖析/第2章-Python中的整数对象/">
 
@@ -300,9 +300,9 @@
 <li>对于python中的对象，与对象相关的元信息实际上都是保存在与对象对应的类型对象中的，对于PyIntObject，这个类型的对象是PyInt_Type</li>
 </ul>
 </li>
-</ul><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[intobject.h]</span><br><span class="line">typedef struct &#123;</span><br><span class="line">    PyObject_HEAD</span><br><span class="line">    long ob_ival;</span><br><span class="line">&#125; PyIntObject;</span><br></pre></td></tr></table></figure><a id="more"></a>
+</ul><a id="more"></a>
 
-
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[intobject.h]</span><br><span class="line">typedef struct &#123;</span><br><span class="line">    PyObject_HEAD</span><br><span class="line">    long ob_ival;</span><br><span class="line">&#125; PyIntObject;</span><br></pre></td></tr></table></figure>
 
 <ul>
 <li><p>PyInt_Type</p>

@@ -55,13 +55,13 @@
   };
 </script>
 
-  <meta name="description" content="《图解HTTP》读书笔记第一章HTTP（HyperText Transfer Protocol，超文转移协议，超文本传输协议的译法并不严谨。）网络基础 TCP/IPTCP/IP 协议族TCP/IP 协议族是互联网相关联的协议的集合。从电缆的规格到IP地址的选定方法、寻找异地用户的方法、双方建立通信的顺序，以及Web页面显示需要处理的步骤，等等。而HTTP是属于它内部的一个子集。">
+  <meta name="description" content="《图解HTTP》读书笔记第一章HTTP（HyperText Transfer Protocol，超文转移协议，超文本传输协议的译法并不严谨。）">
 <meta name="keywords" content="http">
 <meta property="og:type" content="article">
 <meta property="og:title" content="《图解HTTP》读书笔记">
 <meta property="og:url" content="https://ztzheng100.github.io.git/2019/09/08/http协议/《图解HTTP》读书笔记/index.html">
 <meta property="og:site_name" content="ZZT_blog">
-<meta property="og:description" content="《图解HTTP》读书笔记第一章HTTP（HyperText Transfer Protocol，超文转移协议，超文本传输协议的译法并不严谨。）网络基础 TCP/IPTCP/IP 协议族TCP/IP 协议族是互联网相关联的协议的集合。从电缆的规格到IP地址的选定方法、寻找异地用户的方法、双方建立通信的顺序，以及Web页面显示需要处理的步骤，等等。而HTTP是属于它内部的一个子集。">
+<meta property="og:description" content="《图解HTTP》读书笔记第一章HTTP（HyperText Transfer Protocol，超文转移协议，超文本传输协议的译法并不严谨。）">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="https://blog-1251477229.cos.ap-chengdu.myqcloud.com/others/graphical-http-9.jpg">
 <meta property="og:image" content="https://blog-1251477229.cos.ap-chengdu.myqcloud.com/others/graphical-http-10.jpg">
@@ -81,7 +81,7 @@
 <meta property="og:updated_time" content="2019-09-08T13:55:11.493Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="《图解HTTP》读书笔记">
-<meta name="twitter:description" content="《图解HTTP》读书笔记第一章HTTP（HyperText Transfer Protocol，超文转移协议，超文本传输协议的译法并不严谨。）网络基础 TCP/IPTCP/IP 协议族TCP/IP 协议族是互联网相关联的协议的集合。从电缆的规格到IP地址的选定方法、寻找异地用户的方法、双方建立通信的顺序，以及Web页面显示需要处理的步骤，等等。而HTTP是属于它内部的一个子集。">
+<meta name="twitter:description" content="《图解HTTP》读书笔记第一章HTTP（HyperText Transfer Protocol，超文转移协议，超文本传输协议的译法并不严谨。）">
 <meta name="twitter:image" content="https://blog-1251477229.cos.ap-chengdu.myqcloud.com/others/graphical-http-9.jpg">
   <link rel="canonical" href="https://ztzheng100.github.io.git/2019/09/08/http协议/《图解HTTP》读书笔记/">
 
@@ -306,8 +306,8 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <h1 id="《图解HTTP》读书笔记"><a href="#《图解HTTP》读书笔记" class="headerlink" title="《图解HTTP》读书笔记"></a>《图解HTTP》读书笔记</h1><h2 id="第一章"><a href="#第一章" class="headerlink" title="第一章"></a>第一章</h2><p>HTTP（HyperText Transfer Protocol，超文转移协议，超文本传输协议的译法并不严谨。）</p><h3 id="网络基础-TCP-IP"><a href="#网络基础-TCP-IP" class="headerlink" title="网络基础 TCP/IP"></a>网络基础 TCP/IP</h3><h4 id="TCP-IP-协议族"><a href="#TCP-IP-协议族" class="headerlink" title="TCP/IP 协议族"></a>TCP/IP 协议族</h4><p>TCP/IP 协议族是互联网相关联的协议的集合。从电缆的规格到IP地址的选定方法、寻找异地用户的方法、双方建立通信的顺序，以及Web页面显示需要处理的步骤，等等。而HTTP是属于它内部的一个子集。</p><a id="more"></a>
-
+        <h1 id="《图解HTTP》读书笔记"><a href="#《图解HTTP》读书笔记" class="headerlink" title="《图解HTTP》读书笔记"></a>《图解HTTP》读书笔记</h1><h2 id="第一章"><a href="#第一章" class="headerlink" title="第一章"></a>第一章</h2><p>HTTP（HyperText Transfer Protocol，超文转移协议，超文本传输协议的译法并不严谨。）</p><a id="more"></a>
+<h3 id="网络基础-TCP-IP"><a href="#网络基础-TCP-IP" class="headerlink" title="网络基础 TCP/IP"></a>网络基础 TCP/IP</h3><h4 id="TCP-IP-协议族"><a href="#TCP-IP-协议族" class="headerlink" title="TCP/IP 协议族"></a>TCP/IP 协议族</h4><p>TCP/IP 协议族是互联网相关联的协议的集合。从电缆的规格到IP地址的选定方法、寻找异地用户的方法、双方建立通信的顺序，以及Web页面显示需要处理的步骤，等等。而HTTP是属于它内部的一个子集。</p>
 <h4 id="TCP-IP-的分层管理"><a href="#TCP-IP-的分层管理" class="headerlink" title="TCP/IP 的分层管理"></a>TCP/IP 的分层管理</h4><p>TCP/IP 协议族按层次分别分为以下 4 层：应用层、传输层、网络层和数据链路层。<br>分层的好处：把各层之间的接口部分规划好之后，每个层次内部的设计就能够自由改动了。而且，层次化之后，设计也变得相对简单。处于应用层上的应用可以只考虑分派给自己的任务，而无需弄清对方在地球上哪个地方、对方的传输路线、是否能确保传输送达等问题。</p>
 <ul>
 <li>应用层：决定了向用户提供应用服务时通信的活动。<br>TCP/IP 协议族预存了各类通用的应用服务。如 FTP（File Transfer Protocol）、DNS（Domain Name System）和 HTTP。</li>

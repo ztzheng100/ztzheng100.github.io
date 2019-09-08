@@ -55,20 +55,20 @@
   };
 </script>
 
-  <meta name="description" content="[toc]第9章 Python虚拟机中的一般表达式 keyword  对象创建 打印 if where 9.1 简单内建对象的创建 字节码指令将如何影响当前活动的PyFrameObject对象中的运行时栈和local名字空间（f-&amp;gt;f_locals） ++stack_pointer 指向一个内存，（0x0000也指向一个0x0000与0x0001之间的内存）++">
+  <meta name="description" content="[toc]第9章 Python虚拟机中的一般表达式 keyword  对象创建 打印 if where">
 <meta name="keywords" content="源码,python">
 <meta property="og:type" content="article">
 <meta property="og:title" content=" 第9章 Python虚拟机中的一般表达式">
 <meta property="og:url" content="https://ztzheng100.github.io.git/2019/09/08/python源码剖析/第9章-Python虚拟机中的一般表达式/index.html">
 <meta property="og:site_name" content="ZZT_blog">
-<meta property="og:description" content="[toc]第9章 Python虚拟机中的一般表达式 keyword  对象创建 打印 if where 9.1 简单内建对象的创建 字节码指令将如何影响当前活动的PyFrameObject对象中的运行时栈和local名字空间（f-&amp;gt;f_locals） ++stack_pointer 指向一个内存，（0x0000也指向一个0x0000与0x0001之间的内存）++">
+<meta property="og:description" content="[toc]第9章 Python虚拟机中的一般表达式 keyword  对象创建 打印 if where">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:image" content="https://images2018.cnblogs.com/blog/1334023/201808/1334023-20180812093927825-1361167313.png">
 <meta property="og:image" content="https://images2018.cnblogs.com/blog/1334023/201808/1334023-20180812121836471-1283648269.png">
 <meta property="og:updated_time" content="2019-09-08T12:13:42.949Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content=" 第9章 Python虚拟机中的一般表达式">
-<meta name="twitter:description" content="[toc]第9章 Python虚拟机中的一般表达式 keyword  对象创建 打印 if where 9.1 简单内建对象的创建 字节码指令将如何影响当前活动的PyFrameObject对象中的运行时栈和local名字空间（f-&amp;gt;f_locals） ++stack_pointer 指向一个内存，（0x0000也指向一个0x0000与0x0001之间的内存）++">
+<meta name="twitter:description" content="[toc]第9章 Python虚拟机中的一般表达式 keyword  对象创建 打印 if where">
 <meta name="twitter:image" content="https://images2018.cnblogs.com/blog/1334023/201808/1334023-20180812093927825-1361167313.png">
   <link rel="canonical" href="https://ztzheng100.github.io.git/2019/09/08/python源码剖析/第9章-Python虚拟机中的一般表达式/">
 
@@ -295,14 +295,14 @@
       
         <p>[toc]</p><h1 id="第9章-Python虚拟机中的一般表达式"><a href="#第9章-Python虚拟机中的一般表达式" class="headerlink" title="第9章 Python虚拟机中的一般表达式"></a>第9章 Python虚拟机中的一般表达式</h1><ul>
 <li>keyword<br>  <em>对象创建 打印 if where</em></li>
-</ul><h2 id="9-1-简单内建对象的创建"><a href="#9-1-简单内建对象的创建" class="headerlink" title="9.1 简单内建对象的创建"></a>9.1 简单内建对象的创建</h2><ul>
+</ul><a id="more"></a>
+
+<h2 id="9-1-简单内建对象的创建"><a href="#9-1-简单内建对象的创建" class="headerlink" title="9.1 简单内建对象的创建"></a>9.1 简单内建对象的创建</h2><ul>
 <li>字节码指令将如何影响当前活动的PyFrameObject对象中的运行时栈和local名字空间（f-&gt;f_locals）<ul>
 <li>++stack_pointer 指向一个内存，（0x0000也指向一个0x0000与0x0001之间的内存）++</li>
 </ul>
 </li>
-</ul><a id="more"></a>
-
-
+</ul>
 <p><img src="https://images2018.cnblogs.com/blog/1334023/201808/1334023-20180812093927825-1361167313.png" alt="运行时栈和local名字空间"></p>
 <blockquote>
 <p>左边的stack_pointer是运行时栈的栈顶指针，字节码指令对符号和常量的操作最终都将反应到运行时栈和local名字空间（f-&gt;f_locals）  </p>

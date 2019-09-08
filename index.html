@@ -581,26 +581,7 @@
       
           <h1 id="可变参数处理"><a href="#可变参数处理" class="headerlink" title="可变参数处理"></a>可变参数处理</h1><p><code>#include&lt;stdarg.h&gt;</code></p><blockquote>
 <p>va在这里是variable-argument(可变参数)的意思</p>
-</blockquote><h2 id="栈地址和堆地址"><a href="#栈地址和堆地址" class="headerlink" title="栈地址和堆地址"></a>栈地址和堆地址</h2><ul>
-<li><p>堆(heap)和栈(stack)有什么区别??</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">简单的可以理解为：</span><br><span class="line">heap：是由malloc之类函数分配的空间所在地。地址是由低向高增长的。</span><br><span class="line">stack：是自动分配变量，以及函数调用的时候所使用的一些空间。地址是由高向低减少的。</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>linux </p>
-<ol>
-<li>[stack]栈的地址是由高到低向下增长的</li>
-<li>[heap]堆得地址是由低到高向上增长的</li>
-<li>图解<br><img src="https://img-blog.csdn.net/20160706204948669?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQv/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/Center" alt="典型C内存空间分布图"><blockquote>
-<p>预备知识—程序的内存分配<br>一个由c/C++编译的程序占用的内存分为以下几个部分</p>
-<blockquote>
-<p>1、栈区（stack）—由编译器自动分配释放 ，存放函数的参数值，局部变量的值等。其操作方式类似于数据结构中的栈。<br>2、堆区（heap）—一般由程序员分配释放， 若程序员不释放，程序结束时可能由OS回收 。注意它与数据结构中的堆是两回事，分配方式倒是类似于链表，呵呵。<br>3、全局区（静态区）（static）—，全局变量和静态变量的存储是放在一块的，初始化的全局变量和静态变量在一块区域， 未初始化的全局变量和未初始化的静态变量在相邻的另一块区域。-程序结束后有系统释放<br>4、文字常量区 —常量字符串就是放在这里的。 程序结束后由系统释放<br>5、程序代码区—存放函数体的二进制代码。</p>
 </blockquote>
-</blockquote>
-</li>
-</ol>
-</li>
-<li><p>windows</p>
-</li>
-</ul>
           <!--noindex-->
           
             <div class="post-button text-center">
@@ -924,7 +905,7 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h1 id="《图解HTTP》读书笔记"><a href="#《图解HTTP》读书笔记" class="headerlink" title="《图解HTTP》读书笔记"></a>《图解HTTP》读书笔记</h1><h2 id="第一章"><a href="#第一章" class="headerlink" title="第一章"></a>第一章</h2><p>HTTP（HyperText Transfer Protocol，超文转移协议，超文本传输协议的译法并不严谨。）</p><h3 id="网络基础-TCP-IP"><a href="#网络基础-TCP-IP" class="headerlink" title="网络基础 TCP/IP"></a>网络基础 TCP/IP</h3><h4 id="TCP-IP-协议族"><a href="#TCP-IP-协议族" class="headerlink" title="TCP/IP 协议族"></a>TCP/IP 协议族</h4><p>TCP/IP 协议族是互联网相关联的协议的集合。从电缆的规格到IP地址的选定方法、寻找异地用户的方法、双方建立通信的顺序，以及Web页面显示需要处理的步骤，等等。而HTTP是属于它内部的一个子集。</p>
+          <h1 id="《图解HTTP》读书笔记"><a href="#《图解HTTP》读书笔记" class="headerlink" title="《图解HTTP》读书笔记"></a>《图解HTTP》读书笔记</h1><h2 id="第一章"><a href="#第一章" class="headerlink" title="第一章"></a>第一章</h2><p>HTTP（HyperText Transfer Protocol，超文转移协议，超文本传输协议的译法并不严谨。）</p>
           <!--noindex-->
           
             <div class="post-button text-center">
@@ -1209,13 +1190,6 @@
           <h1 id="第16章-PYTHON的内存管理机制"><a href="#第16章-PYTHON的内存管理机制" class="headerlink" title="第16章 PYTHON的内存管理机制"></a>第16章 PYTHON的内存管理机制</h1><ul>
 <li>keyword  <ul>
 <li>垃圾收集制度(garbage collection,GC)  </li>
-</ul>
-</li>
-</ul><h2 id="16-1-内存管理架构"><a href="#16-1-内存管理架构" class="headerlink" title="16.1 内存管理架构"></a>16.1 内存管理架构</h2><ul>
-<li>Python内存管理机制有两套实现，由编译符号PYMALLOC_DEBUG控制，当该符号被定义时，开启debug模式下的内存管理机制，这套机制在正常内存管理动作外还记录许多关于内存的信息，方便调试。</li>
-<li>Python内存管理机制被抽象成分层设计：<br><img src="http://img.it610.com/image/info5/ff7ac22a0ba34183b3b6ae04a45979cd.jpg" alt="Python中内存管理的层次结构"><ul>
-<li>比如调用 malloc(0)，有的操作系统会返回 NULL，表示内存申请失败；然而有的操作系统会返回一个貌似正常的指针，但是这个指针所指的内存并不是有效的。</li>
-<li>为了最广泛的可移植性，Python 必须保证相同的语义一定代表着相同的运行时行为，为了处理这些与平台相关的内存分配行为，Python 必须 要在 C的内存分配接口之上再提供一层包装</li>
 </ul>
 </li>
 </ul>

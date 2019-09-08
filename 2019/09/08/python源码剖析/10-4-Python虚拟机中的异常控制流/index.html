@@ -55,18 +55,18 @@
   };
 </script>
 
-  <meta name="description" content="[toc]10.4 Python虚拟机中的异常控制流10.4.1 Python中的异常机制10.4.1.1 Python自身抛出异常123456789101112131415# cat demo5.py1 / 0 # python2.5……&amp;gt;&amp;gt;&amp;gt; source = open(&amp;quot;demo5.py&amp;quot;).read()&amp;gt;&amp;gt;&amp;gt; co = compile">
+  <meta name="description" content="[toc]10.4 Python虚拟机中的异常控制流10.4.1 Python中的异常机制10.4.1.1 Python自身抛出异常">
 <meta name="keywords" content="源码,python">
 <meta property="og:type" content="article">
 <meta property="og:title" content="10.4 Python虚拟机中的异常控制流">
 <meta property="og:url" content="https://ztzheng100.github.io.git/2019/09/08/python源码剖析/10-4-Python虚拟机中的异常控制流/index.html">
 <meta property="og:site_name" content="ZZT_blog">
-<meta property="og:description" content="[toc]10.4 Python虚拟机中的异常控制流10.4.1 Python中的异常机制10.4.1.1 Python自身抛出异常123456789101112131415# cat demo5.py1 / 0 # python2.5……&amp;gt;&amp;gt;&amp;gt; source = open(&amp;quot;demo5.py&amp;quot;).read()&amp;gt;&amp;gt;&amp;gt; co = compile">
+<meta property="og:description" content="[toc]10.4 Python虚拟机中的异常控制流10.4.1 Python中的异常机制10.4.1.1 Python自身抛出异常">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:updated_time" content="2019-09-08T12:18:07.718Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="10.4 Python虚拟机中的异常控制流">
-<meta name="twitter:description" content="[toc]10.4 Python虚拟机中的异常控制流10.4.1 Python中的异常机制10.4.1.1 Python自身抛出异常123456789101112131415# cat demo5.py1 / 0 # python2.5……&amp;gt;&amp;gt;&amp;gt; source = open(&amp;quot;demo5.py&amp;quot;).read()&amp;gt;&amp;gt;&amp;gt; co = compile">
+<meta name="twitter:description" content="[toc]10.4 Python虚拟机中的异常控制流10.4.1 Python中的异常机制10.4.1.1 Python自身抛出异常">
   <link rel="canonical" href="https://ztzheng100.github.io.git/2019/09/08/python源码剖析/10-4-Python虚拟机中的异常控制流/">
 
 
@@ -290,8 +290,8 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <p>[toc]</p><h1 id="10-4-Python虚拟机中的异常控制流"><a href="#10-4-Python虚拟机中的异常控制流" class="headerlink" title="10.4 Python虚拟机中的异常控制流"></a>10.4 Python虚拟机中的异常控制流</h1><h2 id="10-4-1-Python中的异常机制"><a href="#10-4-1-Python中的异常机制" class="headerlink" title="10.4.1 Python中的异常机制"></a>10.4.1 Python中的异常机制</h2><h3 id="10-4-1-1-Python自身抛出异常"><a href="#10-4-1-1-Python自身抛出异常" class="headerlink" title="10.4.1.1 Python自身抛出异常"></a>10.4.1.1 Python自身抛出异常</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"># cat demo5.py</span><br><span class="line">1 / 0</span><br><span class="line"> </span><br><span class="line"># python2.5</span><br><span class="line">……</span><br><span class="line">&gt;&gt;&gt; source = open(&quot;demo5.py&quot;).read()</span><br><span class="line">&gt;&gt;&gt; co = compile(source, &quot;demo5.py&quot;, &quot;exec&quot;)</span><br><span class="line">&gt;&gt;&gt; import dis</span><br><span class="line">&gt;&gt;&gt; dis.dis(co)</span><br><span class="line">  1           0 LOAD_CONST               0 (1)</span><br><span class="line">              3 LOAD_CONST               1 (0)</span><br><span class="line">              6 BINARY_DIVIDE      </span><br><span class="line">              7 POP_TOP            </span><br><span class="line">              8 LOAD_CONST               2 (None)</span><br><span class="line">             11 RETURN_VALUE</span><br></pre></td></tr></table></figure><a id="more"></a>
-
+        <p>[toc]</p><h1 id="10-4-Python虚拟机中的异常控制流"><a href="#10-4-Python虚拟机中的异常控制流" class="headerlink" title="10.4 Python虚拟机中的异常控制流"></a>10.4 Python虚拟机中的异常控制流</h1><h2 id="10-4-1-Python中的异常机制"><a href="#10-4-1-Python中的异常机制" class="headerlink" title="10.4.1 Python中的异常机制"></a>10.4.1 Python中的异常机制</h2><h3 id="10-4-1-1-Python自身抛出异常"><a href="#10-4-1-1-Python自身抛出异常" class="headerlink" title="10.4.1.1 Python自身抛出异常"></a>10.4.1.1 Python自身抛出异常</h3><a id="more"></a>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"># cat demo5.py</span><br><span class="line">1 / 0</span><br><span class="line"> </span><br><span class="line"># python2.5</span><br><span class="line">……</span><br><span class="line">&gt;&gt;&gt; source = open(&quot;demo5.py&quot;).read()</span><br><span class="line">&gt;&gt;&gt; co = compile(source, &quot;demo5.py&quot;, &quot;exec&quot;)</span><br><span class="line">&gt;&gt;&gt; import dis</span><br><span class="line">&gt;&gt;&gt; dis.dis(co)</span><br><span class="line">  1           0 LOAD_CONST               0 (1)</span><br><span class="line">              3 LOAD_CONST               1 (0)</span><br><span class="line">              6 BINARY_DIVIDE      </span><br><span class="line">              7 POP_TOP            </span><br><span class="line">              8 LOAD_CONST               2 (None)</span><br><span class="line">             11 RETURN_VALUE</span><br></pre></td></tr></table></figure>
 
 <h3 id="10-4-1-2-在线程状态对象中记录异常信息"><a href="#10-4-1-2-在线程状态对象中记录异常信息" class="headerlink" title="10.4.1.2 在线程状态对象中记录异常信息"></a>10.4.1.2 在线程状态对象中记录异常信息</h3><ul>
 <li>在<code>i_divmod</code>之后，Python的执行路径会沿着<code>PyErr_SetString、PyErr_SetObject，一直到达PyErr_Restore。在PyErr_Restore中</code>，Python将这个异常放置到一个安全的地方：  </li>

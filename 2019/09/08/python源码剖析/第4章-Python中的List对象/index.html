@@ -55,18 +55,18 @@
   };
 </script>
 
-  <meta name="description" content="第4章 Python中的List对象634.1 PyListObject对象 ob_item：指向元素列表所在内存块的首地址。 allocated:维护了当前列表中可容纳的元素的总数。 ob_size:实际被使用了的内存的数量则记录在ob_size  Python中的list是一个动态数组。所以，++在每一次需要申请内存时，PyListObject就会申请一大块内存++，这时申请内存的总大小记录在">
+  <meta name="description" content="第4章 Python中的List对象634.1 PyListObject对象 ob_item：指向元素列表所在内存块的首地址。 allocated:维护了当前列表中可容纳的元素的总数。 ob_size:实际被使用了的内存的数量则记录在ob_size">
 <meta name="keywords" content="源码,python">
 <meta property="og:type" content="article">
 <meta property="og:title" content="第4章 Python中的List对象">
 <meta property="og:url" content="https://ztzheng100.github.io.git/2019/09/08/python源码剖析/第4章-Python中的List对象/index.html">
 <meta property="og:site_name" content="ZZT_blog">
-<meta property="og:description" content="第4章 Python中的List对象634.1 PyListObject对象 ob_item：指向元素列表所在内存块的首地址。 allocated:维护了当前列表中可容纳的元素的总数。 ob_size:实际被使用了的内存的数量则记录在ob_size  Python中的list是一个动态数组。所以，++在每一次需要申请内存时，PyListObject就会申请一大块内存++，这时申请内存的总大小记录在">
+<meta property="og:description" content="第4章 Python中的List对象634.1 PyListObject对象 ob_item：指向元素列表所在内存块的首地址。 allocated:维护了当前列表中可容纳的元素的总数。 ob_size:实际被使用了的内存的数量则记录在ob_size">
 <meta property="og:locale" content="zh-CN">
 <meta property="og:updated_time" content="2019-09-08T12:09:10.271Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="第4章 Python中的List对象">
-<meta name="twitter:description" content="第4章 Python中的List对象634.1 PyListObject对象 ob_item：指向元素列表所在内存块的首地址。 allocated:维护了当前列表中可容纳的元素的总数。 ob_size:实际被使用了的内存的数量则记录在ob_size  Python中的list是一个动态数组。所以，++在每一次需要申请内存时，PyListObject就会申请一大块内存++，这时申请内存的总大小记录在">
+<meta name="twitter:description" content="第4章 Python中的List对象634.1 PyListObject对象 ob_item：指向元素列表所在内存块的首地址。 allocated:维护了当前列表中可容纳的元素的总数。 ob_size:实际被使用了的内存的数量则记录在ob_size">
   <link rel="canonical" href="https://ztzheng100.github.io.git/2019/09/08/python源码剖析/第4章-Python中的List对象/">
 
 
@@ -294,10 +294,10 @@
 <li><code>ob_item</code>：指向元素列表所在内存块的首地址。</li>
 <li><code>allocated</code>:维护了当前列表中可容纳的元素的总数。</li>
 <li><code>ob_size</code>:实际被使用了的内存的数量则记录在ob_size</li>
-</ul><blockquote>
+</ul><a id="more"></a>
+<blockquote>
 <p>Python中的list是一个动态数组。所以，++在每一次需要申请内存时，PyListObject就会申请一大块内存++，这时申请内存的总大小记录在allocated中，而实际被使用了的内存的数量则记录在ob_size中。</p>
-</blockquote><a id="more"></a>
-
+</blockquote>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">typedef struct &#123;</span><br><span class="line">    PyObject_VAR_HEAD                                           // 变量头部信息</span><br><span class="line">    /* Vector of pointers to list elements.  list[0] is ob_item[0], etc. */</span><br><span class="line">    PyObject **ob_item;                                         // 元素指向具体指</span><br><span class="line"></span><br><span class="line">    Py_ssize_t allocated;                                       // 当前空间</span><br><span class="line">&#125; PyListObject;</span><br></pre></td></tr></table></figure>
 
 <h2 id="4-2-PyListObject对象的创建与维护"><a href="#4-2-PyListObject对象的创建与维护" class="headerlink" title="4.2 PyListObject对象的创建与维护"></a>4.2 PyListObject对象的创建与维护</h2><h3 id="4-2-2设置元素-PyList-SetItem"><a href="#4-2-2设置元素-PyList-SetItem" class="headerlink" title="4.2.2设置元素 PyList_SetItem"></a>4.2.2设置元素 PyList_SetItem</h3><ul>
