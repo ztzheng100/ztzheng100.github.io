@@ -56,12 +56,12 @@
 </script>
 
   <meta property="og:type" content="website">
-<meta property="og:title" content="Hexo">
+<meta property="og:title" content="ZZT_blog">
 <meta property="og:url" content="https://ztzheng100.github.io.git/index.html">
-<meta property="og:site_name" content="Hexo">
+<meta property="og:site_name" content="ZZT_blog">
 <meta property="og:locale" content="zh-CN">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Hexo">
+<meta name="twitter:title" content="ZZT_blog">
   <link rel="canonical" href="https://ztzheng100.github.io.git/">
 
 
@@ -76,7 +76,7 @@
   };
 </script>
 
-  <title>Hexo</title>
+  <title>ZZT_blog</title>
   <meta name="generator" content="Hexo 3.9.0">
   
 
@@ -124,7 +124,7 @@
     <div>
       <a href="/" class="brand" rel="start">
         <span class="logo-line-before"><i></i></span>
-        <span class="site-title">Hexo</span>
+        <span class="site-title">ZZT_blog</span>
         <span class="logo-line-after"><i></i></span>
       </a>
     </div>
@@ -224,152 +224,6 @@
   
   
   <div class="post-block home">
-    <link itemprop="mainEntityOfPage" href="https://ztzheng100.github.io.git/2019/09/08/c语言/3C语言DLL开发/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="zzt">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Hexo">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-            
-            <a href="/2019/09/08/c语言/3C语言DLL开发/" class="post-title-link" itemprop="url">3 C语言DLL开发</a>
-          
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              
-                
-              
-
-              <time title="创建时间：2019-09-08 20:24:35 / 修改时间：22:07:24" itemprop="dateCreated datePublished" datetime="2019-09-08T20:24:35+08:00">2019-09-08</time>
-            </span>
-          
-            
-
-            
-          
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/c语言/" itemprop="url" rel="index"><span itemprop="name">c语言</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h2 id="静态链接库和动态链接库"><a href="#静态链接库和动态链接库" class="headerlink" title="静态链接库和动态链接库"></a>静态链接库和动态链接库</h2><h3 id="1-静态库"><a href="#1-静态库" class="headerlink" title="1) 静态库"></a>1) 静态库</h3><p>函数和数据被编译进一个二进制文件（通常扩展名为.LIB）。在使用静态库的情况下， 在编译链接可执行文件时，链接器从库中复制这些函数和数据并把它们和应用程序的其他模块组合起来创建最终的可执行文件（.EXE文件）。++当发布产品时，只需要发布这个可执行文件，并不需要发布被使用的静态库。++</p>
-<h3 id="2-动态库"><a href="#2-动态库" class="headerlink" title="2) 动态库"></a>2) 动态库</h3><p>在使用动态库的时候，往往提供两个文件：一个引入库(.lib)文件和一个DLL (.dll) 文件。虽然引入库的后缀名也是“lib”，但是，动态库的引入库文件和静态库文件有着本质上的区别，++对一个DLL来说，其引入库文件(.lib)包含该DLL导出的函数和变量的符号名，而.dll文件包含该DLL实际的函数和数据++。在使用动态库的情况下，在编译链接可执行文件时，只需要链接该DLL的引入库文件，该DLL中的函数代码和数据并不复制到可执行文件中，++直到可执行程序运行时，才去加载所需的DLL++，将该DLL映射到进程的地址空间中，然后访问DLL中导出的函数。++这时，在发布产品时，除了发布可执行文件以外，同时还要发布该程序将要调用的动态链接库。++</p>
-<h3 id="第一个demo"><a href="#第一个demo" class="headerlink" title="第一个demo"></a>第一个demo</h3><ul>
-<li>hModule 表示本DLL程序的句柄。</li>
-<li><code>ul_reason_for_call 表示DLL当前所处的状态，例如DLL_PROCESS_ATTACH表示DLL刚刚被加载到一个进程中，DLL_PROCESS_DETACH表示DLL刚刚从一个进程中卸载。</code></li>
-<li>lpReserved 表示一个保留参数，目前已经很少使用。</li>
-<li>DllMain() 函数在DLL程序载入和卸载时执行，可以用来做一些初始化和清理的工作，++如果仅仅是向外暴露函数，就可以省略 DllMain() 函数++。但是如果有 DllMain() 函数，就一定要 #include &lt;objbase.h&gt;  或 #include &lt;windows.h&gt;。</li>
-</ul>
-<blockquote>
-<p>首先利用VC6.0新建一个 Win32 Dynamic-Link Library 类型的工程，工程取名为 dllDemo，并选择“An empty Dll project”选项，即创建一个空的动态链接库工程。然后，为该工程添加 一个C源文件 main.c，并在其中编写完成加法运算和减法运算的函数，代码如下所示：</p>
-</blockquote>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;objbase.h&gt;  // 也可以 #include &lt;windows.h&gt;</span><br><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line">_declspec(dllexport) int add(int a, int b)&#123;</span><br><span class="line">    return a+b;</span><br><span class="line">&#125;</span><br><span class="line">_declspec(dllexport)int sub(int a, int b)&#123;</span><br><span class="line">    return a-b;</span><br><span class="line">&#125;</span><br><span class="line">BOOL APIENTRY DllMain(</span><br><span class="line">    HANDLE hModule,</span><br><span class="line">    DWORD  ul_reason_for_call,</span><br><span class="line">    LPVOID lpReserved</span><br><span class="line">)&#123;</span><br><span class="line">    if(ul_reason_for_call == DLL_PROCESS_ATTACH)&#123;</span><br><span class="line">        printf(&quot;Congratulations! DLL is loaded!&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h2 id="查看一个DLL中有哪些导出函数"><a href="#查看一个DLL中有哪些导出函数" class="headerlink" title="查看一个DLL中有哪些导出函数"></a>查看一个DLL中有哪些导出函数</h2><ol>
-<li>VC98\bin目录下,批处理文件VCVARS32.bat，该文件的作用是用来建立VC6.0使用的环境信息。该文件所设置的环境信息只是在当前命令行窗口生效。如果关闭该窗口。</li>
-<li>Dumpbin.exe文件位于VC6.0安装目录下的VC98\bin目录下，用于查看dll文件的导出函数：</li>
-</ol>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">dumpbin -exports 文件名</span><br><span class="line">dumpbin -exports dllDemo.dll</span><br></pre></td></tr></table></figure>
-
-<p><img src="http://c.biancheng.net/cpp/uploads/allimg/140805/1-140P515160L29.png" alt="DLL中的导出函数"></p>
-<h2 id="动态链接库DLL的加载：隐式加载-载入时加载-和显式加载-运行时加载"><a href="#动态链接库DLL的加载：隐式加载-载入时加载-和显式加载-运行时加载" class="headerlink" title="动态链接库DLL的加载：隐式加载(载入时加载)和显式加载(运行时加载)"></a>动态链接库DLL的加载：隐式加载(载入时加载)和显式加载(运行时加载)</h2><ul>
-<li>动态链接库有两种加载方式：隐式加载和显示加载。<ul>
-<li>隐式加载又叫<strong>载入时加载</strong>，++指在主程序载入内存时搜索DLL，并将DLL载入内存++。隐式加载也会有静态链接库的问题，如果程序稍大，加载时间就会过长，用户不能接受。</li>
-<li>显式加载又叫<strong>运行时加载</strong>，++指主程序在运行过程中需要DLL中的函数时再加载++。显式加载是将较大的程序分开加载的，程序运行时只需要将主程序载入内存，软件打开速度快，用户体验好。</li>
-</ul>
-</li>
-</ul>
-<h3 id="隐式加载"><a href="#隐式加载" class="headerlink" title="隐式加载"></a>隐式加载</h3><ul>
-<li><p>#pragma comment(lib, “dllDemo.lib”) 手动导包</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">#include&lt;stdio.h&gt;</span><br><span class="line">extern int add(int, int);  // 也可以是 _declspec(dllimport) int add(int, int);</span><br><span class="line">extern int sub(int, int);  // 也可以是 _declspec(dllimport) int sub(int, int);</span><br><span class="line">int main()&#123;</span><br><span class="line">    int a=10, b=5;</span><br><span class="line">    printf(&quot;a+b=%d\n&quot;, add(a, b));</span><br><span class="line">    printf(&quot;a-b=%d\n&quot;, sub(a, b));</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-</li>
-<li><p>另一种写法</p>
-</li>
-</ul>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">[dllDemo.h]</span><br><span class="line">#ifndef _DLLDEMO_H</span><br><span class="line">#define _DLLDEMO_H</span><br><span class="line">#pragma comment(lib, &quot;dllDemo.lib&quot;)</span><br><span class="line">_declspec(dllexport) int add(int, int);</span><br><span class="line">_declspec(dllexport) int sub(int, int);</span><br><span class="line">#endif</span><br></pre></td></tr></table></figure>
-
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">[demo.c]</span><br><span class="line">#include&lt;stdio.h&gt;</span><br><span class="line">#pragma comment(lib, &quot;dllDemo.lib&quot;)</span><br><span class="line">_declspec(dllimport) int add(int, int);</span><br><span class="line">_declspec(dllimport) int sub(int, int);</span><br><span class="line">int main()&#123;</span><br><span class="line">    int a=10, b=5;</span><br><span class="line">    printf(&quot;a+b=%d\n&quot;, add(a, b));</span><br><span class="line">    printf(&quot;a-b=%d\n&quot;, sub(a, b));</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h3 id="显式加载"><a href="#显式加载" class="headerlink" title="显式加载"></a>显式加载</h3><ul>
-<li><p>将 debug 目录下的 dllDemo.dll 复制到当前工程目录下。注意，++只需要 dllDemo.dll，不需要 dllDemo.lib++。</p>
-</li>
-<li><p>LoadLibrary() 函数</p>
-<ul>
-<li><p>该函数的作用是将指定的可执行模块映射到调用进程的地址空间</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">HMODULE  LoadLibrary(LPCTSTR 1pFileName);</span><br><span class="line">//1pFileName: 调用对象；dll和exe</span><br><span class="line">//HMODULE： 返回调用对象的句柄对象</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-</li>
-<li><p>GetProcAddress()函数</p>
-<ul>
-<li><p>获取该动态链接库中导出函数的地址</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">FARPROC  GetProcAddress(HMODULE hModule, LPCSTR 1pProcName);</span><br><span class="line">//hModule：指定动态链接库模块的句柄，即 LoadLibrary() 函数的返回值。</span><br><span class="line">//1pProcName：字符串指针，表示DLL中函数的名字。</span><br></pre></td></tr></table></figure>
-</li>
-</ul>
-</li>
-<li><p>例子</p>
-</li>
-</ul>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">#include&lt;stdio.h&gt;</span><br><span class="line">#include&lt;stdlib.h&gt;</span><br><span class="line">#include&lt;windows.h&gt;  // 必须包含 windows.h</span><br><span class="line">typedef int (*FUNADDR)();  // 指向函数的指针</span><br><span class="line">int main()&#123;</span><br><span class="line">    int a=10, b=5;</span><br><span class="line">   </span><br><span class="line">    HINSTANCE dllDemo = LoadLibrary(&quot;dllDemo.dll&quot;);</span><br><span class="line">    FUNADDR add, sub;</span><br><span class="line">    if(dllDemo)&#123;</span><br><span class="line">        add = (FUNADDR)GetProcAddress(dllDemo, &quot;add&quot;);</span><br><span class="line">        sub = (FUNADDR)GetProcAddress(dllDemo, &quot;sub&quot;);</span><br><span class="line">    &#125;else&#123;</span><br><span class="line">        printf(&quot;Fail to load DLL!\n&quot;);</span><br><span class="line">        system(&quot;pause&quot;);</span><br><span class="line">        exit(1);</span><br><span class="line">    &#125;</span><br><span class="line">    printf(&quot;a+b=%d\n&quot;, add(a, b));</span><br><span class="line">    printf(&quot;a-b=%d\n&quot;, sub(a, b));</span><br><span class="line">    system(&quot;pause&quot;);</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<h2 id="参考文件"><a href="#参考文件" class="headerlink" title="参考文件"></a>参考文件</h2><p><a href="http://c.biancheng.net/cpp/u/dll/" target="_blank" rel="noopener">C语言DLL(动态链接库开发)</a>  </p>
-
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-          <div class="post-eof"></div>
-        
-      </footer>
-  </div>
-  
-  
-  
-  </article>
-
-    
-        <article itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block home">
     <link itemprop="mainEntityOfPage" href="https://ztzheng100.github.io.git/2019/09/08/c语言/1 指针/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -379,7 +233,7 @@
     </span>
 
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Hexo">
+      <meta itemprop="name" content="ZZT_blog">
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
@@ -567,7 +421,7 @@
     </span>
 
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Hexo">
+      <meta itemprop="name" content="ZZT_blog">
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
@@ -717,6 +571,152 @@
   
   
   <div class="post-block home">
+    <link itemprop="mainEntityOfPage" href="https://ztzheng100.github.io.git/2019/09/08/c语言/3C语言DLL开发/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zzt">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ZZT_blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+            
+            <a href="/2019/09/08/c语言/3C语言DLL开发/" class="post-title-link" itemprop="url">3 C语言DLL开发</a>
+          
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              
+                
+              
+
+              <time title="创建时间：2019-09-08 20:24:35 / 修改时间：22:07:24" itemprop="dateCreated datePublished" datetime="2019-09-08T20:24:35+08:00">2019-09-08</time>
+            </span>
+          
+            
+
+            
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/c语言/" itemprop="url" rel="index"><span itemprop="name">c语言</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h2 id="静态链接库和动态链接库"><a href="#静态链接库和动态链接库" class="headerlink" title="静态链接库和动态链接库"></a>静态链接库和动态链接库</h2><h3 id="1-静态库"><a href="#1-静态库" class="headerlink" title="1) 静态库"></a>1) 静态库</h3><p>函数和数据被编译进一个二进制文件（通常扩展名为.LIB）。在使用静态库的情况下， 在编译链接可执行文件时，链接器从库中复制这些函数和数据并把它们和应用程序的其他模块组合起来创建最终的可执行文件（.EXE文件）。++当发布产品时，只需要发布这个可执行文件，并不需要发布被使用的静态库。++</p>
+<h3 id="2-动态库"><a href="#2-动态库" class="headerlink" title="2) 动态库"></a>2) 动态库</h3><p>在使用动态库的时候，往往提供两个文件：一个引入库(.lib)文件和一个DLL (.dll) 文件。虽然引入库的后缀名也是“lib”，但是，动态库的引入库文件和静态库文件有着本质上的区别，++对一个DLL来说，其引入库文件(.lib)包含该DLL导出的函数和变量的符号名，而.dll文件包含该DLL实际的函数和数据++。在使用动态库的情况下，在编译链接可执行文件时，只需要链接该DLL的引入库文件，该DLL中的函数代码和数据并不复制到可执行文件中，++直到可执行程序运行时，才去加载所需的DLL++，将该DLL映射到进程的地址空间中，然后访问DLL中导出的函数。++这时，在发布产品时，除了发布可执行文件以外，同时还要发布该程序将要调用的动态链接库。++</p>
+<h3 id="第一个demo"><a href="#第一个demo" class="headerlink" title="第一个demo"></a>第一个demo</h3><ul>
+<li>hModule 表示本DLL程序的句柄。</li>
+<li><code>ul_reason_for_call 表示DLL当前所处的状态，例如DLL_PROCESS_ATTACH表示DLL刚刚被加载到一个进程中，DLL_PROCESS_DETACH表示DLL刚刚从一个进程中卸载。</code></li>
+<li>lpReserved 表示一个保留参数，目前已经很少使用。</li>
+<li>DllMain() 函数在DLL程序载入和卸载时执行，可以用来做一些初始化和清理的工作，++如果仅仅是向外暴露函数，就可以省略 DllMain() 函数++。但是如果有 DllMain() 函数，就一定要 #include &lt;objbase.h&gt;  或 #include &lt;windows.h&gt;。</li>
+</ul>
+<blockquote>
+<p>首先利用VC6.0新建一个 Win32 Dynamic-Link Library 类型的工程，工程取名为 dllDemo，并选择“An empty Dll project”选项，即创建一个空的动态链接库工程。然后，为该工程添加 一个C源文件 main.c，并在其中编写完成加法运算和减法运算的函数，代码如下所示：</p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;objbase.h&gt;  // 也可以 #include &lt;windows.h&gt;</span><br><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line">_declspec(dllexport) int add(int a, int b)&#123;</span><br><span class="line">    return a+b;</span><br><span class="line">&#125;</span><br><span class="line">_declspec(dllexport)int sub(int a, int b)&#123;</span><br><span class="line">    return a-b;</span><br><span class="line">&#125;</span><br><span class="line">BOOL APIENTRY DllMain(</span><br><span class="line">    HANDLE hModule,</span><br><span class="line">    DWORD  ul_reason_for_call,</span><br><span class="line">    LPVOID lpReserved</span><br><span class="line">)&#123;</span><br><span class="line">    if(ul_reason_for_call == DLL_PROCESS_ATTACH)&#123;</span><br><span class="line">        printf(&quot;Congratulations! DLL is loaded!&quot;);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="查看一个DLL中有哪些导出函数"><a href="#查看一个DLL中有哪些导出函数" class="headerlink" title="查看一个DLL中有哪些导出函数"></a>查看一个DLL中有哪些导出函数</h2><ol>
+<li>VC98\bin目录下,批处理文件VCVARS32.bat，该文件的作用是用来建立VC6.0使用的环境信息。该文件所设置的环境信息只是在当前命令行窗口生效。如果关闭该窗口。</li>
+<li>Dumpbin.exe文件位于VC6.0安装目录下的VC98\bin目录下，用于查看dll文件的导出函数：</li>
+</ol>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">dumpbin -exports 文件名</span><br><span class="line">dumpbin -exports dllDemo.dll</span><br></pre></td></tr></table></figure>
+
+<p><img src="http://c.biancheng.net/cpp/uploads/allimg/140805/1-140P515160L29.png" alt="DLL中的导出函数"></p>
+<h2 id="动态链接库DLL的加载：隐式加载-载入时加载-和显式加载-运行时加载"><a href="#动态链接库DLL的加载：隐式加载-载入时加载-和显式加载-运行时加载" class="headerlink" title="动态链接库DLL的加载：隐式加载(载入时加载)和显式加载(运行时加载)"></a>动态链接库DLL的加载：隐式加载(载入时加载)和显式加载(运行时加载)</h2><ul>
+<li>动态链接库有两种加载方式：隐式加载和显示加载。<ul>
+<li>隐式加载又叫<strong>载入时加载</strong>，++指在主程序载入内存时搜索DLL，并将DLL载入内存++。隐式加载也会有静态链接库的问题，如果程序稍大，加载时间就会过长，用户不能接受。</li>
+<li>显式加载又叫<strong>运行时加载</strong>，++指主程序在运行过程中需要DLL中的函数时再加载++。显式加载是将较大的程序分开加载的，程序运行时只需要将主程序载入内存，软件打开速度快，用户体验好。</li>
+</ul>
+</li>
+</ul>
+<h3 id="隐式加载"><a href="#隐式加载" class="headerlink" title="隐式加载"></a>隐式加载</h3><ul>
+<li><p>#pragma comment(lib, “dllDemo.lib”) 手动导包</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">#include&lt;stdio.h&gt;</span><br><span class="line">extern int add(int, int);  // 也可以是 _declspec(dllimport) int add(int, int);</span><br><span class="line">extern int sub(int, int);  // 也可以是 _declspec(dllimport) int sub(int, int);</span><br><span class="line">int main()&#123;</span><br><span class="line">    int a=10, b=5;</span><br><span class="line">    printf(&quot;a+b=%d\n&quot;, add(a, b));</span><br><span class="line">    printf(&quot;a-b=%d\n&quot;, sub(a, b));</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>另一种写法</p>
+</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">[dllDemo.h]</span><br><span class="line">#ifndef _DLLDEMO_H</span><br><span class="line">#define _DLLDEMO_H</span><br><span class="line">#pragma comment(lib, &quot;dllDemo.lib&quot;)</span><br><span class="line">_declspec(dllexport) int add(int, int);</span><br><span class="line">_declspec(dllexport) int sub(int, int);</span><br><span class="line">#endif</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">[demo.c]</span><br><span class="line">#include&lt;stdio.h&gt;</span><br><span class="line">#pragma comment(lib, &quot;dllDemo.lib&quot;)</span><br><span class="line">_declspec(dllimport) int add(int, int);</span><br><span class="line">_declspec(dllimport) int sub(int, int);</span><br><span class="line">int main()&#123;</span><br><span class="line">    int a=10, b=5;</span><br><span class="line">    printf(&quot;a+b=%d\n&quot;, add(a, b));</span><br><span class="line">    printf(&quot;a-b=%d\n&quot;, sub(a, b));</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="显式加载"><a href="#显式加载" class="headerlink" title="显式加载"></a>显式加载</h3><ul>
+<li><p>将 debug 目录下的 dllDemo.dll 复制到当前工程目录下。注意，++只需要 dllDemo.dll，不需要 dllDemo.lib++。</p>
+</li>
+<li><p>LoadLibrary() 函数</p>
+<ul>
+<li><p>该函数的作用是将指定的可执行模块映射到调用进程的地址空间</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">HMODULE  LoadLibrary(LPCTSTR 1pFileName);</span><br><span class="line">//1pFileName: 调用对象；dll和exe</span><br><span class="line">//HMODULE： 返回调用对象的句柄对象</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+<li><p>GetProcAddress()函数</p>
+<ul>
+<li><p>获取该动态链接库中导出函数的地址</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">FARPROC  GetProcAddress(HMODULE hModule, LPCSTR 1pProcName);</span><br><span class="line">//hModule：指定动态链接库模块的句柄，即 LoadLibrary() 函数的返回值。</span><br><span class="line">//1pProcName：字符串指针，表示DLL中函数的名字。</span><br></pre></td></tr></table></figure>
+</li>
+</ul>
+</li>
+<li><p>例子</p>
+</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">#include&lt;stdio.h&gt;</span><br><span class="line">#include&lt;stdlib.h&gt;</span><br><span class="line">#include&lt;windows.h&gt;  // 必须包含 windows.h</span><br><span class="line">typedef int (*FUNADDR)();  // 指向函数的指针</span><br><span class="line">int main()&#123;</span><br><span class="line">    int a=10, b=5;</span><br><span class="line">   </span><br><span class="line">    HINSTANCE dllDemo = LoadLibrary(&quot;dllDemo.dll&quot;);</span><br><span class="line">    FUNADDR add, sub;</span><br><span class="line">    if(dllDemo)&#123;</span><br><span class="line">        add = (FUNADDR)GetProcAddress(dllDemo, &quot;add&quot;);</span><br><span class="line">        sub = (FUNADDR)GetProcAddress(dllDemo, &quot;sub&quot;);</span><br><span class="line">    &#125;else&#123;</span><br><span class="line">        printf(&quot;Fail to load DLL!\n&quot;);</span><br><span class="line">        system(&quot;pause&quot;);</span><br><span class="line">        exit(1);</span><br><span class="line">    &#125;</span><br><span class="line">    printf(&quot;a+b=%d\n&quot;, add(a, b));</span><br><span class="line">    printf(&quot;a-b=%d\n&quot;, sub(a, b));</span><br><span class="line">    system(&quot;pause&quot;);</span><br><span class="line">    return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="参考文件"><a href="#参考文件" class="headerlink" title="参考文件"></a>参考文件</h2><p><a href="http://c.biancheng.net/cpp/u/dll/" target="_blank" rel="noopener">C语言DLL(动态链接库开发)</a>  </p>
+
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+          <div class="post-eof"></div>
+        
+      </footer>
+  </div>
+  
+  
+  
+  </article>
+
+    
+        <article itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block home">
     <link itemprop="mainEntityOfPage" href="https://ztzheng100.github.io.git/2019/09/08/c语言/5可变参数的C函数/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -726,7 +726,7 @@
     </span>
 
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Hexo">
+      <meta itemprop="name" content="ZZT_blog">
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
@@ -870,7 +870,7 @@
     </span>
 
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Hexo">
+      <meta itemprop="name" content="ZZT_blog">
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
@@ -1009,7 +1009,7 @@
     </span>
 
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Hexo">
+      <meta itemprop="name" content="ZZT_blog">
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
@@ -1162,7 +1162,7 @@
     </span>
 
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Hexo">
+      <meta itemprop="name" content="ZZT_blog">
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
@@ -1807,7 +1807,7 @@
     </span>
 
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Hexo">
+      <meta itemprop="name" content="ZZT_blog">
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
@@ -1909,7 +1909,7 @@
     </span>
 
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Hexo">
+      <meta itemprop="name" content="ZZT_blog">
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
@@ -2100,7 +2100,7 @@
     </span>
 
     <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Hexo">
+      <meta itemprop="name" content="ZZT_blog">
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
