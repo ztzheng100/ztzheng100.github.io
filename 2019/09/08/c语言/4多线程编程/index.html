@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+
+
+
+
+
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.4.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.4.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.4.0">
+  <link rel="mask-icon" href="/images/logo.svg?v=7.4.0" color="#222">
+
+<link rel="stylesheet" href="/css/main.css?v=7.4.0">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '7.4.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    },
+    sidebarPadding: 40
+  };
+</script>
+
+  <meta name="description" content="多线程编程1. 线程库 目前使用的三种主要线程库是：POSIX Pthreads、Windows 和 Java： ++Pthreads++ 作为 POSIX 标准的扩展，可以提供用户级或内核级的库； ++Windows++ 线程库是用于 Windows 操作系统的内核级线程库； ++Java++ 线程 API 允许线程在 Java 程序中直接创建和管理。然而，由于大多数 JVM 实例运行在宿主操作">
+<meta name="keywords" content="多线程">
+<meta property="og:type" content="article">
+<meta property="og:title" content="多线程编程">
+<meta property="og:url" content="https://ztzheng100.github.io.git/2019/09/08/c语言/4多线程编程/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="多线程编程1. 线程库 目前使用的三种主要线程库是：POSIX Pthreads、Windows 和 Java： ++Pthreads++ 作为 POSIX 标准的扩展，可以提供用户级或内核级的库； ++Windows++ 线程库是用于 Windows 操作系统的内核级线程库； ++Java++ 线程 API 允许线程在 Java 程序中直接创建和管理。然而，由于大多数 JVM 实例运行在宿主操作">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="http://c.biancheng.net/uploads/allimg/181105/2-1Q105122153504.gif">
+<meta property="og:updated_time" content="2019-09-08T14:07:09.003Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="多线程编程">
+<meta name="twitter:description" content="多线程编程1. 线程库 目前使用的三种主要线程库是：POSIX Pthreads、Windows 和 Java： ++Pthreads++ 作为 POSIX 标准的扩展，可以提供用户级或内核级的库； ++Windows++ 线程库是用于 Windows 操作系统的内核级线程库； ++Java++ 线程 API 允许线程在 Java 程序中直接创建和管理。然而，由于大多数 JVM 实例运行在宿主操作">
+<meta name="twitter:image" content="http://c.biancheng.net/uploads/allimg/181105/2-1Q105122153504.gif">
+  <link rel="canonical" href="https://ztzheng100.github.io.git/2019/09/08/c语言/4多线程编程/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>多线程编程 | Hexo</title>
+  <meta name="generator" content="Hexo 3.9.0">
+  
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">Hexo</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+      
+      
+      
+        
+        <li class="menu-item menu-item-home">
+      
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-tags">
+      
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-categories">
+      
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-archives">
+      
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-guestbook">
+      
+    
+
+    <a href="/guestbook" rel="section"><i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br>guestbook</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+            
+
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+      <article itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block post">
+    <link itemprop="mainEntityOfPage" href="https://ztzheng100.github.io.git/2019/09/08/c语言/4多线程编程/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zzt">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Hexo">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">多线程编程
+
+          
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              
+                
+              
+
+              <time title="创建时间：2019-09-08 20:24:35 / 修改时间：22:07:09" itemprop="dateCreated datePublished" datetime="2019-09-08T20:24:35+08:00">2019-09-08</time>
+            </span>
+          
+            
+
+            
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/c语言/" itemprop="url" rel="index"><span itemprop="name">c语言</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="多线程编程"><a href="#多线程编程" class="headerlink" title="多线程编程"></a>多线程编程</h1><h2 id="1-线程库"><a href="#1-线程库" class="headerlink" title="1. 线程库"></a>1. 线程库</h2><ul>
+<li>目前使用的三种主要线程库是：POSIX Pthreads、Windows 和 Java：<ul>
+<li>++Pthreads++ 作为 POSIX 标准的扩展，可以提供用户级或内核级的库；</li>
+<li>++Windows++ 线程库是用于 Windows 操作系统的内核级线程库；</li>
+<li>++Java++ 线程 API 允许线程在 Java 程序中直接创建和管理。然而，由于大多数 JVM 实例运行在宿主操作系统之上，Java 线程 API 通常采用宿主系统的线程库来实现。这意味着在 Windows 系统上，Java 线程通常采用 Windows API 来实现，而在 UNIX 和 Linux 系统中采用 Pthreads 来实现。<blockquote>
+<p>++对于 POSIX 和 Windows 线程，全局声明（即在函数之外声明的）的任何数据，可为同一进程的所有线程共享++。因为 Java 没有全局数据的概念，所以线程对共享数据的访问必须加以显式安排。属于某个函数的本地数据通常位于堆栈。由于每个线程都有自己的堆栈，每个线程都有自己的本地数据。</p>
+</blockquote>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="2-异步线程和同步线程"><a href="#2-异步线程和同步线程" class="headerlink" title="2. 异步线程和同步线程"></a>2. 异步线程和同步线程</h2><ul>
+<li>异步线程<ul>
+<li>++对异步线程，一旦父线程创建了一个子线程后，父线程就恢复自身的执行，这样父线程与子线程会并发执行++。 无需等待子线程。</li>
+<li>例子：如图 1 所示的多线程服务器使用的策略就是异步线程<br><img src="http://c.biancheng.net/uploads/allimg/181105/2-1Q105122153504.gif" alt="图 1 多线程的服务器架构">  </li>
+</ul>
+</li>
+<li>同步线程<ul>
+<li>由父线程创建的线程并发执行工作，但是父线程在这个工作完成之前无法继续。</li>
+</ul>
+</li>
+</ul>
+<h2 id="3-创建linux线程-–Pthreads"><a href="#3-创建linux线程-–Pthreads" class="headerlink" title="3. 创建linux线程 –Pthreads"></a>3. 创建linux线程 –Pthreads</h2><p><code>&lt;pthread.h&gt;</code></p>
+<ul>
+<li><p>创建线程  </p>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">int pthread_create(pthread_t *tidp,const pthread_attr_t *attr,</span><br><span class="line">(void*)(*start_rtn)(void*),void *arg);</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>返回值<br>  若线程创建成功，则返回0。若线程创建失败，则返回出错编号，</li>
+<li>参数<br>  tidp：指向线程标识符的指针。<br>  attr：用来设置线程属性。<br>  start_rtn：是线程运行函数的起始地址。<br>  arg：是运行函数的参数。  </li>
+</ul>
+</li>
+<li><p>pthread_join 线程同步</p>
+<ul>
+<li><p>pthread_join()函数，以阻塞的方式等待thread指定的线程结束。当函数返回时，被等待线程的资源被收回。如果线程已经结束，那么该函数会立即返回。并且thread指定的线程必须是joinable的。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">int pthread_join(pthread_t thread, void **retval);</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>返回值 ：<br>  0代表成功。 失败，返回的则是错误号</p>
+</li>
+<li><p>参数<br>  thread: 线程标识符，即线程ID，标识唯一线程。<br>  retval: 用户定义的指针，用来存储被等待线程的返回值。</p>
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="4-创建windows线程"><a href="#4-创建windows线程" class="headerlink" title="4. 创建windows线程"></a>4. 创建windows线程</h2><p><code>#include &lt;windows.h&gt;</code></p>
+<ul>
+<li>CreateThread 创建线程  <ul>
+<li>CreateThread是一种微软在Windows API中提供了建立新的线程的函数，该函数在主线程的基础上创建一个新线程。线程终止运行后，线程对象仍然在系统中，++必须通过CloseHandle函数来关闭该线程对象++。</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">//MSDN中CreateThread原型：</span><br><span class="line">HANDLE CreateThread(</span><br><span class="line">LPSECURITY_ATTRIBUTES lpThreadAttributes,//SD 线程安全属性</span><br><span class="line">SIZE_T dwStackSize,//initial stack size 堆栈大小</span><br><span class="line">LPTHREAD_START_ROUTINE lpStartAddress,//thread function 指向线程函数的指针</span><br><span class="line">LPVOID lpParameter,//thread argument 向线程函数传递的参数，是一个指向结构的指针，不需传递参数时，为NULL。</span><br><span class="line">DWORD dwCreationFlags,//creation option 线程创建属性</span><br><span class="line">LPDWORD lpThreadId//thread identifier保存新线程的id。</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>++需要调用到CRT库时，不要用CreateThread 创建线程、并用CloseHandle来关闭这个线程，而应该用_beginthread来创建线程，_endthread来销毁线程++。因为没有对子线程为CRT库分配堆，会导致低内存错误而崩溃。</p>
+<ul>
+<li>创建线程–_beginthreadex<br><code>#include &lt;process.h&gt;</code></li>
+</ul>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">unsigned long _beginthreadex(</span><br><span class="line">    void *security,    // 安全属性， 为NULL时表示默认安全性</span><br><span class="line">    unsigned stack_size,    // 线程的堆栈大小， 一般默认为0</span><br><span class="line">    unsigned(_stdcall *start_address)(void *),    // 所要启动的线程函数</span><br><span class="line">    void *argilist, // 线程函数的参数， 是一个void*类型， 传递多个参数时用结构体</span><br><span class="line">    unsigned initflag,    // 新线程的初始状态，0表示立即执行，CREATE_SUSPENDED表示创建之后挂起</span><br><span class="line">    unsigned *threaddr    // 用来接收线程ID</span><br><span class="line">);</span><br><span class="line">返回值 : // 成功返回新线程句柄， 失败返回0</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>创建线程–_beginthread<br><code>#include &lt;process.h&gt;</code></li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">uintptr_t _beginthread(</span><br><span class="line">void( *start_address )( void * ),//指向新线程调用的函数的起始地址</span><br><span class="line">unsigned stack_size,//新线程的堆栈大小，可以为0</span><br><span class="line">void *arglist//传递给线程的参数列表，无参数时为NULL</span><br><span class="line">);</span><br><span class="line">返回值：</span><br><span class="line">假如成功，函数将会返回一个新线程的句柄,如果失败_beginthread将返回-1。</span><br></pre></td></tr></table></figure>
+
+<h2 id="4-Java-线程"><a href="#4-Java-线程" class="headerlink" title="4. Java 线程"></a>4. Java 线程</h2><ol>
+<li>是创建一个新的类，它从类 Thread 派生并重载函数 run();</li>
+<li>更常使用的方法是定义一个实现接口 Runnable 的类。</li>
+</ol>
+<ul>
+<li>无关，以后再补充</li>
+</ul>
+<h2 id="参考文件"><a href="#参考文件" class="headerlink" title="参考文件"></a>参考文件</h2><p><a href="http://c.biancheng.net/view/1224.html" target="_blank" rel="noopener">什么是线程库，线程库类别及其应用</a><br><a href="https://docs.microsoft.com/en-us/cpp/c-runtime-library/reference/beginthread-beginthreadex?view=vs-2019" target="_blank" rel="noopener">windows的api</a><br><a href="https://baike.baidu.com/item/_beginthreadex/9301135" target="_blank" rel="noopener">_beginthreadex</a></p>
+
+    </div>
+
+    
+    
+    
+        
+      
+
+      <footer class="post-footer">
+          
+            
+          
+          <div class="post-tags">
+            
+              <a href="/tags/多线程/" rel="tag"># 多线程</a>
+            
+          </div>
+        
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+              
+                <a href="/2019/09/08/c语言/5可变参数的C函数/" rel="next" title="可变参数的C函数">
+                  <i class="fa fa-chevron-left"></i> 可变参数的C函数
+                </a>
+              
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+              
+                <a href="/2019/09/08/c语言/1 指针/" rel="prev" title="指针">
+                  指针 <i class="fa fa-chevron-right"></i>
+                </a>
+              
+            </div>
+          </div>
+        
+      </footer>
+    
+  </div>
+  
+  
+  
+  </article>
+
+  </div>
+
+
+          </div>
+          
+
+        </div>
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+        
+        
+        
+        
+      
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#多线程编程"><span class="nav-number">1.</span> <span class="nav-text">多线程编程</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-线程库"><span class="nav-number">1.1.</span> <span class="nav-text">1. 线程库</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-异步线程和同步线程"><span class="nav-number">1.2.</span> <span class="nav-text">2. 异步线程和同步线程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-创建linux线程-–Pthreads"><span class="nav-number">1.3.</span> <span class="nav-text">3. 创建linux线程 –Pthreads</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-创建windows线程"><span class="nav-number">1.4.</span> <span class="nav-text">4. 创建windows线程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-Java-线程"><span class="nav-number">1.5.</span> <span class="nav-text">4. Java 线程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#参考文件"><span class="nav-number">1.6.</span> <span class="nav-text">参考文件</span></a></li></ol></li></ol></div>
+        
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">zzt</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+  <nav class="site-state motion-element">
+      <div class="site-state-item site-state-posts">
+        
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">27</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-categories">
+        
+          
+            <a href="/categories/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">分类</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-tags">
+        
+          
+            <a href="/tags/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-name">标签</span>
+        </a>
+      </div>
+    
+  </nav>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zzt</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.9.0</div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.4.0</div>
+
+        
+
+
+
+
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+
+
+  <script src="/lib/anime.min.js?v=3.1.0"></script>
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+<script src="/js/utils.js?v=7.4.0"></script><script src="/js/motion.js?v=7.4.0"></script>
+<script src="/js/schemes/pisces.js?v=7.4.0"></script>
+<script src="/js/next-boot.js?v=7.4.0"></script>
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+</body>
+</html>
