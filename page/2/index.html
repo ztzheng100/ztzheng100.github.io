@@ -224,6 +224,226 @@
   
   
   <div class="post-block home">
+    <link itemprop="mainEntityOfPage" href="https://ztzheng100.github.io.git/2019/09/08/python源码剖析/第8章-Python虚拟机框架/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zzt">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Hexo">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+            
+            <a href="/2019/09/08/python源码剖析/第8章-Python虚拟机框架/" class="post-title-link" itemprop="url"> 第8章 Python虚拟机框架</a>
+          
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              
+                
+              
+
+              <time title="创建时间：2019-09-08 20:15:17 / 修改时间：20:15:40" itemprop="dateCreated datePublished" datetime="2019-09-08T20:15:17+08:00">2019-09-08</time>
+            </span>
+          
+            
+
+            
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/python源码剖析/" itemprop="url" rel="index"><span itemprop="name">python源码剖析</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <p>[toc]</p>
+<h1 id="第8章-Python虚拟机框架"><a href="#第8章-Python虚拟机框架" class="headerlink" title="第8章 Python虚拟机框架"></a>第8章 Python虚拟机框架</h1><h2 id="8-1-Python虚拟机中的执行环境"><a href="#8-1-Python虚拟机中的执行环境" class="headerlink" title="8.1 Python虚拟机中的执行环境"></a>8.1 Python虚拟机中的执行环境</h2><ul>
+<li><p>可执行文件的运行过程<br><img src="http://new.51cto.com/files/uploadimg/20080723/1555090.jpg" alt="可执行文件运行时的运行时栈"></p>
+</li>
+<li><p>动态信息：执行环境</p>
+<ul>
+<li><p>执行环境不等于命名空间，但类似</p>
+</li>
+<li><p>一个栈帧（PyCodeObject）（PyFrameObject）中的数据</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">void f(int a, int b)</span><br><span class="line">&#123;</span><br><span class="line">	printf(&quot;a=%d, b=%d\n&quot;, a, b);</span><br><span class="line">&#125;</span><br><span class="line">void g()</span><br><span class="line">&#123;</span><br><span class="line">	f(1, 2);</span><br><span class="line">&#125;</span><br><span class="line">int main()</span><br><span class="line">&#123;</span><br><span class="line">	g();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+</li>
+</ul>
+<h4 id="8-1-1-Python源码中的PyFrameObject"><a href="#8-1-1-Python源码中的PyFrameObject" class="headerlink" title="8.1.1 Python源码中的PyFrameObject"></a>8.1.1 Python源码中的PyFrameObject</h4><ul>
+<li>PyFrameObject 是Python对X86平台上栈帧额模拟。</li>
+<li>PyFrameObject<ul>
+<li>f_code：存放的是一个待执行的 PyCodeObject对象</li>
+<li><code>f_builtins，f_globals， f_locals</code> 正是动态的执行环境，这三个<code>PyObject*</code>都会指向 PyDictObject<br>对象，而在这些 PyDictObject 对象中，++分别维护了 builtin 的 name，global 的 name，<br>local 的 name 与对应的值之间的映射关系++</li>
+</ul>
+</li>
+<li>PyFrameObject 对象是个变长对象，每段Code Block 在执行时所需的栈空间大小不同。</li>
+<li>运行时栈：执行计算所需要的内存。</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">typedef struct _frame &#123;</span><br><span class="line">    PyObject_VAR_HEAD</span><br><span class="line">    struct _frame *f_back;	/* previous frame, or NULL *///执行环境链上的前一个frame</span><br><span class="line">    PyCodeObject *f_code;	/* code segment PyCodeObject对象*/</span><br><span class="line">    PyObject *f_builtins;	/* builtin symbol table (PyDictObject) builtins 命名空间*/</span><br><span class="line">    PyObject *f_globals;	/* global symbol table (PyDictObject) global 名字空间*/</span><br><span class="line">    PyObject *f_locals;		/* local symbol table (any mapping) local 名字空间*/</span><br><span class="line">    PyObject **f_valuestack;	/* points after the last local 运行时栈的栈第位置*/</span><br><span class="line">    /* Next free slot in f_valuestack.  Frame creation sets to f_valuestack.</span><br><span class="line">       Frame evaluation usually NULLs it, but a frame that yields sets it</span><br><span class="line">       to the current stack top. */</span><br><span class="line">    PyObject **f_stacktop;/*运行时栈的栈顶位置*/</span><br><span class="line">    PyObject *f_trace;		/* Trace function */</span><br><span class="line"></span><br><span class="line">    /* If an exception is raised in this frame, the next three are used to</span><br><span class="line">     * record the exception info (if any) originally in the thread state.  See</span><br><span class="line">     * comments before set_exc_info() -- it&apos;s not obvious.</span><br><span class="line">     * Invariant:  if _type is NULL, then so are _value and _traceback.</span><br><span class="line">     * Desired invariant:  all three are NULL, or all three are non-NULL.  That</span><br><span class="line">     * one isn&apos;t currently true, but &quot;should be&quot;.</span><br><span class="line">     */</span><br><span class="line">    PyObject *f_exc_type, *f_exc_value, *f_exc_traceback;</span><br><span class="line"></span><br><span class="line">    PyThreadState *f_tstate;</span><br><span class="line">    int f_lasti;		/* Last instruction if called 上一条字节码指令在f_code中的偏移位置*/</span><br><span class="line">    /* Call PyFrame_GetLineNumber() instead of reading this field</span><br><span class="line">       directly.  As of 2.3 f_lineno is only valid when tracing is</span><br><span class="line">       active (i.e. when f_trace is set).  At other times we use</span><br><span class="line">       PyCode_Addr2Line to calculate the line from the current</span><br><span class="line">       bytecode index. */</span><br><span class="line">    int f_lineno;		/* Current line number 当前字节码对应的源代码行*/</span><br><span class="line">    int f_iblock;		/* index in f_blockstack */</span><br><span class="line">    PyTryBlock f_blockstack[CO_MAXBLOCKS]; /* for try and loop blocks */</span><br><span class="line">    PyObject *f_localsplus[1];	/* locals+stack, dynamically sized动态内存，维护（局部变量+cell对象集合+free对象集合+运行时栈）所需要的空间 */</span><br><span class="line">&#125; PyFrameObject;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>PyFrameObject 对象中的栈的起始位置（也就是栈底）是由<code>f_valuestack</code> 维护的，而<code>f_stacktop</code> 维护了当前的栈顶。<br><img src="http://new.51cto.com/files/uploadimg/20080723/155957338.jpg" alt="新创建的PyFrameObject 对象"><h3 id="8-1-2-PyFrameObject-中的动态内存空间"><a href="#8-1-2-PyFrameObject-中的动态内存空间" class="headerlink" title="8.1.2 PyFrameObject 中的动态内存空间"></a>8.1.2 PyFrameObject 中的动态内存空间</h3></li>
+<li>创建PyFrameObject对象–PyFrame_New</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">[frameobject.c](有删节)</span><br><span class="line">PyFrameObject * PyFrame_New(PyThreadState *tstate, PyCodeObject *code, PyObject *globals,</span><br><span class="line">PyObject *locals)</span><br><span class="line">&#123;</span><br><span class="line">    PyFrameObject *f;</span><br><span class="line">    int extras, ncells, nfrees, i;</span><br><span class="line">    ncells = PyTuple_GET_SIZE(code-&gt;co_cellvars);</span><br><span class="line">    nfrees = PyTuple_GET_SIZE(code-&gt;co_freevars);</span><br><span class="line">    //四部分构成PyFrameObject维护的动态内存区，其大小由extras确定</span><br><span class="line">    extras = code-&gt;co_stacksize + code-&gt;co_nlocals + ncells + nfrees;</span><br><span class="line">    f = PyObject_GC_NewVar(PyFrameObject, &amp;PyFrame_Type, extras);</span><br><span class="line">  </span><br><span class="line">    f-&gt;f_nlocals = code-&gt;co_nlocals;</span><br><span class="line">    f-&gt;f_stacksize = code-&gt;co_stacksize;</span><br><span class="line">    f-&gt;f_ncells = ncells;</span><br><span class="line">    f-&gt;f_nfreevars = nfrees;</span><br><span class="line">      //计算初始化时运行时栈的栈顶</span><br><span class="line">    extras = f-&gt;f_nlocals + ncells + nfrees;</span><br><span class="line">    //f_valuestack 维护运行时栈的栈底，f_stacktop </span><br><span class="line">维护运行时栈的栈顶</span><br><span class="line">    f-&gt;f_valuestack = f-&gt;f_localsplus + extras;</span><br><span class="line">    f-&gt;f_stacktop = f-&gt;f_valuestack;</span><br><span class="line">    return f;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="8-1-3-在Python-中访问PyFrameObject-对象"><a href="#8-1-3-在Python-中访问PyFrameObject-对象" class="headerlink" title="8.1.3 在Python 中访问PyFrameObject 对象"></a>8.1.3 在Python 中访问PyFrameObject 对象</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">import sys</span><br><span class="line">value = 3</span><br><span class="line"></span><br><span class="line">def g():</span><br><span class="line">	frame = sys._getframe()</span><br><span class="line">	print &apos;current function is : &apos;, frame.f_code.co_name</span><br><span class="line">	caller = frame.f_back</span><br><span class="line">	print &apos;caller function is : &apos;, caller.f_code.co_name</span><br><span class="line">	print &quot;caller&apos;s local namespace : &quot;, caller.f_locals</span><br><span class="line">	print &quot;caller&apos;s global namespace : &quot;,caller.f_globals.keys()</span><br><span class="line"></span><br><span class="line">def f():</span><br><span class="line">	a = 1</span><br><span class="line">	b = 2</span><br><span class="line">	g()</span><br><span class="line">def show():</span><br><span class="line">	f()</span><br><span class="line"></span><br><span class="line">show()</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">import sys</span><br><span class="line">def get_current_frame():</span><br><span class="line">try:</span><br><span class="line">1/0</span><br><span class="line">except Exception, e:</span><br><span class="line">type, value, traceback = sys.exc_info()</span><br><span class="line">return traceback.tb_frame.f_back</span><br></pre></td></tr></table></figure>
+
+<h2 id="8-2-名字、作用域和名字空间"><a href="#8-2-名字、作用域和名字空间" class="headerlink" title="8.2 名字、作用域和名字空间"></a>8.2 名字、作用域和名字空间</h2><h3 id="8-2-1-Python-程序的基础结构——module"><a href="#8-2-1-Python-程序的基础结构——module" class="headerlink" title="8.2.1 Python 程序的基础结构——module"></a>8.2.1 Python 程序的基础结构——module</h3><ul>
+<li>一个module一个命名空间</li>
+</ul>
+<h3 id="8-2-2-约束与名字空间"><a href="#8-2-2-约束与名字空间" class="headerlink" title="8.2.2 约束与名字空间"></a>8.2.2 约束与名字空间</h3><ul>
+<li>赋值语句<ul>
+<li>创建一个对象obj，然后将obj“赋给”一个名字name</li>
+<li>约束：&lt;name,job&gt;对象名和赋值的操作</li>
+<li>一个对象的++名字空间中的所有名字++都称为对象的属性。</li>
+<li>那么Python 中还有一类“拥有访问对象属性的行为”的语句，我们将访问对象属性这个动作称之为“属性引用”。如：“A.a”就是一个属性引用</li>
+<li>但在module 内部，对名字空间的使用有着另一套不同的规则。</li>
+</ul>
+</li>
+</ul>
+<h3 id="8-2-2-作用域与名字空间"><a href="#8-2-2-作用域与名字空间" class="headerlink" title="8.2.2 作用域与名字空间"></a>8.2.2 作用域与名字空间</h3><ul>
+<li>在一个module内部，可能存在多个名字空间。每个名字空间和一个作用域相对应。</li>
+<li>约束作用域：一个约束起作用的程序正文区域。</li>
+<li>嵌套作用域：</li>
+</ul>
+<h4 id="8-2-3-1-LGB-规则"><a href="#8-2-3-1-LGB-规则" class="headerlink" title="8.2.3.1 LGB 规则"></a>8.2.3.1 LGB 规则</h4><ul>
+<li>一个module 对应的源文件定义了一个作用域，这个称为global 作用域（对应global 名字空间）</li>
+<li>一个函数定义了一个local 作用域（对应于local 名字空间）</li>
+<li>Python 自身还定义了一个最顶层的作用域——builtin 作用域（对应于builtin 名字空间，在这里定义了Python 的builtin 函数，比如dir、open、range 等）</li>
+<li>B.PY的作用域</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">[B.py]</span><br><span class="line">a=1 //[1]</span><br><span class="line">def f():</span><br><span class="line">    a=2     //[2]</span><br><span class="line">    print a     //[3]</span><br><span class="line">print a     //[4]</span><br></pre></td></tr></table></figure>
+
+<p><img src="http://new.51cto.com/files/uploadimg/20080723/161509248.jpg" alt="Python2.2 之前的LGB 作用域规则"></p>
+<h4 id="8-2-3-2-LEGB-规则"><a href="#8-2-3-2-LEGB-规则" class="headerlink" title="8.2.3.2 LEGB 规则"></a>8.2.3.2 LEGB 规则</h4><ul>
+<li>嵌套函数<ul>
+<li>作用域仅仅是由文本决定的，函数g 位于函数f 之内，所以函数g 定义的作用域内嵌于函数f 的作用域之内</li>
+</ul>
+</li>
+<li>闭包：<ul>
+<li>在[2]处，“a = 2”这个约束已经不起作用了，但是Python 在执行“func = f()”时，会执行函数f 中的“def g():”语句，这时Python 会将约束“a = 2”与函数g 对应的函数对象捆绑在一起，将捆绑后的结果返回，这个捆绑起来的整体被称为“闭包”。</li>
+</ul>
+</li>
+<li>Python 实现闭包是为了实现最内嵌套作用域规则。<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">[C.py]</span><br><span class="line">a = 1</span><br><span class="line">def f():</span><br><span class="line">    a = 2</span><br><span class="line">    def g():</span><br><span class="line">        print a //[1]：输出结果为2</span><br><span class="line">    return g</span><br><span class="line">func = f()</span><br><span class="line">func()//[2]</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h4 id="8-2-3-3-global-表达式"><a href="#8-2-3-3-global-表达式" class="headerlink" title="8.2.3.3 global 表达式"></a>8.2.3.3 global 表达式</h4><ul>
+<li>++由一个赋值语句引进的名字在这个赋值语句所在的作用域里是可见（起作用）的++<ul>
+<li><blockquote>
+<p>就是说虽然“a = 2”这个约束是在“printa”之后建立的，但是由于它们在同一个作用域内，所以在代码清单8-2 的[1]处，“a = 2”这个约束的名字a 就是可见的，按照LEGB 规则，在local 名字空间中就能找到名字a，所以使用的是local 名字空间中的a 所对应的对象。但是很不幸的是，虽然名字a 在[1]处已经可见了，但是要到[2]处对这个名字的赋值动作才会发生，a 才会引用一个有效的对象，所以在[1]处当然应该抛出一个“referenced before assignment”的异常。</p>
+</blockquote>
+</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">\\输出异常UnboundLocalError: local variable &apos;a&apos; referenced before assignment</span><br><span class="line">a = 1</span><br><span class="line">def g():</span><br><span class="line">        print a</span><br><span class="line">def f():</span><br><span class="line">        print a //[1]</span><br><span class="line">        a = 2 //[2]</span><br><span class="line">        print a</span><br><span class="line">g()</span><br><span class="line">f()</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>global声明</li>
+</ul>
+<h4 id="8-2-3-4-属性引用与名字引用"><a href="#8-2-3-4-属性引用与名字引用" class="headerlink" title="8.2.3.4 属性引用与名字引用"></a>8.2.3.4 属性引用与名字引用</h4><ul>
+<li><p>名字引用：直接调用对象的名字</p>
+</li>
+<li><p>属性引用：通过对象的名字调用其属性，到名字空间中查找属性名字所引用的对象</p>
+</li>
+</ul>
+<h2 id="8-3-Python虚拟机的运行框架"><a href="#8-3-Python虚拟机的运行框架" class="headerlink" title="8.3 Python虚拟机的运行框架"></a>8.3 Python虚拟机的运行框架</h2><ul>
+<li>PyEval_EvalFrameEx  虚拟机的具体实现</li>
+<li>初始化变量<ul>
+<li>first_instr（<code>char*</code>类型的变量） 永远指向字节码指令序列的开始位置；</li>
+<li>next_instr 永远指向下一条待执行的字节码指令的位置；</li>
+<li>f_lasti 指向上一条已经执行过的字节码指令的位置。<br><img src="http://new.51cto.com/files/uploadimg/20080723/163109500.jpg" alt="遍历字节码指令序列"></li>
+</ul>
+</li>
+<li>实现<ul>
+<li>Python 在获得了一条字节码指令和其需要的指令参数后，会对字节码指令利用switch进行判断，根据判断的结果选择不同的case 语句，每一条字节码指令都会对应一个case语句。在case 语句中，就是Python 对字节码指令的实现。</li>
+<li>why ： 指示了在退出这个巨大的for 循环时Python 执行引擎的状态，异常或正常退出。（Python 结束字节码执行时的状态）</li>
+<li><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">[ceval.c]</span><br><span class="line">/* Interpreter main loop */</span><br><span class="line">PyObject* PyEval_EvalFrameEx</span><br><span class="line">(PyFrameObject *f, int throwflag)</span><br><span class="line">&#123;</span><br><span class="line">	……</span><br><span class="line">	why = WHY_NOT;</span><br><span class="line">	……</span><br><span class="line">	for (;;) &#123;</span><br><span class="line">		……</span><br><span class="line">		fast_next_opcode:</span><br><span class="line">		f-&gt;f_lasti = INSTR_OFFSET();</span><br><span class="line">		//获得字节码指令</span><br><span class="line">		opcode = NEXTOP();</span><br><span class="line">		oparg = 0;</span><br><span class="line">		//如果指令需要参数，获得指令参数</span><br><span class="line">		if (HAS_ARG(opcode))</span><br><span class="line">		oparg = NEXTARG();</span><br><span class="line">		dispatch_opcode:</span><br><span class="line">		switch (opcode) &#123;</span><br><span class="line">			case NOP:</span><br><span class="line">			goto fast_next_opcode;</span><br><span class="line">			case LOAD_FAST:</span><br><span class="line">			……</span><br><span class="line">			&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="8-4-Python运行时环境初探"><a href="#8-4-Python运行时环境初探" class="headerlink" title="8.4 ++Python运行时环境初探++"></a>8.4 ++Python运行时环境初探++</h2><ul>
+<li>进程和线程<ul>
+<li>进程是线程的活动环境</li>
+<li>同一个进程中的多个线程会共享进程地址空间中的全局变量</li>
+<li>PyThreadState 对象：线程状态信息的抽象</li>
+<li>PyInterpreterState 对象：进程这个抽象概念</li>
+</ul>
+</li>
+</ul>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">[pystate.h]</span><br><span class="line">typedef struct _is &#123;</span><br><span class="line">	struct _is *next;</span><br><span class="line">	struct _ts *tstate_head; //模拟进程环境中的线程集合</span><br><span class="line">	PyObject *modules;</span><br><span class="line">	PyObject *sysdict;</span><br><span class="line">	PyObject *builtins;</span><br><span class="line">	……</span><br><span class="line">&#125; PyInterpreterState;</span><br><span class="line"></span><br><span class="line">typedef struct _ts &#123;</span><br><span class="line">	struct _ts *next;</span><br><span class="line">	PyInterpreterState *interp;</span><br><span class="line">	struct _frame *frame; //模拟线程中的函数调用堆栈</span><br><span class="line">	int recursion_depth;</span><br><span class="line">	……</span><br><span class="line">	PyObject *dict;</span><br><span class="line">	……</span><br><span class="line">	long thread_id;</span><br><span class="line">&#125; PyThreadState;</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://images.51cto.com/files/uploadimg/20080723/1640230.jpg" alt="Python 的运行时环境"></p>
+<h2 id="疑问"><a href="#疑问" class="headerlink" title="疑问"></a>疑问</h2><ul>
+<li>由一个赋值语句引进的名字在这个赋值语句所在的作用域里是可见（起作用）的<ul>
+<li>a=2定义在print a 之后，源码是怎么实现其是可见的<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">a=1</span><br><span class="line">def f()</span><br><span class="line">    a=2</span><br><span class="line">    print a</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+</li>
+</ul>
+<h2 id="参考文件"><a href="#参考文件" class="headerlink" title="参考文件"></a>参考文件</h2><p><a href="https://www.cnblogs.com/beiluowuzheng/p/9383603.html" target="_blank" rel="noopener">Python虚拟机中的执行环境（顶）</a><br><a href="http://book.51cto.com/art/200807/82508.htm" target="_blank" rel="noopener">Python 虚拟机中的执行环境</a><br><a href="https://blog.csdn.net/wenxueliu/article/details/80919947" target="_blank" rel="noopener">Python 源码分析之字节码之基本操作</a></p>
+
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+          <div class="post-eof"></div>
+        
+      </footer>
+  </div>
+  
+  
+  
+  </article>
+
+    
+        <article itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block home">
     <link itemprop="mainEntityOfPage" href="https://ztzheng100.github.io.git/2019/09/08/python源码剖析/第10章-Python虚拟机中的控制流/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1594,209 +1814,11 @@
   </article>
 
     
-        <article itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block home">
-    <link itemprop="mainEntityOfPage" href="https://ztzheng100.github.io.git/2019/09/08/python源码剖析/第1章-Python对象初探/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="zzt">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Hexo">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-            
-            <a href="/2019/09/08/python源码剖析/第1章-Python对象初探/" class="post-title-link" itemprop="url">第1章 Python对象初探</a>
-          
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              
-                
-              
-
-              <time title="创建时间：2019-09-08 18:27:22 / 修改时间：19:59:45" itemprop="dateCreated datePublished" datetime="2019-09-08T18:27:22+08:00">2019-09-08</time>
-            </span>
-          
-            
-
-            
-          
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/python源码剖析/" itemprop="url" rel="index"><span itemprop="name">python源码剖析</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <p>[toc]</p>
-<h1 id="第1部分-Python内建对象13"><a href="#第1部分-Python内建对象13" class="headerlink" title="第1部分 Python内建对象13"></a>第1部分 Python内建对象13</h1><ul>
-<li>keyword<br>  ++对象在c层面的实现方式  类型对象的作用  类型对象和实例的关系++</li>
-</ul>
-<h1 id="第1章-Python对象初探"><a href="#第1章-Python对象初探" class="headerlink" title="第1章 Python对象初探"></a>第1章 Python对象初探</h1><h2 id="1-1-Python内的对象"><a href="#1-1-Python内的对象" class="headerlink" title="1.1 Python内的对象"></a>1.1 Python内的对象</h2><ul>
-<li>python中所有对象共有信息的定义  </li>
-<li>对象：是数据以及基于这些数据的操作的集合</li>
-<li>python所有内建的类型对象都是被静态初始化的。而c结构体是在堆申请一块内存<blockquote>
-<p><a href="https://www.cnblogs.com/yechanglv/p/6941993.html" target="_blank" rel="noopener">https://www.cnblogs.com/yechanglv/p/6941993.html</a></p>
-</blockquote>
-</li>
-<li>python中，对象A一旦被创建，它在内存中的大小就不变了。一旦对象是可变长度的数据的对象，就在对象内维护一个指向可变大小的内存区域</li>
-</ul>
-<h3 id="1-1-1-对象机制的基石-PyObject"><a href="#1-1-1-对象机制的基石-PyObject" class="headerlink" title="1.1.1 对象机制的基石__PyObject"></a>1.1.1 对象机制的基石__PyObject</h3><ul>
-<li><p>_object对象</p>
-  <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[object.h] #简化</span><br><span class="line">typedef struct _object &#123;</span><br><span class="line">int ob_refcnt;</span><br><span class="line">struct _typeobject *ob_type;</span><br><span class="line">&#125; PyObject;</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>ob_refcnt：内存管理机制，基于引用计数的垃圾收集机制。</li>
-<li>_typeobject：类型信息，后面详解。</li>
-</ul>
-</li>
-</ul>
-<h3 id="1-1-2-定长对象和变长对象"><a href="#1-1-2-定长对象和变长对象" class="headerlink" title="1.1.2 定长对象和变长对象"></a>1.1.2 定长对象和变长对象</h3><ul>
-<li>ob_size：容器内所容纳元素的的个数</li>
-<li>变长对象<ul>
-<li></li>
-</ul>
-</li>
-</ul>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">[object.h] #简化</span><br><span class="line">typedef struct &#123;</span><br><span class="line">	PyObject_VAR_HEAD</span><br><span class="line">&#125; PyVarObject;</span><br><span class="line"></span><br><span class="line">#define PyObject_VAR_HEAD		\</span><br><span class="line">	PyObject_HEAD			\</span><br><span class="line">	Py_ssize_t ob_size; /* Number of items in variable part */</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">#define PyObject_HEAD			\</span><br><span class="line">	_PyObject_HEAD_EXTRA		\</span><br><span class="line">	Py_ssize_t ob_refcnt;		\</span><br><span class="line">	struct _typeobject *ob_type;</span><br></pre></td></tr></table></figure>
-
-<h2 id="1-2-类型对象19"><a href="#1-2-类型对象19" class="headerlink" title="1.2 类型对象19"></a>1.2 类型对象19</h2><ul>
-<li>在_typeobject 的定义中包含了许多的信息，主要可以分为4 类：<ul>
-<li>类型名，tp_name，主要是Python 内部以及调试的时候使用；</li>
-<li>创建该类型对象时分配内存空间大小的信息，即<code>tp_basicsize 和tp_itemsize</code>；</li>
-<li>与该类型对象相关联的操作信息（就是诸如tp_print 这样的许多的函数指针）</li>
-</ul>
-</li>
-</ul>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">[object.h] #简化</span><br><span class="line">typedef struct _typeobject &#123;</span><br><span class="line">	PyObject_VAR_HEAD</span><br><span class="line">	const char *tp_name; /* For printing, in format &quot;&lt;module&gt;.&lt;name&gt;&quot; */</span><br><span class="line">	Py_ssize_t tp_basicsize, tp_itemsize; /* For allocation */</span><br><span class="line">	....</span><br><span class="line">&#125; PyTypeObject;</span><br></pre></td></tr></table></figure>
-
-<h3 id="1-2-1-对象的创建"><a href="#1-2-1-对象的创建" class="headerlink" title="1.2.1 对象的创建"></a>1.2.1 对象的创建</h3><ul>
-<li>Python 的C API 分成两类<ol>
-<li>一类称为范型的API，或者称为AOL（Abstract Object Layer）<ul>
-<li>形式:<code>PyObject_***</code></li>
-<li><code>输出对象的PyObject_Print ， 你可以PyObject_Print(int object) ， 也可以PyObject_Print(stringobject)，</code></li>
-</ul>
-</li>
-<li>另一类是与类型相关的API，或者称为COL（Concrete Object Layer）<ul>
-<li>这类API 通常只能作用在某一种类型的对象上，对于每一种内建对象，Python 都提供了这样的一组API。</li>
-<li>比如对于整数对象，我们可以利用如下的API 来创建，<code>PyObject intObj = PyInt_FromLong(10)</code>，这样就创建了一个值为10 的整数对象。</li>
-</ul>
-</li>
-</ol>
-</li>
-<li><code>int(10)</code>的执行过程<ul>
-<li>结果：当我们执行“int(10)”这样的表达式时，就是通过PyInt_Type 创建了一个整数对象。</li>
-</ul>
-<ol>
-<li>通过PyInt_Type 创建了一个整数对象。</li>
-<li>首先<code>PyInt_Type 中的tp_new</code> 会被调用，</li>
-<li><code>如果这个tp_new 为NULL（真正的PyInt_Type 中并不为NULL，我们这里只是举例说明tp_new 为NULL 的情况），那么会到tp_base 指定的基类中去寻找tp_new 操作</code></li>
-<li><code>PyBaseObject_Type 的tp_new</code>指向了object_new。</li>
-<li><img src="http://new.51cto.com/files/uploadimg/20080723/144411249.jpg" alt="image"><blockquote>
-<p>标上序号的虚线箭头代表了创建整数对象的函数调用流程，</p>
-</blockquote>
-</li>
-</ol>
-</li>
-<li><code>typedef PyObject *(*allocfunc)(struct _typeobject *, Py_ssize_t);</code><blockquote>
-<p> <a href="https://www.cnblogs.com/haore147/p/3647262.html" target="_blank" rel="noopener">c语言函数指针的理解与使用</a></p>
-</blockquote>
-</li>
-</ul>
-<h3 id="1-2-2-对象的行为"><a href="#1-2-2-对象的行为" class="headerlink" title="1.2.2 对象的行为"></a>1.2.2 对象的行为</h3><ul>
-<li><p>PyTypeObject 中定义了大量的函数指针，会指向某个函数/null,这些函数指针可以视为类型对象中所定义的操作，而这些操作直接决定着一个对象在运行时所表现出的行为。</p>
-</li>
-<li><p>函数指针举例</p>
-<ul>
-<li>tp_hash 指明对于该类型的对象，如何生成其hash 值。</li>
-<li><code>tp_new，tp_init</code> 是如何决定一个实例对象被创建出来并初始化的</li>
-<li><code>tp_as_number</code>：指向PyNumberMethods函数族，定义了数值对象应该支持的操作<ul>
-<li><code>tp_as_number.nb_add</code> 就指定了对该对象进行加法操作时的具体行为。</li>
-</ul>
-</li>
-<li><code>tp_as_sequence</code>:指向PySequenceMethods函数族，序列对象list</li>
-<li><code>tp_as_mapping</code>:指向PyMappingMethods函数族，关联对象dict<blockquote>
-<p>归根结底就在于PyTypeObject 中允许一种类型同时指定三种不同对象的行为特性。</p>
-</blockquote>
-<h3 id="1-2-3-类型的类型"><a href="#1-2-3-类型的类型" class="headerlink" title="1.2.3 类型的类型"></a>1.2.3 类型的类型</h3></li>
-</ul>
-</li>
-<li><p>Python 中的类型实际上也是一个对象:PyType_Type</p>
-</li>
-<li><p>类型对象的类型是什么呢？PyType_Type</p>
-<ul>
-<li>PyType_Type 在Python 的类型机制中是一个至关重要的对象，所有用户自定义class所对应的PyTypeObject 对象都是通过这个对象创建的<br><img src="http://new.51cto.com/files/uploadimg/20080723/1456420.jpg" alt="image"></li>
-<li></li>
-</ul>
-</li>
-<li><p>PyInt_Type 是怎么和PyType_Type 建立关系的</p>
-  <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">[intobject.c]</span><br><span class="line">PyTypeObject PyInt_Type = &#123;</span><br><span class="line">PyObject_HEAD_INIT(&amp;PyType_Type)</span><br><span class="line">0,</span><br><span class="line">&quot;int&quot;,</span><br><span class="line">sizeof(PyIntObject),</span><br><span class="line">……</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
-
-<ul>
-<li>例子：一个整数对象在运行时的形象的表示了，如图<br><img src="http://new.51cto.com/files/uploadimg/20080723/1456421.jpg" alt="image"><br>图1-6 运行时整数对象及其类型之间的关系</li>
-</ul>
-</li>
-</ul>
-<h2 id="1-3-Python对象的多态性"><a href="#1-3-Python对象的多态性" class="headerlink" title="1.3 Python对象的多态性"></a>1.3 Python对象的多态性</h2><ul>
-<li>函数之间通过对象传递，每个对象的ob_type中记录的对象的对应的可执行操作<h2 id="1-4-引用计数"><a href="#1-4-引用计数" class="headerlink" title="1.4 引用计数"></a>1.4 引用计数</h2><h2 id="1-5-Python对象的分类28"><a href="#1-5-Python对象的分类28" class="headerlink" title="1.5 Python对象的分类28"></a>1.5 Python对象的分类28</h2></li>
-</ul>
-<p><img src="http://new.51cto.com/files/uploadimg/20080723/150500446.jpg" alt="image"></p>
-
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-          <div class="post-eof"></div>
-        
-      </footer>
-  </div>
-  
-  
-  
-  </article>
-
-    
   </div>
 
   
   <nav class="pagination">
-    <a class="extend prev" rel="prev" href="/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="page-number current">2</span>
+    <a class="extend prev" rel="prev" href="/"><i class="fa fa-angle-left" aria-label="上一页"></i></a><a class="page-number" href="/">1</a><span class="page-number current">2</span><a class="page-number" href="/page/3/">3</a><a class="extend next" rel="next" href="/page/3/"><i class="fa fa-angle-right" aria-label="下一页"></i></a>
   </nav>
 
 
@@ -1841,7 +1863,7 @@
         
           <a href="/archives/">
         
-          <span class="site-state-item-count">20</span>
+          <span class="site-state-item-count">21</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -1858,7 +1880,9 @@
         
           
         
-        <span class="site-state-item-count">1</span>
+          
+        
+        <span class="site-state-item-count">2</span>
         <span class="site-state-item-name">分类</span>
         </a>
       </div>
@@ -1877,7 +1901,9 @@
         
           
         
-        <span class="site-state-item-count">2</span>
+          
+        
+        <span class="site-state-item-count">3</span>
         <span class="site-state-item-name">标签</span>
         </a>
       </div>
