@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+
+
+
+
+
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.4.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.4.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.4.0">
+  <link rel="mask-icon" href="/images/logo.svg?v=7.4.0" color="#222">
+
+<link rel="stylesheet" href="/css/main.css?v=7.4.0">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '7.4.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    },
+    sidebarPadding: 40
+  };
+</script>
+
+  <meta name="description" content="三、深入类和对象1. 鸭子类型和多态   维基百科：">
+<meta name="keywords" content="python">
+<meta property="og:type" content="article">
+<meta property="og:title" content="三、深入类和对象">
+<meta property="og:url" content="https://ztzheng100.github.io.git/2019/09/08/python进阶/3深入类和对象/index.html">
+<meta property="og:site_name" content="ZZT_blog">
+<meta property="og:description" content="三、深入类和对象1. 鸭子类型和多态   维基百科：">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-09-09T08:16:59.401Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="三、深入类和对象">
+<meta name="twitter:description" content="三、深入类和对象1. 鸭子类型和多态   维基百科：">
+  <link rel="canonical" href="https://ztzheng100.github.io.git/2019/09/08/python进阶/3深入类和对象/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>三、深入类和对象 | ZZT_blog</title>
+  <meta name="generator" content="Hexo 3.9.0">
+  
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">ZZT_blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+      
+      
+      
+        
+        <li class="menu-item menu-item-home">
+      
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-tags">
+      
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-categories">
+      
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-archives">
+      
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-guestbook">
+      
+    
+
+    <a href="/guestbook" rel="section"><i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br>guestbook</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+            
+
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+      <article itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block post">
+    <link itemprop="mainEntityOfPage" href="https://ztzheng100.github.io.git/2019/09/08/python进阶/3深入类和对象/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zzt">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ZZT_blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">三、深入类和对象
+
+          
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              
+                
+              
+
+              <time title="创建时间：2019-09-08 20:24:35" itemprop="dateCreated datePublished" datetime="2019-09-08T20:24:35+08:00">2019-09-08</time>
+            </span>
+          
+            
+
+            
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2019-09-09 16:16:59" itemprop="dateModified" datetime="2019-09-09T16:16:59+08:00">2019-09-09</time>
+              </span>
+            
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/python进阶/" itemprop="url" rel="index"><span itemprop="name">python进阶</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="三、深入类和对象"><a href="#三、深入类和对象" class="headerlink" title="三、深入类和对象"></a>三、深入类和对象</h1><h3 id="1-鸭子类型和多态"><a href="#1-鸭子类型和多态" class="headerlink" title="1. 鸭子类型和多态"></a>1. 鸭子类型和多态</h3><p>   维基百科：</p><a id="more"></a>
+<blockquote>
+<p>动态编程语言是一类在运行时可以改变其结构的语言：例如新的函数、对象、甚至代码可以被引进，已有的函数可以被删除或是其他结构上的变化。动态语言目前非常具有活力如PHP、Ruby、Python 都属于动态语言，而C、C++、Java等语言则不属于动态语言。</p>
+</blockquote>
+<p>这个解释很抽象，其实动态语言是相对静态语言而言的，静态语言的特点是在程序执行前，代码编译时从代码中就可以知道一切，比如变量的类型，方法的返回值类型：</p>
+<pre><code>String s = &quot;hello&quot;
+s = &quot;world&quot;
+s = 1 // 编译时就会报错</code></pre><p>在静态语言中，变量有类型信息，它是一块内存区域，静态语言的优点是代码结构非常规范，便于调试，但有时显得啰嗦。而动态语言只有等到程序运行时才知道一切，变量（严格来说叫名字，就像人的名字一样）不需要指定类型，变量本身没有任何类型信息，类型信息在对象身上，对象是什么类型，必须等到程序运行时才知道，动态类型语言的优点在于方便阅读，不需要写很多类型相关的代码；缺点是不方便调试，命名不规范时会造成读不懂，不利于理解等。</p>
+<pre><code>s = &quot;hello&quot;
+s = &quot;world&quot;
+s = 1  # 可以给变量随意赋值，无论是什么类型都可以</code></pre><p><strong>鸭子类型:</strong><br></p>
+<hr>
+<p>动态语言中经常提到鸭子类型，所谓鸭子类型就是：如果走起路来像鸭子，叫起来也像鸭子，那么它就是鸭子（If it walks like a duck and quacks like a duck, it must be a duck）。鸭子类型是编程语言中动态类型语言中的一种设计风格，一个对象的特征不是由父类决定，而是通过对象的方法决定的。</p>
+<p>如果你学的是Java或者C++等静态语言，可能对鸭子类型的理解没那么深刻，因为静态语言中对象的特性取决于其父类。而动态语言则不一样，比如迭代器，任何实现了 <strong>iter</strong> 和 <strong>next</strong>方法的对象都可称之为迭代器，但对象本身是什么类型不受限制，可以自定义为任何类</p>
+<pre><code># python3
+class Foo:
+    def __iter__(self):
+        pass
+
+    def __next__(self):
+        pass
+
+from collections import Iterable
+from collections import Iterator
+
+print(isinstance(Foo(), Iterable)) # True
+print(isinstance(Foo(), Iterator)) # True</code></pre><p>我们并不需要继承 Iterator 就可以实现迭代器的功能。当有一函数希望接收的参数是 Iterator 类型时，但是我们传递的是 Foo 的实例对象，其实也没问题，换成是Java等静态语言，就必须传递 Iterator或者是它的子类。鸭子类型通常得益于”不”测试方法和函数中参数的类型，而是依赖文档、清晰的代码和测试来确保正确使用，这既是优点也是缺点，缺点是需要通过文档才能知道参数类型，为了弥补这方面的不足，Python3.6引入了类型信息，定义变量的时候可以指定类型，例如：</p>
+<pre><code>def greeting(name: str) -&gt; str:
+    return &apos;Hello &apos; + name</code></pre><p>如下代码:   </p>
+<pre><code>class Cat(object):
+    def say(self):
+        print(&quot;i am a cat&quot;)
+
+class Dog(object):
+    def say(self):
+        print(&quot;i am a fish&quot;)
+
+class Duck(object):
+    def say(self):
+        print(&quot;i am a duck&quot;)
+
+animal_list = [Cat, Dog, Duck]
+for animal in animal_list:
+    animal().say()</code></pre><h3 id="2-抽象基类-abc模块"><a href="#2-抽象基类-abc模块" class="headerlink" title="2.抽象基类 (abc模块)"></a><strong>2.抽象基类 (abc模块)</strong></h3><p>定义一个接口或抽象类，并且通过执行类型检查来确保子类实现了某些特定的方法</p>
+<p>使用 abc 模块可以很轻松的定义抽象基类：</p>
+<pre><code>from abc import ABCMeta, abstractmethod
+
+class IStream(metaclass=ABCMeta):
+    @abstractmethod
+    def read(self, maxbytes=-1):
+        pass
+
+    @abstractmethod
+    def write(self, data):
+        pass</code></pre><p>抽象类的一个特点是它不能直接被实例化，比如你想像下面这样做是不行的：</p>
+<pre><code>a = IStream() # TypeError: Can&apos;t instantiate abstract class
+                # IStream with abstract methods read, write</code></pre><p>抽象类的目的就是让别的类继承它并实现特定的抽象方法：</p>
+<pre><code>class SocketStream(IStream):
+    def read(self, maxbytes=-1):
+        pass
+
+    def write(self, data):
+        pass</code></pre><p>抽象基类的一个主要用途是在代码中检查某些类是否为特定类型，实现了特定接口：</p>
+<pre><code>def serialize(obj, stream):
+    if not isinstance(stream, IStream):
+        raise TypeError(&apos;Expected an IStream&apos;)
+    pass</code></pre><p>除了继承这种方式外，还可以通过注册方式来让某个类实现抽象基类：</p>
+<pre><code>import io
+
+# Register the built-in I/O classes as supporting our interface
+IStream.register(io.IOBase)
+
+# Open a normal file and type check
+f = open(&apos;foo.txt&apos;)
+isinstance(f, IStream) # Returns True</code></pre><p>@abstractmethod 还能注解静态方法、类方法和 properties 。 你只需保证这个注解紧靠在函数定义前即可：</p>
+<pre><code>class A(metaclass=ABCMeta):
+@property
+@abstractmethod
+def name(self):
+    pass
+
+@name.setter
+@abstractmethod
+def name(self, value):
+    pass
+
+@classmethod
+@abstractmethod
+def method1(cls):
+    pass
+
+@staticmethod
+@abstractmethod
+def method2():
+    pass</code></pre><h3 id="3-使用isinstance而不是type"><a href="#3-使用isinstance而不是type" class="headerlink" title="3.使用isinstance而不是type"></a>3.使用<code>isinstance</code>而不是<code>type</code></h3><pre><code>class A:
+pass
+
+class B(A):
+    pass
+
+b = B()
+
+print(isinstance(b, B)) #True
+print(isinstance(b, A))  #True
+print(type(b) is A)  #False</code></pre><h3 id="4-类变量和对象变量"><a href="#4-类变量和对象变量" class="headerlink" title="4.类变量和对象变量"></a>4.类变量和对象变量</h3><pre><code>class A:
+aa = 1
+def __init__(self, x, y):
+    self.x = x
+    self.y = y
+
+a = A(2,3)
+
+A.aa = 11
+a.aa = 100
+print(a.x, a.y, a.aa)
+print(A.aa)
+
+&gt;&gt;&gt;  2 3 100
+&gt;&gt;&gt;11
+b = A(3,5)
+print(b.aa)
+&gt;&gt;&gt; 11</code></pre><h3 id="5-类属性和实例属性以及查找顺序"><a href="#5-类属性和实例属性以及查找顺序" class="headerlink" title="5.类属性和实例属性以及查找顺序"></a>5.类属性和实例属性以及查找顺序</h3><pre><code>#新式类
+class D:
+    pass
+class E:
+    pass
+class C(E):
+    pass
+class B(D):
+    pass
+class A(B, C):
+    name=&quot;A&quot;
+    def __init__(self):
+        self.name=&apos;obj&apos;
+a=A()
+print(a.name)
+print(A.__mro__)
+#结果如下:
+&gt;&gt;&gt;obj
+&gt;&gt;&gt;(&lt;class &apos;__main__.A&apos;&gt;, &lt;class &apos;__main__.B&apos;&gt;, &lt;class &apos;__main__.D&apos;&gt;, &lt;class &apos;__main__.C&apos;&gt;, &lt;class &apos;__main__.E&apos;&gt;, &lt;class &apos;object&apos;&gt;)</code></pre><h3 id="6-静态方法、类方法以及对象方法"><a href="#6-静态方法、类方法以及对象方法" class="headerlink" title="6.静态方法、类方法以及对象方法"></a>6.静态方法、类方法以及对象方法</h3><pre><code>class Date:
+    #构造函数
+    def __init__(self, year, month, day):
+        self.year = year
+        self.month = month
+        self.day = day
+
+    def tomorrow(self):
+        self.day += 1
+    #静态方法
+    @staticmethod
+    def parse_from_string(date_str):
+        year, month, day = tuple(date_str.split(&quot;-&quot;))
+        return Date(int(year), int(month), int(day))
+
+    @staticmethod
+    def valid_str(date_str):
+        year, month, day = tuple(date_str.split(&quot;-&quot;))
+        if int(year)&gt;0 and (int(month) &gt;0 and int(month)&lt;=12) and (int(day) &gt;0 and int(day)&lt;=31):
+            return True
+        else:
+            return False
+    #类方法
+    @classmethod
+    def from_string(cls, date_str):
+        year, month, day = tuple(date_str.split(&quot;-&quot;))
+        return cls(int(year), int(month), int(day))
+
+    def __str__(self):
+        return &quot;{year}/{month}/{day}&quot;.format(year=self.year, month=self.month, day=self.day)
+
+if __name__ == &quot;__main__&quot;:
+    new_day = Date(2018, 12, 31)
+    new_day.tomorrow()
+    print(new_day)
+
+    #2018-12-31
+    date_str = &quot;2018-12-31&quot;
+    year, month, day = tuple(date_str.split(&quot;-&quot;))
+    new_day = Date(int(year), int(month), int(day))
+    print (new_day)
+
+    #用staticmethod完成初始化
+    new_day = Date.parse_from_string(date_str)
+    print (new_day)
+
+    #用classmethod完成初始化
+    new_day = Date.from_string(date_str)
+    print(new_day)
+
+    print(Date.valid_str(&quot;2018-12-32&quot;))</code></pre><h3 id="7-数据封装和私有属性"><a href="#7-数据封装和私有属性" class="headerlink" title="7.数据封装和私有属性"></a>7.数据封装和私有属性</h3><p>使用<strong>来是实现私有属性<br>使用_User</strong>来访问私有属性，没有绝对的私有属性，都有突破口来访问，用来规范化代码</p>
+<pre><code>from class_method import Date
+class User:
+    def __init__(self, birthday):
+        self.__birthday = birthday
+    #使用双下划线实现私有属性
+    def get_age(self):
+        #返回年龄
+        return 2018 - self.__birthday.year
+
+
+if __name__ == &quot;__main__&quot;:
+    user = User(Date(1990,2,1))
+    # print(user._Student__birthday)
+    print(user._User__birthday)
+
+    print(user.get_age())</code></pre><h3 id="8-python对象的自省机制"><a href="#8-python对象的自省机制" class="headerlink" title="8.python对象的自省机制"></a>8.python对象的自省机制</h3><h3 id="9-super函数"><a href="#9-super函数" class="headerlink" title="9.super函数"></a>9.super函数</h3><h3 id="10-django-rest-framework中对多继承使用的经验"><a href="#10-django-rest-framework中对多继承使用的经验" class="headerlink" title="10.django rest framework中对多继承使用的经验"></a>10.django rest framework中对多继承使用的经验</h3><h3 id="11-python中的with语句"><a href="#11-python中的with语句" class="headerlink" title="11.python中的with语句"></a>11.python中的with语句</h3><h3 id="12-contextlib实现上下文管理器"><a href="#12-contextlib实现上下文管理器" class="headerlink" title="12.contextlib实现上下文管理器"></a>12.contextlib实现上下文管理器</h3>
+    </div>
+
+    
+    
+    
+        
+      
+
+      <footer class="post-footer">
+          
+            
+          
+          <div class="post-tags">
+            
+              <a href="/tags/python/" rel="tag"># python</a>
+            
+          </div>
+        
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+              
+                <a href="/2019/09/08/python进阶/5自定义序列类/" rel="next" title="五、自定义序列类">
+                  <i class="fa fa-chevron-left"></i> 五、自定义序列类
+                </a>
+              
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+              
+                <a href="/2019/09/08/python进阶/1python中一切皆对象/" rel="prev" title="python��һ�нԶ���">
+                  python��һ�нԶ��� <i class="fa fa-chevron-right"></i>
+                </a>
+              
+            </div>
+          </div>
+        
+      </footer>
+    
+  </div>
+  
+  
+  
+  </article>
+
+  </div>
+
+
+          </div>
+          
+
+        </div>
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+        
+        
+        
+        
+      
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#三、深入类和对象"><span class="nav-number">1.</span> <span class="nav-text">三、深入类和对象</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-鸭子类型和多态"><span class="nav-number">1.0.1.</span> <span class="nav-text">1. 鸭子类型和多态</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-抽象基类-abc模块"><span class="nav-number">1.0.2.</span> <span class="nav-text">2.抽象基类 (abc模块)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-使用isinstance而不是type"><span class="nav-number">1.0.3.</span> <span class="nav-text">3.使用isinstance而不是type</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-类变量和对象变量"><span class="nav-number">1.0.4.</span> <span class="nav-text">4.类变量和对象变量</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-类属性和实例属性以及查找顺序"><span class="nav-number">1.0.5.</span> <span class="nav-text">5.类属性和实例属性以及查找顺序</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-静态方法、类方法以及对象方法"><span class="nav-number">1.0.6.</span> <span class="nav-text">6.静态方法、类方法以及对象方法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-数据封装和私有属性"><span class="nav-number">1.0.7.</span> <span class="nav-text">7.数据封装和私有属性</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#8-python对象的自省机制"><span class="nav-number">1.0.8.</span> <span class="nav-text">8.python对象的自省机制</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#9-super函数"><span class="nav-number">1.0.9.</span> <span class="nav-text">9.super函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#10-django-rest-framework中对多继承使用的经验"><span class="nav-number">1.0.10.</span> <span class="nav-text">10.django rest framework中对多继承使用的经验</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#11-python中的with语句"><span class="nav-number">1.0.11.</span> <span class="nav-text">11.python中的with语句</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#12-contextlib实现上下文管理器"><span class="nav-number">1.0.12.</span> <span class="nav-text">12.contextlib实现上下文管理器</span></a></li></ol></li></ol></li></ol></div>
+        
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">zzt</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+  <nav class="site-state motion-element">
+      <div class="site-state-item site-state-posts">
+        
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">37</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-categories">
+        
+          
+            <a href="/categories/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">分类</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-tags">
+        
+          
+            <a href="/tags/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-name">标签</span>
+        </a>
+      </div>
+    
+  </nav>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zzt</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.9.0</div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.4.0</div>
+
+        
+
+
+
+
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+
+
+  <script src="/lib/anime.min.js?v=3.1.0"></script>
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+<script src="/js/utils.js?v=7.4.0"></script><script src="/js/motion.js?v=7.4.0"></script>
+<script src="/js/schemes/pisces.js?v=7.4.0"></script>
+<script src="/js/next-boot.js?v=7.4.0"></script>
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+</body>
+</html>

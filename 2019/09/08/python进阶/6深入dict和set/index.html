@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+
+
+
+
+
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.4.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.4.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.4.0">
+  <link rel="mask-icon" href="/images/logo.svg?v=7.4.0" color="#222">
+
+<link rel="stylesheet" href="/css/main.css?v=7.4.0">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '7.4.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    },
+    sidebarPadding: 40
+  };
+</script>
+
+  <meta name="description" content="六、深入dict和set1.collections中的abc">
+<meta name="keywords" content="python">
+<meta property="og:type" content="article">
+<meta property="og:title" content="六、深入dict和set">
+<meta property="og:url" content="https://ztzheng100.github.io.git/2019/09/08/python进阶/6深入dict和set/index.html">
+<meta property="og:site_name" content="ZZT_blog">
+<meta property="og:description" content="六、深入dict和set1.collections中的abc">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:updated_time" content="2019-09-09T08:18:29.557Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="六、深入dict和set">
+<meta name="twitter:description" content="六、深入dict和set1.collections中的abc">
+  <link rel="canonical" href="https://ztzheng100.github.io.git/2019/09/08/python进阶/6深入dict和set/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>六、深入dict和set | ZZT_blog</title>
+  <meta name="generator" content="Hexo 3.9.0">
+  
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">ZZT_blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+      
+      
+      
+        
+        <li class="menu-item menu-item-home">
+      
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-tags">
+      
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-categories">
+      
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-archives">
+      
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-guestbook">
+      
+    
+
+    <a href="/guestbook" rel="section"><i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br>guestbook</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+            
+
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+      <article itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block post">
+    <link itemprop="mainEntityOfPage" href="https://ztzheng100.github.io.git/2019/09/08/python进阶/6深入dict和set/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zzt">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ZZT_blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">六、深入dict和set
+
+          
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              
+                
+              
+
+              <time title="创建时间：2019-09-08 20:24:35" itemprop="dateCreated datePublished" datetime="2019-09-08T20:24:35+08:00">2019-09-08</time>
+            </span>
+          
+            
+
+            
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2019-09-09 16:18:29" itemprop="dateModified" datetime="2019-09-09T16:18:29+08:00">2019-09-09</time>
+              </span>
+            
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/python进阶/" itemprop="url" rel="index"><span itemprop="name">python进阶</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="六、深入dict和set"><a href="#六、深入dict和set" class="headerlink" title="六、深入dict和set"></a>六、深入dict和set</h1><h2 id="1-collections中的abc"><a href="#1-collections中的abc" class="headerlink" title="1.collections中的abc"></a>1.<code>collections</code>中的<code>abc</code></h2><a id="more"></a><pre><code>from collections.abc import Mapping, MutableMapping
+#dict属于mapping类型
+
+a = {}
+print (isinstance(a, MutableMapping))</code></pre><h2 id="2-dict的常见用法"><a href="#2-dict的常见用法" class="headerlink" title="2.dict的常见用法"></a>2.dict的常见用法</h2><pre><code>a = {&quot;bobby1&quot;:{&quot;company&quot;:&quot;imooc&quot;},
+    &quot;bobby2&quot;: {&quot;company&quot;: &quot;imooc2&quot;}
+    }
+#clear
+# a.clear()
+# pass
+b = a
+#copy, 返回浅拷贝
+new_dict = a.copy()
+print(new_dict)
+print(id(a),id(b),id(new_dict))
+new_dict[&quot;bobby1&quot;][&quot;company&quot;] = &quot;imooc3&quot;
+import copy
+new_dict2 = copy.deepcopy(a)
+print(new_dict2)
+new_dict2[&quot;bobby1&quot;][&quot;company&quot;] = &quot;imooc3&quot;
+
+print(new_dict)
+print(a)
+
+
+#formkeys
+new_list = [&quot;bobby1&quot;, &quot;bobby2&quot;]
+
+new_dict = dict.fromkeys(new_list, {&quot;company&quot;:&quot;imooc&quot;})
+
+new_dict.update(((&quot;bobby&quot;,&quot;imooc&quot;),))</code></pre><h2 id="3-dict的子类"><a href="#3-dict的子类" class="headerlink" title="3.dict的子类"></a>3.dict的子类</h2><pre><code>from random import randint
+
+def load_list_data(total_nums, target_nums):
+    &quot;&quot;&quot;
+    从文件中读取数据，以list的方式返回
+    :param total_nums: 读取的数量
+    :param target_nums: 需要查询的数据的数量
+    &quot;&quot;&quot;
+    all_data = []
+    target_data = []
+    file_name = &quot;G:/慕课网课程/AdvancePython/fbobject_idnew.txt&quot;
+    with open(file_name, encoding=&quot;utf8&quot;, mode=&quot;r&quot;) as f_open:
+        for count, line in enumerate(f_open):
+            if count &lt; total_nums:
+                all_data.append(line)
+            else:
+                break
+
+    for x in range(target_nums):
+        random_index = randint(0, total_nums)
+        if all_data[random_index] not in target_data:
+            target_data.append(all_data[random_index])
+            if len(target_data) == target_nums:
+                break
+
+    return all_data, target_data
+
+def load_dict_data(total_nums, target_nums):
+    &quot;&quot;&quot;
+    从文件中读取数据，以dict的方式返回
+    :param total_nums: 读取的数量
+    :param target_nums: 需要查询的数据的数量
+    &quot;&quot;&quot;
+    all_data = {}
+    target_data = []
+    file_name = &quot;G:/慕课网课程/AdvancePython/fbobject_idnew.txt&quot;
+    with open(file_name, encoding=&quot;utf8&quot;, mode=&quot;r&quot;) as f_open:
+        for count, line in enumerate(f_open):
+            if count &lt; total_nums:
+                all_data[line] = 0
+            else:
+                break
+    all_data_list = list(all_data)
+    for x in range(target_nums):
+        random_index = randint(0, total_nums-1)
+        if all_data_list[random_index] not in target_data:
+            target_data.append(all_data_list[random_index])
+            if len(target_data) == target_nums:
+                break
+
+    return all_data, target_data
+
+
+def find_test(all_data, target_data):
+    #测试运行时间
+    test_times = 100
+    total_times = 0
+    import time
+    for i in range(test_times):
+        find = 0
+        start_time = time.time()
+        for data in target_data:
+            if data in all_data:
+                find += 1
+        last_time = time.time() - start_time
+        total_times += last_time
+    return total_times/test_times
+
+
+if __name__ == &quot;__main__&quot;:
+    # all_data, target_data = load_list_data(10000, 1000)
+    # all_data, target_data = load_list_data(100000, 1000)
+    # all_data, target_data = load_list_data(1000000, 1000)
+
+
+    # all_data, target_data = load_dict_data(10000, 1000)
+    # all_data, target_data = load_dict_data(100000, 1000)
+    # all_data, target_data = load_dict_data(1000000, 1000)
+    all_data, target_data = load_dict_data(2000000, 1000)
+    last_time = find_test(all_data, target_data)
+
+    #dict查找的性能远远大于list
+    #在list中随着list数据的增大 查找时间会增大
+    #在dict中查找元素不会随着dict的增大而增大
+    print(last_time)
+
+#1.  dict的key或者set的值 都必须是可以hash的
+#不可变对象 都是可hash的， str， fronzenset， tuple，自己实现的类 __hash__
+#2. dict的内存花销大，但是查询速度快， 自定义的对象 或者python内部的对象都是用dict包装的
+# 3. dict的存储顺序和元素添加顺序有关
+# 4. 添加数据有可能改变已有数据的顺序</code></pre><h2 id="4-set和frozenset"><a href="#4-set和frozenset" class="headerlink" title="4.set和frozenset"></a>4.set和frozenset</h2><pre><code>#set 集合 fronzenset (不可变集合) 无序， 不重复
+# s = set(&apos;abcdee&apos;)
+# s = set([&apos;a&apos;,&apos;b&apos;,&apos;c&apos;,&apos;d&apos;,&apos;e&apos;])
+s = {&apos;a&apos;,&apos;b&apos;, &apos;c&apos;}
+# s = frozenset(&quot;abcde&quot;) #frozenset 可以作为dict的key
+# print(s)
+
+#向set添加数据
+another_set = set(&quot;cef&quot;)
+re_set = s.difference(another_set)
+re_set = s - another_set
+re_set = s &amp; another_set
+re_set = s | another_set
+
+#set性能很高
+# | &amp; -  #集合运算
+print(re_set)
+
+print (s.issubset(re_set))
+# if &quot;c&quot; in re_set:
+#     print (&quot;i am in set&quot;)</code></pre><h2 id="5-dict和set的实现原理"><a href="#5-dict和set的实现原理" class="headerlink" title="5.dict和set的实现原理"></a>5.dict和set的实现原理</h2>
+    </div>
+
+    
+    
+    
+        
+      
+
+      <footer class="post-footer">
+          
+            
+          
+          <div class="post-tags">
+            
+              <a href="/tags/python/" rel="tag"># python</a>
+            
+          </div>
+        
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+              
+                <a href="/2019/09/08/python进阶/7对象引用、可变性和垃圾回收/" rel="next" title="七、对象引用、可变性和垃圾回收">
+                  <i class="fa fa-chevron-left"></i> 七、对象引用、可变性和垃圾回收
+                </a>
+              
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+              
+                <a href="/2019/09/08/python进阶/5自定义序列类/" rel="prev" title="五、自定义序列类">
+                  五、自定义序列类 <i class="fa fa-chevron-right"></i>
+                </a>
+              
+            </div>
+          </div>
+        
+      </footer>
+    
+  </div>
+  
+  
+  
+  </article>
+
+  </div>
+
+
+          </div>
+          
+
+        </div>
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+        
+        
+        
+        
+      
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#六、深入dict和set"><span class="nav-number">1.</span> <span class="nav-text">六、深入dict和set</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-collections中的abc"><span class="nav-number">1.1.</span> <span class="nav-text">1.collections中的abc</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-dict的常见用法"><span class="nav-number">1.2.</span> <span class="nav-text">2.dict的常见用法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-dict的子类"><span class="nav-number">1.3.</span> <span class="nav-text">3.dict的子类</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-set和frozenset"><span class="nav-number">1.4.</span> <span class="nav-text">4.set和frozenset</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-dict和set的实现原理"><span class="nav-number">1.5.</span> <span class="nav-text">5.dict和set的实现原理</span></a></li></ol></li></ol></div>
+        
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">zzt</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+  <nav class="site-state motion-element">
+      <div class="site-state-item site-state-posts">
+        
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">37</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-categories">
+        
+          
+            <a href="/categories/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">6</span>
+        <span class="site-state-item-name">分类</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-tags">
+        
+          
+            <a href="/tags/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">9</span>
+        <span class="site-state-item-name">标签</span>
+        </a>
+      </div>
+    
+  </nav>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zzt</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.9.0</div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.4.0</div>
+
+        
+
+
+
+
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+
+
+  <script src="/lib/anime.min.js?v=3.1.0"></script>
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+<script src="/js/utils.js?v=7.4.0"></script><script src="/js/motion.js?v=7.4.0"></script>
+<script src="/js/schemes/pisces.js?v=7.4.0"></script>
+<script src="/js/next-boot.js?v=7.4.0"></script>
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+</body>
+</html>
