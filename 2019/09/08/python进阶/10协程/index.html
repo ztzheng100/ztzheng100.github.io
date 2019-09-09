@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+
+
+
+
+
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.4.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.4.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.4.0">
+  <link rel="mask-icon" href="/images/logo.svg?v=7.4.0" color="#222">
+
+<link rel="stylesheet" href="/css/main.css?v=7.4.0">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '7.4.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    },
+    sidebarPadding: 40
+  };
+</script>
+
+  <meta name="description" content="协程和异步io一. 并发、并行、同步、异步、阻塞、非阻塞">
+<meta name="keywords" content="python">
+<meta property="og:type" content="article">
+<meta property="og:title" content="协程">
+<meta property="og:url" content="https://ztzheng100.github.io.git/2019/09/08/python进阶/10协程/index.html">
+<meta property="og:site_name" content="ZZT_blog">
+<meta property="og:description" content="协程和异步io一. 并发、并行、同步、异步、阻塞、非阻塞">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://img2018.cnblogs.com/blog/1395687/201903/1395687-20190307154013541-1901948952.png">
+<meta property="og:image" content="https://img2018.cnblogs.com/blog/1395687/201903/1395687-20190307160501124-640108104.png">
+<meta property="og:image" content="https://img2018.cnblogs.com/blog/1395687/201903/1395687-20190307160443892-345301598.png">
+<meta property="og:image" content="https://img2018.cnblogs.com/blog/1395687/201903/1395687-20190307160534904-1616243850.png">
+<meta property="og:image" content="https://img2018.cnblogs.com/blog/1395687/201903/1395687-20190307160950041-1554967680.png">
+<meta property="og:image" content="https://img2018.cnblogs.com/blog/1395687/201903/1395687-20190307160557804-1145772481.png">
+<meta property="og:image" content="https://img2018.cnblogs.com/blog/1395687/201903/1395687-20190307160701065-178678230.png">
+<meta property="og:image" content="https://img2018.cnblogs.com/blog/1395687/201903/1395687-20190307161202231-240102959.png">
+<meta property="og:image" content="https://img2018.cnblogs.com/blog/1395687/201903/1395687-20190307161407619-2089061362.png">
+<meta property="og:image" content="https://img2018.cnblogs.com/blog/1395687/201903/1395687-20190307161507057-24036460.png">
+<meta property="og:image" content="https://img2018.cnblogs.com/blog/1395687/201903/1395687-20190308171412492-1793502676.png">
+<meta property="og:image" content="https://img2018.cnblogs.com/blog/1395687/201903/1395687-20190309161323527-1211458520.png">
+<meta property="og:updated_time" content="2019-09-09T09:01:19.785Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="协程">
+<meta name="twitter:description" content="协程和异步io一. 并发、并行、同步、异步、阻塞、非阻塞">
+<meta name="twitter:image" content="https://img2018.cnblogs.com/blog/1395687/201903/1395687-20190307154013541-1901948952.png">
+  <link rel="canonical" href="https://ztzheng100.github.io.git/2019/09/08/python进阶/10协程/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>协程 | ZZT_blog</title>
+  <meta name="generator" content="Hexo 3.9.0">
+  
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">ZZT_blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+      
+      
+      
+        
+        <li class="menu-item menu-item-home">
+      
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-tags">
+      
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-categories">
+      
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-archives">
+      
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-guestbook">
+      
+    
+
+    <a href="/guestbook" rel="section"><i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br>guestbook</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+            
+
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+      <article itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block post">
+    <link itemprop="mainEntityOfPage" href="https://ztzheng100.github.io.git/2019/09/08/python进阶/10协程/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zzt">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ZZT_blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">协程
+
+          
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              
+                
+              
+
+              <time title="创建时间：2019-09-08 20:24:35" itemprop="dateCreated datePublished" datetime="2019-09-08T20:24:35+08:00">2019-09-08</time>
+            </span>
+          
+            
+
+            
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2019-09-09 17:01:19" itemprop="dateModified" datetime="2019-09-09T17:01:19+08:00">2019-09-09</time>
+              </span>
+            
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/python进阶/" itemprop="url" rel="index"><span itemprop="name">python进阶</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="协程和异步io"><a href="#协程和异步io" class="headerlink" title="协程和异步io"></a>协程和异步io</h1><h2 id="一-并发、并行、同步、异步、阻塞、非阻塞"><a href="#一-并发、并行、同步、异步、阻塞、非阻塞" class="headerlink" title="一. 并发、并行、同步、异步、阻塞、非阻塞"></a>一. 并发、并行、同步、异步、阻塞、非阻塞</h2><a id="more"></a><p>###<br>1.并发：是指一个时间段中有几个程序都处于已启动运行到运行完毕之间，且这几个程序都是在同一个处理机（CPU）上运行，但任一个时刻点上只有一个程序在处理机上运行。</p>
+<h3 id="2-并行：是指任何时间点，有多个程序运行在多个CPU上（最多和CPU数量一致）。"><a href="#2-并行：是指任何时间点，有多个程序运行在多个CPU上（最多和CPU数量一致）。" class="headerlink" title="2.并行：是指任何时间点，有多个程序运行在多个CPU上（最多和CPU数量一致）。"></a>2.并行：是指任何时间点，有多个程序运行在多个CPU上（最多和CPU数量一致）。</h3><h3 id="3-并发和并行的区别："><a href="#3-并发和并行的区别：" class="headerlink" title="3.并发和并行的区别："></a>3.并发和并行的区别：</h3><p>并发和并行是即相似又有区别的两个概念，并行是指两个或者多个事件在同一时刻发生；而并发是指两个或多个事件在同一时间间隔内发生。在多道程序环境下，并发性是指在一段时间内宏观上有多个程序在同时运行，但在单处理机系统中，每一时刻却仅能有一道程序执行，故微观上这些程序只能是分时地交替执行。倘若在计算机系统中有多个处理机，则这些可以并发执行的程序便可被分配到多个处理机上，实现并行执行，即利用每个处理机来处理一个可并发执行的程序，这样，多个程序便可以同时执行。</p>
+<h3 id="4-同步：是指代码调用IO操作时，必须等待IO操作完成才能返回的调用方式。"><a href="#4-同步：是指代码调用IO操作时，必须等待IO操作完成才能返回的调用方式。" class="headerlink" title="4.同步：是指代码调用IO操作时，必须等待IO操作完成才能返回的调用方式。"></a>4.同步：是指代码调用IO操作时，必须等待IO操作完成才能返回的调用方式。</h3><h3 id="5-异步：是指代码调用IO操作时，不必等待IO操作完成就能返回的调用方式。"><a href="#5-异步：是指代码调用IO操作时，不必等待IO操作完成就能返回的调用方式。" class="headerlink" title="5.异步：是指代码调用IO操作时，不必等待IO操作完成就能返回的调用方式。"></a>5.异步：是指代码调用IO操作时，不必等待IO操作完成就能返回的调用方式。</h3><h3 id="6-阻塞：是指调用函数的时候当前线程被挂起。"><a href="#6-阻塞：是指调用函数的时候当前线程被挂起。" class="headerlink" title="6.阻塞：是指调用函数的时候当前线程被挂起。"></a>6.阻塞：是指调用函数的时候当前线程被挂起。</h3><h3 id="7-非阻塞：是指调用函数的时候当前线程不会被挂起，而是立即返回。"><a href="#7-非阻塞：是指调用函数的时候当前线程不会被挂起，而是立即返回。" class="headerlink" title="7.非阻塞：是指调用函数的时候当前线程不会被挂起，而是立即返回。"></a>7.非阻塞：是指调用函数的时候当前线程不会被挂起，而是立即返回。</h3><h2 id="二-C10K问题和io多路复用-select、poll、epoll"><a href="#二-C10K问题和io多路复用-select、poll、epoll" class="headerlink" title="二. C10K问题和io多路复用(select、poll、epoll)"></a>二. C10K问题和io多路复用(select、poll、epoll)</h2><h3 id="1-C10K问题："><a href="#1-C10K问题：" class="headerlink" title="1.C10K问题："></a>1.C10K问题：</h3><p>谓c10k问题,指的是服务器同时支持成千上万个客户端的问题,也就是concurrent 10 000<br>connection(这也是c10k这个名字的由来)。由于硬件成本的大幅度降低和硬件技术的进步，如果一台服务器同时能够服务更多的客户端，那么也就意味着服务每一个客户端的成本大幅度降低，从这个角度来看，问题显得非常有意义。</p>
+<h3 id="2-五种I-O模型（详情：https-www-cnblogs-com-findumars-p-6361627-html）："><a href="#2-五种I-O模型（详情：https-www-cnblogs-com-findumars-p-6361627-html）：" class="headerlink" title="2.五种I/O模型（详情：https://www.cnblogs.com/findumars/p/6361627.html）："></a>2.五种I/O模型（详情：<a href="https://www.cnblogs.com/findumars/p/6361627.html" target="_blank" rel="noopener">https://www.cnblogs.com/findumars/p/6361627.html</a>）：</h3><p><img src="https://img2018.cnblogs.com/blog/1395687/201903/1395687-20190307154013541-1901948952.png" alt></p>
+<p>####<br><img src="https://img2018.cnblogs.com/blog/1395687/201903/1395687-20190307160501124-640108104.png" alt></p>
+<p>####<br>5.1阻塞I式/O：系统调用不会立即返回结果，当前线程会阻塞，等到获得结果或报错时在返回（问题：如在调用send()的同时，线程将被阻塞，在此期间，线程将无法执行任何运算或响应任何的网络请求。）</p>
+<p><img src="https://img2018.cnblogs.com/blog/1395687/201903/1395687-20190307160443892-345301598.png" alt></p>
+<h4 id="5-2非阻塞式I-O：调用后立即返回结果（问题：不一定三次握手成功，recv-会被循环调用，-循环调用recv-将大幅度推高CPU"><a href="#5-2非阻塞式I-O：调用后立即返回结果（问题：不一定三次握手成功，recv-会被循环调用，-循环调用recv-将大幅度推高CPU" class="headerlink" title="5.2非阻塞式I/O：调用后立即返回结果（问题：不一定三次握手成功，recv() 会被循环调用， **循环调用recv()将大幅度推高CPU"></a>5.2非阻塞式I/O：调用后立即返回结果（问题：不一定三次握手成功，recv() 会被循环调用， **循环调用recv()将大幅度推高CPU</h4><p>占用率** ），做计算任务或者再次发起其他连接就较有优势</p>
+<p><img src="https://img2018.cnblogs.com/blog/1395687/201903/1395687-20190307160534904-1616243850.png" alt></p>
+<p><img src="https://img2018.cnblogs.com/blog/1395687/201903/1395687-20190307160950041-1554967680.png" alt></p>
+<p>####<br>5.3I/O复用：它的基本原理就是select/epoll这个function会不断的轮询所负责的所有socket，当某个socket有数据到达了，就通知用户进程。（阻塞式的方法，可以监听多个socket状态）（问题：将数据从内核复制到用户空间的时间不能省）</p>
+<p><img src="https://img2018.cnblogs.com/blog/1395687/201903/1395687-20190307160557804-1145772481.png" alt></p>
+<h4 id="5-4信号驱动式I-O：运用较少"><a href="#5-4信号驱动式I-O：运用较少" class="headerlink" title="5.4信号驱动式I/O：运用较少"></a>5.4信号驱动式I/O：运用较少</h4><p><img src="https://img2018.cnblogs.com/blog/1395687/201903/1395687-20190307160701065-178678230.png" alt></p>
+<p>####<br>5.5异步I/O：它就像是用户进程将整个IO操作交给了他人（kernel）完成，然后他人做完后发信号通知。在此期间，用户进程不需要去检查IO操作的状态，也不需要主动的去拷贝数据。</p>
+<h3 id="3-解决方法（参照：https-blog-csdn-net-wangtaomtk-article-details-51811011）："><a href="#3-解决方法（参照：https-blog-csdn-net-wangtaomtk-article-details-51811011）：" class="headerlink" title="3.解决方法（参照：https://blog.csdn.net/wangtaomtk/article/details/51811011）："></a>3.解决方法（参照：<a href="https://blog.csdn.net/wangtaomtk/article/details/51811011" target="_blank" rel="noopener">https://blog.csdn.net/wangtaomtk/article/details/51811011</a>）：</h3><h4 id="3-1每个线程-进程处理一个连接："><a href="#3-1每个线程-进程处理一个连接：" class="headerlink" title="3.1每个线程/进程处理一个连接："></a>3.1每个线程/进程处理一个连接：</h4><p>但是由于申请进程/线程会占用相当可观的系统资源，同时对于多进程/线程的管理会对系统造成压力，因此这种方案不具备良好的可扩展性。因此，这一思路在服务器资源还没有富裕到足够程度的时候，是不可行的；即便资源足够富裕，效率也不够高。</p>
+<p><code>**问题：资源占用过多，可扩展性差。**</code></p>
+<h4 id="3-2-每个进程-线程同时处理多个连接（IO多路复用）："><a href="#3-2-每个进程-线程同时处理多个连接（IO多路复用）：" class="headerlink" title="3.2 每个进程/线程同时处理多个连接（IO多路复用）："></a><strong>3.2</strong> 每个进程/线程同时处理多个连接（IO多路复用）：</h4><h5 id="3-2-1传统思路"><a href="#3-2-1传统思路" class="headerlink" title="3.2.1传统思路"></a>3.2.1传统思路</h5><p><code></code>最简单的方法是循环挨个处理各个连接，每个连接对应一个 socket<code>，当所有 socket 都有数据的时候，这种方法是可行的。但是当应用读取某个
+socket 的文件数据不 ready 的时候， **</code>整个应用会阻塞在这里等待该文件句柄<code>** ，即使别的文件句柄 ready，也无法往下处理。</code></p>
+<p><strong>思路：直接循环处理多个连接。问题：任一文件句柄的不成功会阻塞住整个应用。</strong></p>
+<h4 id="3-2-2-select："><a href="#3-2-2-select：" class="headerlink" title="3.2.2 select："></a><strong>3.2.2</strong> select：</h4><p>####<br><img src="https://img2018.cnblogs.com/blog/1395687/201903/1395687-20190307161202231-240102959.png" alt></p>
+<p>####</p>
+<p><strong>思路：有连接请求抵达了再检查处理。</strong></p>
+<p><strong>问题：句柄上限+重复初始化+逐个排查所有文件句柄状态效率不高。</strong></p>
+<p><strong>3.2.3poll</strong></p>
+<p><strong><img src="https://img2018.cnblogs.com/blog/1395687/201903/1395687-20190307161407619-2089061362.png" alt></strong></p>
+<p><strong>思路：设计新的数据结构提供使用效率。</strong></p>
+<p><strong>问题：逐个排查所有文件句柄状态效率不高。</strong></p>
+<p><strong>3.2.4epoll（nginx使用的是epoll）</strong></p>
+<p><strong><img src="https://img2018.cnblogs.com/blog/1395687/201903/1395687-20190307161507057-24036460.png" alt></strong></p>
+<p><strong>思路：只返回状态变化的文件句柄。</strong></p>
+<p><strong>问题：依赖特定平台（Linux）。</strong></p>
+<p><strong>注：epoll不一定比select好（在高并发的情况下，连接活跃度不是很高，epoll比select好；在并发性不高，同时连接很活跃select比epoll好（游戏））</strong></p>
+<h2 id="三-epoll-回调-事件循环方式url"><a href="#三-epoll-回调-事件循环方式url" class="headerlink" title="三. epoll+回调+事件循环方式url"></a>三. epoll+回调+事件循环方式url</h2><h3 id="1-通过非阻塞I-O实现http请求："><a href="#1-通过非阻塞I-O实现http请求：" class="headerlink" title="1. 通过非阻塞I/O实现http请求："></a>1. 通过非阻塞I/O实现http请求：</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line">1  import socket</span><br><span class="line">     2 from urllib.parse import urlparse</span><br><span class="line">     3 </span><br><span class="line">     4 def get_url(url):</span><br><span class="line">     5     #通过socket请求html</span><br><span class="line">     6     url=urlparse(url)</span><br><span class="line">     7     host=url.netloc</span><br><span class="line">     8     path=url.path</span><br><span class="line">     9     if path==&quot;&quot;:</span><br><span class="line">    10         path=&quot;/&quot;</span><br><span class="line">    11     #建立socket连接</span><br><span class="line">    12     client=socket.socket(socket.AF_INET,socket.SOCK_STREAM)</span><br><span class="line">    13     #设置成非阻塞(抛异常：BlockingIOError: [WinError 10035] 无法立即完成一个非阻止性套接字操作。)</span><br><span class="line">    14     client.setblocking(False)</span><br><span class="line">    15     try:</span><br><span class="line">    16         client.connect((host,80))</span><br><span class="line">    17     except BlockingIOError as e:</span><br><span class="line">    18         pass</span><br><span class="line">    19     #向服务器发送数据(还未连接会抛异常)</span><br><span class="line">    20     while True:</span><br><span class="line">    21         try:</span><br><span class="line">    22             client.send(&quot;GET &#123;&#125; HTTP/1.1\r\nHost:&#123;&#125;\r\nConnection:close\r\n\r\n&quot;.format(path, host).encode(&quot;utf8&quot;))</span><br><span class="line">    23             break</span><br><span class="line">    24         except OSError as e:</span><br><span class="line">    25             pass</span><br><span class="line">    26     #将数据读取完</span><br><span class="line">    27     data=b&quot;&quot;</span><br><span class="line">    28     while True:</span><br><span class="line">    29         try:</span><br><span class="line">    30             d=client.recv(1024)</span><br><span class="line">    31         except BlockingIOError as e:</span><br><span class="line">    32             continue</span><br><span class="line">    33         if d:</span><br><span class="line">    34             data+=d</span><br><span class="line">    35         else:</span><br><span class="line">    36             break</span><br><span class="line">    37     #会将header信息作为返回字符串</span><br><span class="line">    38     data=data.decode(&apos;utf8&apos;)</span><br><span class="line">    39     print(data.split(&apos;\r\n\r\n&apos;)[1])</span><br><span class="line">    40     client.close()</span><br><span class="line">    41 </span><br><span class="line">    42 if __name__==&apos;__main__&apos;:</span><br><span class="line">    43     get_url(&apos;http://www.baidu.com&apos;)</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="2-使用select完成http请求（循环回调）："><a href="#2-使用select完成http请求（循环回调）：" class="headerlink" title="2.使用select完成http请求（循环回调）："></a>2.使用select完成http请求（循环回调）：</h3><p><strong>优点：并发性高（驱动整个程序主要是回调循环loop()，不会等待，请求操作系统有什么准备好了，准备好了就执行【没有线程切换等，只有一个线程，当一个url连接建立完成后就会注册，然后回调执行】，省去了线程切换和内存）</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br></pre></td><td class="code"><pre><span class="line">1  #自动根据环境选择poll和epoll</span><br><span class="line">     2 from selectors import DefaultSelector,EVENT_READ,EVENT_WRITE</span><br><span class="line">     3 selector=DefaultSelector()</span><br><span class="line">     4 urls=[]</span><br><span class="line">     5 #全局变量</span><br><span class="line">     6 stop=False</span><br><span class="line">     7 class Fetcher:</span><br><span class="line">     8     def connected(self, key):</span><br><span class="line">     9         #取消注册</span><br><span class="line">    10         selector.unregister(key.fd)</span><br><span class="line">    11         self.client.send(&quot;GET &#123;&#125; HTTP/1.1\r\nHost:&#123;&#125;\r\nConnection:close\r\n\r\n&quot;.format(self.path, self.host).encode(&quot;utf8&quot;))</span><br><span class="line">    12         selector.register(self.client.fileno(),EVENT_READ,self.readable)</span><br><span class="line">    13 </span><br><span class="line">    14     def readable(self,key):</span><br><span class="line">    15         d = self.client.recv(1024)</span><br><span class="line">    16         if d:</span><br><span class="line">    17             self.data += d</span><br><span class="line">    18         else:</span><br><span class="line">    19             selector.unregister(key.fd)</span><br><span class="line">    20             # 会将header信息作为返回字符串</span><br><span class="line">    21             data = self.data.decode(&apos;utf8&apos;)</span><br><span class="line">    22             print(data.split(&apos;\r\n\r\n&apos;)[1])</span><br><span class="line">    23             self.client.close()</span><br><span class="line">    24             urls.remove(self.spider_url)</span><br><span class="line">    25             if not urls:</span><br><span class="line">    26                 global stop</span><br><span class="line">    27                 stop=True</span><br><span class="line">    28 </span><br><span class="line">    29     def get_url(self,url):</span><br><span class="line">    30         self.spider_url = url</span><br><span class="line">    31         url = urlparse(url)</span><br><span class="line">    32         self.host = url.netloc</span><br><span class="line">    33         self.path = url.path</span><br><span class="line">    34         self.data = b&quot;&quot;</span><br><span class="line">    35         if self.path == &quot;&quot;:</span><br><span class="line">    36             self.path = &quot;/&quot;</span><br><span class="line">    37         # 建立socket连接</span><br><span class="line">    38         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)</span><br><span class="line">    39         self.client.setblocking(False)</span><br><span class="line">    40         try:</span><br><span class="line">    41             self.client.connect((self.host, 80))</span><br><span class="line">    42         except BlockingIOError as e:</span><br><span class="line">    43             pass</span><br><span class="line">    44 </span><br><span class="line">    45         #注册写事件,及回调函数</span><br><span class="line">    46         selector.register(self.client.fileno(),EVENT_WRITE,self.connected)</span><br><span class="line">    47 </span><br><span class="line">    48 def loop():</span><br><span class="line">    49     #回调+事件循环+select（poll/epoll）</span><br><span class="line">    50     #事件循环，不停的调用socket的状态并调用对应的回调函数</span><br><span class="line">    51     #判断哪个可读可写，select本身不支持register模式</span><br><span class="line">    52     #socket状态变化后的回调使用程序员完成的</span><br><span class="line">    53     if not stop:</span><br><span class="line">    54         while True:</span><br><span class="line">    55             ready=selector.select()</span><br><span class="line">    56             for key,mask in ready:</span><br><span class="line">    57                 call_back=key.data</span><br><span class="line">    58                 call_back(key)</span><br><span class="line">    59 </span><br><span class="line">    60 </span><br><span class="line">    61 if __name__==&apos;__main__&apos;:</span><br><span class="line">    62     fetcher=Fetcher()</span><br><span class="line">    63     fetcher.get_url(&apos;http://www.baidu.com&apos;)</span><br><span class="line">    64     loop()</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="四-回调之痛"><a href="#四-回调之痛" class="headerlink" title="四. 回调之痛"></a>四. 回调之痛</h2><p><strong>1.可读性差；2.共享状态管理困难；3.异常处理困难</strong></p>
+<p>##<br><img src="https://img2018.cnblogs.com/blog/1395687/201903/1395687-20190308171412492-1793502676.png" alt></p>
+<p><strong>协程能解决</strong></p>
+<h2 id="五-C10M问题和协程"><a href="#五-C10M问题和协程" class="headerlink" title="五. C10M问题和协程"></a>五. C10M问题和协程</h2><h3 id="1-C10M问题："><a href="#1-C10M问题：" class="headerlink" title="1.C10M问题："></a>1.C10M问题：</h3><p><strong>如何利用8核心CPU，64G内存，在10gps的网络上保持1000万的并发连接。</strong></p>
+<h3 id="2-协程："><a href="#2-协程：" class="headerlink" title="2.协程："></a><strong>2.协程：</strong></h3><p><strong>2.1问题：回调模式编码复杂度高；同步编程的并发性不高；多线程需要线程间同步，look会降低性能</strong></p>
+<p><strong>2.2解决：</strong></p>
+<p><strong>采用同步的方式去编写异步的代码；</strong></p>
+<p><strong>采用单线程去解决任务：线程是由操作系统切换，单线程切换意味着需要我们自己去调度任务；不在需要锁，并发性高，如果单线程内切换函数，性能远高于线程切换，并发性更高。</strong></p>
+<p><strong>2.3协程：</strong></p>
+<p><strong>传统函数调用 过程 A- &gt;B-&gt;C；</strong></p>
+<p><strong>我们需要一个可以暂停的函数，并且可以在适当的时候恢复该函数的继续执行；</strong></p>
+<pre><code>**出现了协程 - &gt; 有多个入口的函数， 可以暂停的函数， 可以暂停的函数(可以向暂停的地方传入值)；**</code></pre><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">1 def get_url(url):</span><br><span class="line">     2     #do someting 1</span><br><span class="line">     3     html = get_html(url) #此处暂停，切换到另一个函数去执行</span><br><span class="line">     4     # #parse html</span><br><span class="line">     5     urls = parse_url(html)</span><br><span class="line">     6 </span><br><span class="line">     7 def get_url(url):</span><br><span class="line">     8     #do someting 1</span><br><span class="line">     9     html = get_html(url) #此处暂停，切换到另一个函数去执行</span><br><span class="line">    10     # #parse html</span><br><span class="line">    11     urls = parse_url(html)</span><br></pre></td></tr></table></figure>
+
+
+<h2 id="六-生成器的send和yield-from"><a href="#六-生成器的send和yield-from" class="headerlink" title="六. 生成器的send和yield from"></a>六. 生成器的send和yield from</h2><h3 id="1-生成器send和next方法："><a href="#1-生成器send和next方法：" class="headerlink" title="1.生成器send和next方法："></a>1.生成器send和next方法：</h3><p><strong>启动生成器方式有两种：1.next()；2.send()；</strong></p>
+<p><strong>生成器可以产出值；也可以接收值（调用方传递进来的值）；</strong></p>
+<p><strong>send方法可以传递值进入生成器内部，同时还可以重启生成器执行到下一个yield的位置（注：在调用send()发送非none之前，我们必须启动一次生成器，否则会抛错，方式有两种gen.send(None)或者next(gen)）</strong></p>
+<h3 id="2-close-方法：（关闭生成器）"><a href="#2-close-方法：（关闭生成器）" class="headerlink" title="2.close()方法：（关闭生成器）"></a>2.close()方法：（关闭生成器）</h3><p><strong>自己处理的话会抛异常，gen.close()，RuntimeError: generator ignored<br>GeneratorExit，如果是except<br>Exception就不会抛异常，GeneratorExit是继承至BaseException的，Exception也是继承于BaseException的</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">1  def gen_func():</span><br><span class="line">     2     #自己处理的话会抛异常，gen.close()，RuntimeError: generator ignored GeneratorExit</span><br><span class="line">     3     try:</span><br><span class="line">     4         yield &apos;https://www.baidu.com&apos;</span><br><span class="line">     5     #如果是except Exception就不会抛异常，GeneratorExit是继承至BaseException的，Exception也是继承于BaseException的</span><br><span class="line">     6     except GeneratorExit as e:</span><br><span class="line">     7         pass</span><br><span class="line">     8     yield 1</span><br><span class="line">     9     yield 2</span><br><span class="line">    10     return &apos;LYQ&apos;</span><br><span class="line">    11 </span><br><span class="line">    12 if __name__==&apos;__main__&apos;:</span><br><span class="line">    13     #抛异常StopIteration：</span><br><span class="line">    14     gen=gen_func()</span><br><span class="line">    15     print(next(gen))</span><br><span class="line">    16     gen.close()</span><br><span class="line">    17     print(next(gen))</span><br></pre></td></tr></table></figure>
+
+
+<h3 id="3-throw-方法：向生成器中扔异常，需要自己处理，否则会抛错"><a href="#3-throw-方法：向生成器中扔异常，需要自己处理，否则会抛错" class="headerlink" title="3.throw()方法：向生成器中扔异常，需要自己处理，否则会抛错"></a>3.throw()方法：向生成器中扔异常，需要自己处理，否则会抛错</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">1 def gen_func():</span><br><span class="line">     2     try:</span><br><span class="line">     3         yield &apos;https://www.baidu.com&apos;</span><br><span class="line">     4     except Exception:</span><br><span class="line">     5         pass</span><br><span class="line">     6     yield 1</span><br><span class="line">     7     yield 2</span><br><span class="line">     8     return &apos;LYQ&apos;</span><br><span class="line">     9 </span><br><span class="line">    10 if __name__==&apos;__main__&apos;:</span><br><span class="line">    11     #抛异常StopIteration：</span><br><span class="line">    12     gen=gen_func()</span><br><span class="line">    13     print(next(gen))</span><br><span class="line">    14     #扔一个异常，是第一句的异常</span><br><span class="line">    15     gen.throw(Exception,&apos;download error&apos;)</span><br><span class="line">    16     print(next(gen))</span><br><span class="line">    17     #扔一个异常，是第二句的异常</span><br><span class="line">    18     gen.throw(Exception,&apos;download error&apos;)</span><br><span class="line">    19     print(next(gen))</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="4-yield-from：（Python-3-3新加的语法）"><a href="#4-yield-from：（Python-3-3新加的语法）" class="headerlink" title="4.yield from：（Python 3.3新加的语法）"></a>4.yield from：（Python 3.3新加的语法）</h3><h4 id="4-1简介："><a href="#4-1简介：" class="headerlink" title="4.1简介："></a>4.1简介：</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">1 from itertools import chain</span><br><span class="line">     2 my_list=[1,2,3]</span><br><span class="line">     3 my_dict=&#123;&apos;name1&apos;:&apos;LYQ1&apos;,</span><br><span class="line">     4          &apos;name2&apos;:&apos;LYQ2&apos;&#125;</span><br><span class="line">     5 #将所有值遍历输出</span><br><span class="line">     6 # for value in chain(my_list,my_dict,range(5,10)):</span><br><span class="line">     7 #     print(value)</span><br><span class="line">     8 </span><br><span class="line">     9 def g1(iterable):</span><br><span class="line">    10     yield range(10)</span><br><span class="line">    11 #yield from iterable</span><br><span class="line">    12 def my_chain(*args,**kwargs):</span><br><span class="line">    13     for my_iterable in args:</span><br><span class="line">    14         #功能非常多</span><br><span class="line">    15         yield from my_iterable</span><br><span class="line">    16         # for value in my_iterable:</span><br><span class="line">    17         #     yield value</span><br><span class="line">    18 for value in my_chain(my_list,my_dict,range(5,10)):</span><br><span class="line">    19     print(value)</span><br></pre></td></tr></table></figure>
+
+
+
+
+<h4 id="4-2main调用方-g1-委托生成器-gen-子生成器"><a href="#4-2main调用方-g1-委托生成器-gen-子生成器" class="headerlink" title="4.2main调用方 g1:委托生成器 gen:子生成器:"></a>4.2main调用方 g1:委托生成器 gen:子生成器:</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">1 def g1(gen):</span><br><span class="line">     2     yield from gen</span><br><span class="line">     3 gen=range(10)</span><br><span class="line">     4 def main():</span><br><span class="line">     5     g=g1(gen)</span><br><span class="line">     6     #直接发送给子生成器</span><br><span class="line">     7     print(g.send(None))</span><br><span class="line">     8 #main:调用方 g1:委托生成器 gen:子生成器</span><br><span class="line">     9 #yield from会在调用方与子生成器之间建立一个双向通道</span><br><span class="line">    10 main()</span><br></pre></td></tr></table></figure>
+
+
+
+<h4 id="4-3例子："><a href="#4-3例子：" class="headerlink" title="4.3例子："></a>4.3例子：</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line">1 final_result = &#123;&#125;</span><br><span class="line">     2 </span><br><span class="line">     3 </span><br><span class="line">     4 def sales_sum(pro_name):</span><br><span class="line">     5     total = 0</span><br><span class="line">     6     nums = []</span><br><span class="line">     7     while True:</span><br><span class="line">     8         x = yield</span><br><span class="line">     9         print(pro_name + &quot;销量: &quot;, x)</span><br><span class="line">    10         if not x:</span><br><span class="line">    11             break</span><br><span class="line">    12         total += x</span><br><span class="line">    13         nums.append(x)</span><br><span class="line">    14     #直接返回到yield from sales_sum(key)</span><br><span class="line">    15     return total, nums</span><br><span class="line">    16 </span><br><span class="line">    17 </span><br><span class="line">    18 def middle(key):</span><br><span class="line">    19     while True:</span><br><span class="line">    20         final_result[key] = yield from sales_sum(key)</span><br><span class="line">    21         print(key + &quot;销量统计完成！！.&quot;)</span><br><span class="line">    22 </span><br><span class="line">    23 </span><br><span class="line">    24 def main():</span><br><span class="line">    25     data_sets = &#123;</span><br><span class="line">    26         &quot;面膜&quot;: [1200, 1500, 3000],</span><br><span class="line">    27         &quot;手机&quot;: [28, 55, 98, 108],</span><br><span class="line">    28         &quot;大衣&quot;: [280, 560, 778, 70],</span><br><span class="line">    29     &#125;</span><br><span class="line">    30     for key, data_set in data_sets.items():</span><br><span class="line">    31         print(&quot;start key:&quot;, key)</span><br><span class="line">    32         m = middle(key)</span><br><span class="line">    33         #直接send到子生成器里面（x = yield）</span><br><span class="line">    34         m.send(None)  # 预激middle协程</span><br><span class="line">    35         for value in data_set:</span><br><span class="line">    36             m.send(value)  # 给协程传递每一组的值</span><br><span class="line">    37         m.send(None)</span><br><span class="line">    38     print(&quot;final_result:&quot;, final_result)</span><br><span class="line">    39 </span><br><span class="line">    40 </span><br><span class="line">    41 if __name__ == &apos;__main__&apos;:</span><br><span class="line">    42     main()</span><br></pre></td></tr></table></figure>
+
+
+<p>无yield from：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">1 def sales_sum(pro_name):</span><br><span class="line">     2     total = 0</span><br><span class="line">     3     nums = []</span><br><span class="line">     4     while True:</span><br><span class="line">     5         x = yield</span><br><span class="line">     6         print(pro_name + &quot;销量: &quot;, x)</span><br><span class="line">     7         if not x:</span><br><span class="line">     8             break</span><br><span class="line">     9         total += x</span><br><span class="line">    10         nums.append(x)</span><br><span class="line">    11     #直接返回到yield from sales_sum(key)</span><br><span class="line">    12     return total, nums</span><br><span class="line">    13 </span><br><span class="line">    14 if __name__ == &quot;__main__&quot;:</span><br><span class="line">    15     #直接与子生成器通信（没用yield from就需要捕获异常）</span><br><span class="line">    16     my_gen = sales_sum(&quot;手机&quot;)</span><br><span class="line">    17     my_gen.send(None)</span><br><span class="line">    18     my_gen.send(1200)</span><br><span class="line">    19     my_gen.send(1500)</span><br><span class="line">    20     my_gen.send(3000)</span><br><span class="line">    21     try:</span><br><span class="line">    22         my_gen.send(None)</span><br><span class="line">    23     #获取返回值</span><br><span class="line">    24     except StopIteration as e:</span><br><span class="line">    25         result = e.value</span><br><span class="line">    26         print(result)</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+<h4 id="4-4介绍yield-from详情："><a href="#4-4介绍yield-from详情：" class="headerlink" title="4.4介绍yield from详情："></a>4.4介绍yield from详情：</h4><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br></pre></td><td class="code"><pre><span class="line">1 #pep380</span><br><span class="line">     2 </span><br><span class="line">     3 #1. RESULT = yield from EXPR可以简化成下面这样</span><br><span class="line">     4 #一些说明</span><br><span class="line">     5 &quot;&quot;&quot;</span><br><span class="line">     6 _i：子生成器，同时也是一个迭代器</span><br><span class="line">     7 _y：子生成器生产的值</span><br><span class="line">     8 _r：yield from 表达式最终的值</span><br><span class="line">     9 _s：调用方通过send()发送的值</span><br><span class="line">    10 _e：异常对象</span><br><span class="line">    11 </span><br><span class="line">    12 &quot;&quot;&quot;</span><br><span class="line">    13 </span><br><span class="line">    14 _i = iter(EXPR)      # EXPR是一个可迭代对象，_i其实是子生成器；</span><br><span class="line">    15 try:</span><br><span class="line">    16     _y = next(_i)   # 预激子生成器，把产出的第一个值存在_y中；</span><br><span class="line">    17 except StopIteration as _e:</span><br><span class="line">    18     _r = _e.value   # 如果抛出了`StopIteration`异常，那么就将异常对象的`value`属性保存到_r，这是最简单的情况的返回值；</span><br><span class="line">    19 else:</span><br><span class="line">    20     while 1:    # 尝试执行这个循环，委托生成器会阻塞；</span><br><span class="line">    21         _s = yield _y   # 生产子生成器的值，等待调用方`send()`值，发送过来的值将保存在_s中；</span><br><span class="line">    22         try:</span><br><span class="line">    23             _y = _i.send(_s)    # 转发_s，并且尝试向下执行；</span><br><span class="line">    24         except StopIteration as _e:</span><br><span class="line">    25             _r = _e.value       # 如果子生成器抛出异常，那么就获取异常对象的`value`属性存到_r，退出循环，恢复委托生成器的运行；</span><br><span class="line">    26             break</span><br><span class="line">    27 RESULT = _r     # _r就是整个yield from表达式返回的值。</span><br><span class="line">    28 </span><br><span class="line">    29 &quot;&quot;&quot;</span><br><span class="line">    30 1. 子生成器可能只是一个迭代器，并不是一个作为协程的生成器，所以它不支持.throw()和.close()方法；</span><br><span class="line">    31 2. 如果子生成器支持.throw()和.close()方法，但是在子生成器内部，这两个方法都会抛出异常；</span><br><span class="line">    32 3. 调用方让子生成器自己抛出异常</span><br><span class="line">    33 4. 当调用方使用next()或者.send(None)时，都要在子生成器上调用next()函数，当调用方使用.send()发送非 None 值时，才调用子生成器的.send()方法；</span><br><span class="line">    34 &quot;&quot;&quot;</span><br><span class="line">    35 _i = iter(EXPR)</span><br><span class="line">    36 try:</span><br><span class="line">    37     _y = next(_i)</span><br><span class="line">    38 except StopIteration as _e:</span><br><span class="line">    39     _r = _e.value</span><br><span class="line">    40 else:</span><br><span class="line">    41     while 1:</span><br><span class="line">    42         try:</span><br><span class="line">    43             _s = yield _y</span><br><span class="line">    44         except GeneratorExit as _e:</span><br><span class="line">    45             try:</span><br><span class="line">    46                 _m = _i.close</span><br><span class="line">    47             except AttributeError:</span><br><span class="line">    48                 pass</span><br><span class="line">    49             else:</span><br><span class="line">    50                 _m()</span><br><span class="line">    51             raise _e</span><br><span class="line">    52         except BaseException as _e:</span><br><span class="line">    53             _x = sys.exc_info()</span><br><span class="line">    54             try:</span><br><span class="line">    55                 _m = _i.throw</span><br><span class="line">    56             except AttributeError:</span><br><span class="line">    57                 raise _e</span><br><span class="line">    58             else:</span><br><span class="line">    59                 try:</span><br><span class="line">    60                     _y = _m(*_x)</span><br><span class="line">    61                 except StopIteration as _e:</span><br><span class="line">    62                     _r = _e.value</span><br><span class="line">    63                     break</span><br><span class="line">    64         else:</span><br><span class="line">    65             try:</span><br><span class="line">    66                 if _s is None:</span><br><span class="line">    67                     _y = next(_i)</span><br><span class="line">    68                 else:</span><br><span class="line">    69                     _y = _i.send(_s)</span><br><span class="line">    70             except StopIteration as _e:</span><br><span class="line">    71                 _r = _e.value</span><br><span class="line">    72                 break</span><br><span class="line">    73 RESULT = _r</span><br></pre></td></tr></table></figure>
+
+
+
+
+
+<p>看完代码，我们总结一下关键点：</p>
+<pre><code>　　　　1. 子生成器生产的值，都是直接传给调用方的；调用方通过.send()发送的值都是直接传递给子生成器的；如果发送的是 None，会调用子生成器的__next__()方法，如果不是 None，会调用子生成器的.send()方法；  
+　　　　2. 子生成器退出的时候，最后的return EXPR，会触发一个StopIteration(EXPR)异常；  
+　　　　3. yield from表达式的值，是子生成器终止时，传递给StopIteration异常的第一个参数；  
+　　　　4. 如果调用的时候出现StopIteration异常，委托生成器会恢复运行，同时其他的异常会向上 &quot;冒泡&quot;；  
+　　　　5. 传入委托生成器的异常里，除了GeneratorExit之外，其他的所有异常全部传递给子生成器的.throw()方法；如果调用.throw()的时候出现了StopIteration异常，那么就恢复委托生成器的运行，其他的异常全部向上 &quot;冒泡&quot;；  
+　　　　6. 如果在委托生成器上调用.close()或传入GeneratorExit异常，会调用子生成器的.close()方法，没有的话就不调用。如果在调用.close()的时候抛出了异常，那么就向上 &quot;冒泡&quot;，否则的话委托生成器会抛出GeneratorExit异常。</code></pre><h2 id="七-生成器如何变成协程？"><a href="#七-生成器如何变成协程？" class="headerlink" title="七. 生成器如何变成协程？"></a>七. 生成器如何变成协程？</h2><h3 id="1-生成器可以暂停并获取状态："><a href="#1-生成器可以暂停并获取状态：" class="headerlink" title="1.生成器可以暂停并获取状态："></a>1.生成器可以暂停并获取状态：</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">1 #生成器是可以暂停的函数</span><br><span class="line">     2 import inspect</span><br><span class="line">     3 def gen():</span><br><span class="line">     4     yield 1</span><br><span class="line">     5     return True</span><br><span class="line">     6 </span><br><span class="line">     7 if __name__==&apos;__main__&apos;:</span><br><span class="line">     8     g1=gen()</span><br><span class="line">     9     #获取生成器状态 GEN_CREATED(创建)</span><br><span class="line">    10     print(inspect.getgeneratorstate(g1))</span><br><span class="line">    11     next(g1)</span><br><span class="line">    12     #GEN_SUSPENDED暂停</span><br><span class="line">    13     print(inspect.getgeneratorstate(g1))</span><br><span class="line">    14     try:</span><br><span class="line">    15         next(g1)</span><br><span class="line">    16     except StopIteration:</span><br><span class="line">    17         pass</span><br><span class="line">    18     #GEN_CLOSED关闭</span><br><span class="line">    19     print(inspect.getgeneratorstate(g1))</span><br></pre></td></tr></table></figure>
+
+
+
+
+<h3 id="2-协程的调度依然是-事件循环-协程模式-，协程是单线程模式："><a href="#2-协程的调度依然是-事件循环-协程模式-，协程是单线程模式：" class="headerlink" title="2.协程的调度依然是 事件循环+协程模式 ，协程是单线程模式："></a>2.协程的调度依然是 事件循环+协程模式 ，协程是单线程模式：</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">1 #生成器是可以暂停的函数</span><br><span class="line">     2 import inspect</span><br><span class="line">     3 # def gen_func():</span><br><span class="line">     4 #     value=yield from</span><br><span class="line">     5 #     #第一返回值给调用方， 第二调用方通过send方式返回值给gen</span><br><span class="line">     6 #     return &quot;bobby&quot;</span><br><span class="line">     7 #1. 用同步的方式编写异步的代码， 在适当的时候暂停函数并在适当的时候启动函数</span><br><span class="line">     8 import socket</span><br><span class="line">     9 def get_socket_data():</span><br><span class="line">    10     yield 1</span><br><span class="line">    11 </span><br><span class="line">    12 def downloader(url):</span><br><span class="line">    13     client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)</span><br><span class="line">    14     client.setblocking(False)</span><br><span class="line">    15 </span><br><span class="line">    16     try:</span><br><span class="line">    17         client.connect((host, 80))  # 阻塞不会消耗cpu</span><br><span class="line">    18     except BlockingIOError as e:</span><br><span class="line">    19         pass</span><br><span class="line">    20 </span><br><span class="line">    21     selector.register(self.client.fileno(), EVENT_WRITE, self.connected)</span><br><span class="line">    22     #如果get_socket_data()中出现异常，会直接抛给downloader（向上抛）</span><br><span class="line">    23     source = yield from get_socket_data()</span><br><span class="line">    24     data = source.decode(&quot;utf8&quot;)</span><br><span class="line">    25     html_data = data.split(&quot;\r\n\r\n&quot;)[1]</span><br><span class="line">    26     print(html_data)</span><br><span class="line">    27 </span><br><span class="line">    28 def download_html(html):</span><br><span class="line">    29     html = yield from downloader()</span><br><span class="line">    30 </span><br><span class="line">    31 if __name__ == &quot;__main__&quot;:</span><br><span class="line">    32     #协程的调度依然是 事件循环+协程模式 ，协程是单线程模式</span><br><span class="line">    33     pass</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="八-async和await原生协程"><a href="#八-async和await原生协程" class="headerlink" title="八. async和await原生协程"></a>八. async和await原生协程</h2><h3 id="1-python为了将语义变得更加明确，就引入了async和await关键字定义原生的协程："><a href="#1-python为了将语义变得更加明确，就引入了async和await关键字定义原生的协程：" class="headerlink" title="__ 1.python为了将语义变得更加明确，就引入了async和await关键字定义原生的协程： __"></a>__ 1.python为了将语义变得更加明确，就引入了async和await关键字定义原生的协程： __</h3><p>生成器实现的协程又可以当生成器，又可以当协程，且代码凌乱，不利于后期维护。原生的协程中不可以yield，否则会抛错（让协程更加明确）</p>
+<p><img src="https://img2018.cnblogs.com/blog/1395687/201903/1395687-20190309161323527-1211458520.png" alt></p>
+<p><strong>可异步调用：实际实现了<strong>await</strong>魔法函数</strong></p>
+<p><strong>await：将控制权交出去并等待结果返回,await只能接收awaitable对象，可以理解成yield from</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">1  # from collections import Awaitable</span><br><span class="line">     2 #如果是函数,就要使用coroutine装饰器，实际将__await_指向___iter__</span><br><span class="line">     3 # import types</span><br><span class="line">     4 # @types.coroutine</span><br><span class="line">     5 # def downloader(url):</span><br><span class="line">     6 #     return &quot;haha&quot;</span><br><span class="line">     7 </span><br><span class="line">     8 async def downloader(url):</span><br><span class="line">     9     return &quot;haha&quot;</span><br><span class="line">    10 async def download_url(url):</span><br><span class="line">    11     #将控制权交出去并等待结果返回,await只能接收awaitable对象，可以理解成yield from</span><br><span class="line">    12     html=await downloader(url)</span><br><span class="line">    13     return html</span><br><span class="line">    14 </span><br><span class="line">    15 if __name__==&apos;__main__&apos;:</span><br><span class="line">    16     coro=download_url(&apos;www.baidu.com&apos;)</span><br><span class="line">    17     #原生协程不能调用next</span><br><span class="line">    18     coro.send(None)</span><br></pre></td></tr></table></figure>
+
+
+    </div>
+
+    
+    
+    
+        
+      
+
+      <footer class="post-footer">
+          
+            
+          
+          <div class="post-tags">
+            
+              <a href="/tags/python/" rel="tag"># python</a>
+            
+          </div>
+        
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+              
+                <a href="/2019/09/08/python进阶/9线程池编程/" rel="next" title="线程池编程">
+                  <i class="fa fa-chevron-left"></i> 线程池编程
+                </a>
+              
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+              
+                <a href="/2019/09/08/数据结构/数据结构/" rel="prev" title="数据结构与算法">
+                  数据结构与算法 <i class="fa fa-chevron-right"></i>
+                </a>
+              
+            </div>
+          </div>
+        
+      </footer>
+    
+  </div>
+  
+  
+  
+  </article>
+
+  </div>
+
+
+          </div>
+          
+
+        </div>
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+        
+        
+        
+        
+      
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#协程和异步io"><span class="nav-number">1.</span> <span class="nav-text">协程和异步io</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#一-并发、并行、同步、异步、阻塞、非阻塞"><span class="nav-number">1.1.</span> <span class="nav-text">一. 并发、并行、同步、异步、阻塞、非阻塞</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-并行：是指任何时间点，有多个程序运行在多个CPU上（最多和CPU数量一致）。"><span class="nav-number">1.1.1.</span> <span class="nav-text">2.并行：是指任何时间点，有多个程序运行在多个CPU上（最多和CPU数量一致）。</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-并发和并行的区别："><span class="nav-number">1.1.2.</span> <span class="nav-text">3.并发和并行的区别：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-同步：是指代码调用IO操作时，必须等待IO操作完成才能返回的调用方式。"><span class="nav-number">1.1.3.</span> <span class="nav-text">4.同步：是指代码调用IO操作时，必须等待IO操作完成才能返回的调用方式。</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-异步：是指代码调用IO操作时，不必等待IO操作完成就能返回的调用方式。"><span class="nav-number">1.1.4.</span> <span class="nav-text">5.异步：是指代码调用IO操作时，不必等待IO操作完成就能返回的调用方式。</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-阻塞：是指调用函数的时候当前线程被挂起。"><span class="nav-number">1.1.5.</span> <span class="nav-text">6.阻塞：是指调用函数的时候当前线程被挂起。</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-非阻塞：是指调用函数的时候当前线程不会被挂起，而是立即返回。"><span class="nav-number">1.1.6.</span> <span class="nav-text">7.非阻塞：是指调用函数的时候当前线程不会被挂起，而是立即返回。</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#二-C10K问题和io多路复用-select、poll、epoll"><span class="nav-number">1.2.</span> <span class="nav-text">二. C10K问题和io多路复用(select、poll、epoll)</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-C10K问题："><span class="nav-number">1.2.1.</span> <span class="nav-text">1.C10K问题：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-五种I-O模型（详情：https-www-cnblogs-com-findumars-p-6361627-html）："><span class="nav-number">1.2.2.</span> <span class="nav-text">2.五种I/O模型（详情：https://www.cnblogs.com/findumars/p/6361627.html）：</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#5-2非阻塞式I-O：调用后立即返回结果（问题：不一定三次握手成功，recv-会被循环调用，-循环调用recv-将大幅度推高CPU"><span class="nav-number">1.2.2.1.</span> <span class="nav-text">5.2非阻塞式I/O：调用后立即返回结果（问题：不一定三次握手成功，recv() 会被循环调用， **循环调用recv()将大幅度推高CPU</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#5-4信号驱动式I-O：运用较少"><span class="nav-number">1.2.2.2.</span> <span class="nav-text">5.4信号驱动式I/O：运用较少</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-解决方法（参照：https-blog-csdn-net-wangtaomtk-article-details-51811011）："><span class="nav-number">1.2.3.</span> <span class="nav-text">3.解决方法（参照：https://blog.csdn.net/wangtaomtk/article/details/51811011）：</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#3-1每个线程-进程处理一个连接："><span class="nav-number">1.2.3.1.</span> <span class="nav-text">3.1每个线程/进程处理一个连接：</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-2-每个进程-线程同时处理多个连接（IO多路复用）："><span class="nav-number">1.2.3.2.</span> <span class="nav-text">3.2 每个进程/线程同时处理多个连接（IO多路复用）：</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#3-2-1传统思路"><span class="nav-number">1.2.3.2.1.</span> <span class="nav-text">3.2.1传统思路</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-2-2-select："><span class="nav-number">1.2.3.3.</span> <span class="nav-text">3.2.2 select：</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#三-epoll-回调-事件循环方式url"><span class="nav-number">1.3.</span> <span class="nav-text">三. epoll+回调+事件循环方式url</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-通过非阻塞I-O实现http请求："><span class="nav-number">1.3.1.</span> <span class="nav-text">1. 通过非阻塞I/O实现http请求：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-使用select完成http请求（循环回调）："><span class="nav-number">1.3.2.</span> <span class="nav-text">2.使用select完成http请求（循环回调）：</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#四-回调之痛"><span class="nav-number">1.4.</span> <span class="nav-text">四. 回调之痛</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#五-C10M问题和协程"><span class="nav-number">1.5.</span> <span class="nav-text">五. C10M问题和协程</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-C10M问题："><span class="nav-number">1.5.1.</span> <span class="nav-text">1.C10M问题：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-协程："><span class="nav-number">1.5.2.</span> <span class="nav-text">2.协程：</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#六-生成器的send和yield-from"><span class="nav-number">1.6.</span> <span class="nav-text">六. 生成器的send和yield from</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-生成器send和next方法："><span class="nav-number">1.6.1.</span> <span class="nav-text">1.生成器send和next方法：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-close-方法：（关闭生成器）"><span class="nav-number">1.6.2.</span> <span class="nav-text">2.close()方法：（关闭生成器）</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-throw-方法：向生成器中扔异常，需要自己处理，否则会抛错"><span class="nav-number">1.6.3.</span> <span class="nav-text">3.throw()方法：向生成器中扔异常，需要自己处理，否则会抛错</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-yield-from：（Python-3-3新加的语法）"><span class="nav-number">1.6.4.</span> <span class="nav-text">4.yield from：（Python 3.3新加的语法）</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#4-1简介："><span class="nav-number">1.6.4.1.</span> <span class="nav-text">4.1简介：</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-2main调用方-g1-委托生成器-gen-子生成器"><span class="nav-number">1.6.4.2.</span> <span class="nav-text">4.2main调用方 g1:委托生成器 gen:子生成器:</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-3例子："><span class="nav-number">1.6.4.3.</span> <span class="nav-text">4.3例子：</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-4介绍yield-from详情："><span class="nav-number">1.6.4.4.</span> <span class="nav-text">4.4介绍yield from详情：</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#七-生成器如何变成协程？"><span class="nav-number">1.7.</span> <span class="nav-text">七. 生成器如何变成协程？</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-生成器可以暂停并获取状态："><span class="nav-number">1.7.1.</span> <span class="nav-text">1.生成器可以暂停并获取状态：</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-协程的调度依然是-事件循环-协程模式-，协程是单线程模式："><span class="nav-number">1.7.2.</span> <span class="nav-text">2.协程的调度依然是 事件循环+协程模式 ，协程是单线程模式：</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#八-async和await原生协程"><span class="nav-number">1.8.</span> <span class="nav-text">八. async和await原生协程</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-python为了将语义变得更加明确，就引入了async和await关键字定义原生的协程："><span class="nav-number">1.8.1.</span> <span class="nav-text">__ 1.python为了将语义变得更加明确，就引入了async和await关键字定义原生的协程： __</span></a></li></ol></li></ol></li></ol></div>
+        
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">zzt</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+  <nav class="site-state motion-element">
+      <div class="site-state-item site-state-posts">
+        
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">40</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-categories">
+        
+          
+            <a href="/categories/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">7</span>
+        <span class="site-state-item-name">分类</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-tags">
+        
+          
+            <a href="/tags/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">10</span>
+        <span class="site-state-item-name">标签</span>
+        </a>
+      </div>
+    
+  </nav>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zzt</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.9.0</div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.4.0</div>
+
+        
+
+
+
+
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+
+
+  <script src="/lib/anime.min.js?v=3.1.0"></script>
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+<script src="/js/utils.js?v=7.4.0"></script><script src="/js/motion.js?v=7.4.0"></script>
+<script src="/js/schemes/pisces.js?v=7.4.0"></script>
+<script src="/js/next-boot.js?v=7.4.0"></script>
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+</body>
+</html>

@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+
+
+
+
+
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=7.4.0">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=7.4.0">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=7.4.0">
+  <link rel="mask-icon" href="/images/logo.svg?v=7.4.0" color="#222">
+
+<link rel="stylesheet" href="/css/main.css?v=7.4.0">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css?v=4.7.0">
+
+
+<script id="hexo-configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Pisces',
+    version: '7.4.0',
+    exturl: false,
+    sidebar: {"position":"left","display":"post","offset":12,"onmobile":false},
+    copycode: {"enable":false,"show_result":false,"style":null},
+    back2top: {"enable":true,"sidebar":false,"scrollpercent":false},
+    bookmark: {"enable":false,"color":"#222","save":"auto"},
+    fancybox: false,
+    mediumzoom: false,
+    lazyload: false,
+    pangu: false,
+    algolia: {
+      appID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    },
+    localsearch: {"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},
+    path: '',
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    translation: {
+      copy_button: '复制',
+      copy_success: '复制成功',
+      copy_failure: '复制失败'
+    },
+    sidebarPadding: 40
+  };
+</script>
+
+  <meta name="description" content="6 安全应用知识点 Cookie操作 安全Cookie 跨站请求伪造原理 XSRF保护 模板 请求体 HTTP报文头   用户验证 authenticated装饰器 get_current_user()方法 login_url设置">
+<meta name="keywords" content="python">
+<meta property="og:type" content="article">
+<meta property="og:title" content="安全应用">
+<meta property="og:url" content="https://ztzheng100.github.io.git/2019/09/08/tornado/安全应用/index.html">
+<meta property="og:site_name" content="ZZT_blog">
+<meta property="og:description" content="6 安全应用知识点 Cookie操作 安全Cookie 跨站请求伪造原理 XSRF保护 模板 请求体 HTTP报文头   用户验证 authenticated装饰器 get_current_user()方法 login_url设置">
+<meta property="og:locale" content="zh-CN">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/10103251-ba84fa2d81f4b39a.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/448/format/webp">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/10103251-82a9c765875cced7.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/822/format/webp">
+<meta property="og:updated_time" content="2019-09-09T08:35:50.618Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="安全应用">
+<meta name="twitter:description" content="6 安全应用知识点 Cookie操作 安全Cookie 跨站请求伪造原理 XSRF保护 模板 请求体 HTTP报文头   用户验证 authenticated装饰器 get_current_user()方法 login_url设置">
+<meta name="twitter:image" content="https://upload-images.jianshu.io/upload_images/10103251-ba84fa2d81f4b39a.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/448/format/webp">
+  <link rel="canonical" href="https://ztzheng100.github.io.git/2019/09/08/tornado/安全应用/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome: false,
+    isPost: true,
+    isPage: false,
+    isArchive: false
+  };
+</script>
+
+  <title>安全应用 | ZZT_blog</title>
+  <meta name="generator" content="Hexo 3.9.0">
+  
+
+
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .logo,
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-CN">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-meta">
+
+    <div>
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">ZZT_blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+  </div>
+
+  <div class="site-nav-toggle">
+    <button aria-label="切换导航栏">
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+
+<nav class="site-nav">
+  
+  <ul id="menu" class="menu">
+      
+      
+      
+        
+        <li class="menu-item menu-item-home">
+      
+    
+
+    <a href="/" rel="section"><i class="menu-item-icon fa fa-fw fa-home"></i> <br>首页</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-tags">
+      
+    
+
+    <a href="/tags/" rel="section"><i class="menu-item-icon fa fa-fw fa-tags"></i> <br>标签</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-categories">
+      
+    
+
+    <a href="/categories/" rel="section"><i class="menu-item-icon fa fa-fw fa-th"></i> <br>分类</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-archives">
+      
+    
+
+    <a href="/archives/" rel="section"><i class="menu-item-icon fa fa-fw fa-archive"></i> <br>归档</a>
+
+  </li>
+      
+      
+      
+        
+        <li class="menu-item menu-item-guestbook">
+      
+    
+
+    <a href="/guestbook" rel="section"><i class="menu-item-icon fa fa-fw fa-question-circle"></i> <br>guestbook</a>
+
+  </li>
+  </ul>
+
+</nav>
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+            
+
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+      <article itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block post">
+    <link itemprop="mainEntityOfPage" href="https://ztzheng100.github.io.git/2019/09/08/tornado/安全应用/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zzt">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ZZT_blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">安全应用
+
+          
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              
+                
+              
+
+              <time title="创建时间：2019-09-08 20:24:35" itemprop="dateCreated datePublished" datetime="2019-09-08T20:24:35+08:00">2019-09-08</time>
+            </span>
+          
+            
+
+            
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="fa fa-calendar-check-o"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2019-09-09 16:35:50" itemprop="dateModified" datetime="2019-09-09T16:35:50+08:00">2019-09-09</time>
+              </span>
+            
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/tornado/" itemprop="url" rel="index"><span itemprop="name">tornado</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="6-安全应用"><a href="#6-安全应用" class="headerlink" title="6 安全应用"></a>6 安全应用</h1><h2 id="知识点"><a href="#知识点" class="headerlink" title="知识点"></a>知识点</h2><ul>
+<li>Cookie操作</li>
+<li>安全Cookie</li>
+<li>跨站请求伪造原理</li>
+<li>XSRF保护<ul>
+<li>模板</li>
+<li>请求体</li>
+<li>HTTP报文头</li>
+</ul>
+</li>
+<li>用户验证<ul>
+<li>authenticated装饰器</li>
+<li>get_current_user()方法</li>
+<li>login_url设置</li>
+</ul>
+</li>
+</ul><a id="more"></a>
+<h1 id="6-1-Cookie"><a href="#6-1-Cookie" class="headerlink" title="6.1 Cookie"></a>6.1 Cookie</h1><p>对于RequestHandler，除了在第二章中讲到的之外，还提供了操作cookie的方法。</p>
+<h2 id="设置"><a href="#设置" class="headerlink" title="设置"></a>设置</h2><p><strong>set_cookie(name, value, domain=None, expires=None, path=’/‘,<br>expires_days=None)</strong></p>
+<p>参数说明：</p>
+<table>
+<thead>
+<tr>
+<th>参数名</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>name</td>
+<td>cookie名</td>
+</tr>
+<tr>
+<td>value</td>
+<td>cookie值</td>
+</tr>
+<tr>
+<td>domain</td>
+<td>提交cookie时匹配的域名</td>
+</tr>
+<tr>
+<td>path</td>
+<td>提交cookie时匹配的路径</td>
+</tr>
+<tr>
+<td>expires</td>
+<td>cookie的有效期，可以是时间戳整数、时间元组或者datetime类型，为 <strong>UTC时间</strong></td>
+</tr>
+<tr>
+<td>expires_days</td>
+<td>cookie的有效期，天数，优先级低于expires</td>
+</tr>
+</tbody></table>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">import datetime</span><br><span class="line">    </span><br><span class="line">    class IndexHandler(RequestHandler):</span><br><span class="line">        def get(self):</span><br><span class="line">            self.set_cookie(&quot;n1&quot;, &quot;v1&quot;)</span><br><span class="line">            self.set_cookie(&quot;n2&quot;, &quot;v2&quot;, path=&quot;/new&quot;, expires=time.strptime(&quot;2016-11-11 23:59:59&quot;,&quot;%Y-%m-%d %H:%M:%S&quot;))</span><br><span class="line">            self.set_cookie(&quot;n3&quot;, &quot;v3&quot;, expires_days=20)</span><br><span class="line">            # 利用time.mktime将本地时间转换为UTC标准时间</span><br><span class="line">            self.set_cookie(&quot;n4&quot;, &quot;v4&quot;, expires=time.mktime(time.strptime(&quot;2016-11-11 23:59:59&quot;,&quot;%Y-%m-%d %H:%M:%S&quot;)))</span><br><span class="line">            self.write(&quot;OK&quot;)</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://upload-images.jianshu.io/upload_images/10103251-ba84fa2d81f4b39a.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/448/format/webp" alt="day61_tornado-安全应用-01.png"></p>
+<h2 id="获取"><a href="#获取" class="headerlink" title="获取"></a>获取</h2><p><strong>get_cookie(name, default=None)</strong></p>
+<p>获取名为name的cookie，可以设置默认值。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">class IndexHandler(RequestHandler):</span><br><span class="line">    def get(self):</span><br><span class="line">        n3 = self.get_cookie(&quot;n3&quot;)</span><br><span class="line">        self.write(n3)</span><br></pre></td></tr></table></figure>
+
+<h2 id="清除"><a href="#清除" class="headerlink" title="清除"></a>清除</h2><p><strong>clear_cookie(name, path=’/‘, domain=None)</strong></p>
+<p>删除名为name，并同时匹配domain和path的cookie。</p>
+<p><strong>clear_all_cookies(path=’/‘, domain=None)</strong></p>
+<p>删除同时匹配domain和path的所有cookie。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">class ClearOneCookieHandler(RequestHandler):</span><br><span class="line">    def get(self):</span><br><span class="line">        self.clear_cookie(&quot;n3&quot;)</span><br><span class="line">        self.write(&quot;OK&quot;)</span><br><span class="line"></span><br><span class="line">class ClearAllCookieHandler(RequestHandler):</span><br><span class="line">    def get(self):</span><br><span class="line">        self.clear_all_cookies()</span><br><span class="line">        self.write(&quot;OK&quot;)</span><br></pre></td></tr></table></figure>
+
+<p><strong>注意：执行清除cookie操作后，并不是立即删除了浏览器中的cookie，而是给cookie值置空，并改变其有效期使其失效。真正的删除cookie是由浏览器去清理的。</strong></p>
+<h2 id="安全Cookie"><a href="#安全Cookie" class="headerlink" title="安全Cookie"></a>安全Cookie</h2><p>Cookie是存储在客户端浏览器中的，很容易被篡改。Tornado提供了一种对Cookie进行简易加密签名的方法来防止Cookie被恶意篡改。</p>
+<p>使用安全Cookie需要为应用配置一个用来给Cookie进行混淆的秘钥cookie_secret，将其传递给Application的构造函数。我们可以使用如下方法来生成一个随机字符串作为cookie_secret的值。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&gt;&gt;&gt; import base64, uuid</span><br><span class="line">&gt;&gt;&gt; base64.b64encode(uuid.uuid4().bytes + uuid.uuid4().bytes)</span><br><span class="line">&apos;2hcicVu+TqShDpfsjMWQLZ0Mkq5NPEWSk9fi0zsSt3A=&apos;</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>Base64是一种基于64个可打印字符来表示二进制数据的表示方法。由于2的6次方等于64，所以每6个比特为一个单元，对应某个可打印字符。三个字节有24个比特，对应于4个Base64单元，即3个字节需要用4个可打印字符来表示。</p>
+</blockquote>
+<blockquote>
+<p>uuid, 通用唯一识别码（英语：Universally Unique<br>Identifier，简称UUID），是由一组32个16进制数字所构成（两个16进制数是一个字节，总共16字节），因此UUID理论上的总数为1632=2128，约等于3.4<br>x 10^38。也就是说若每纳秒产生1兆个UUID，要花100亿年才会将所有UUID用完。</p>
+</blockquote>
+<blockquote>
+<p>uuid模块的uuid4()函数可以随机产生一个uuid码，bytes属性将此uuid码作为16字节字符串。</p>
+</blockquote>
+<p>将生成的cookie_secret传入Application构造函数：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">app = tornado.web.Application(</span><br><span class="line">        [(r&quot;/&quot;, IndexHandler),],</span><br><span class="line">        cookie_secret = &quot;2hcicVu+TqShDpfsjMWQLZ0Mkq5NPEWSk9fi0zsSt3A=&quot;</span><br><span class="line">    )</span><br></pre></td></tr></table></figure>
+
+
+
+
+<h3 id="获取和设置"><a href="#获取和设置" class="headerlink" title="获取和设置"></a>获取和设置</h3><h4 id="set-secure-cookie-name-value-expires-days-30"><a href="#set-secure-cookie-name-value-expires-days-30" class="headerlink" title="set_secure_cookie(name, value, expires_days=30)"></a>set_secure_cookie(name, value, expires_days=30)</h4><p>设置一个带签名和时间戳的cookie，防止cookie被伪造。</p>
+<h4 id="get-secure-cookie-name-value-None-max-age-days-31"><a href="#get-secure-cookie-name-value-None-max-age-days-31" class="headerlink" title="get_secure_cookie(name, value=None, max_age_days=31)"></a>get_secure_cookie(name, value=None, max_age_days=31)</h4><p>如果cookie存在且验证通过，返回cookie的值，否则返回None。max_age_day不同于expires_days，expires_days是设置浏览器中cookie的有效期，而max_age_day是过滤安全cookie的时间戳。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">class IndexHandler(RequestHandler):</span><br><span class="line">    def get(self):</span><br><span class="line">        cookie = self.get_secure_cookie(&quot;count&quot;)</span><br><span class="line">        count = int(cookie) + 1 if cookie else 1</span><br><span class="line">        self.set_secure_cookie(&quot;count&quot;, str(count))</span><br><span class="line">        self.write(</span><br><span class="line">            &apos;&lt;html&gt;&lt;head&gt;&lt;title&gt;Cookie计数器&lt;/title&gt;&lt;/head&gt;&apos;</span><br><span class="line">            &apos;&lt;body&gt;&lt;h1&gt;您已访问本页%d次。&lt;/h1&gt;&apos; % count + </span><br><span class="line">            &apos;&lt;/body&gt;&lt;/html&gt;&apos;</span><br><span class="line">        )</span><br></pre></td></tr></table></figure>
+
+
+
+
+<p>我们看签名后的cookie值：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&quot;2|1:0|10:1476412069|5:count|4:NQ==|cb5fc1d4434971de6abf87270ac33381c686e4ec8c6f7e62130a0f8cbe5b7609&quot;</span><br></pre></td></tr></table></figure>
+
+<p>字段说明：</p>
+<ol>
+<li>安全cookie的版本，默认使用版本2，不带长度说明前缀</li>
+<li>默认为0</li>
+<li>时间戳</li>
+<li>cookie名</li>
+<li>base64编码的cookie值</li>
+<li>签名值，不带长度说明前缀</li>
+</ol>
+<p><strong>注意：Tornado的安全cookie只是一定程度的安全，仅仅是增加了恶意修改的难度。Tornado的安全cookies仍然容易被窃听，而cookie值是签名不是加密，攻击者能够读取已存储的cookie值，并且可以传输他们的数据到任意服务器，或者通过发送没有修改的数据给应用伪造请求。因此，避免在浏览器cookie中存储敏感的用户数据是非常重要的。</strong></p>
+<h1 id="6-2-XSRF"><a href="#6-2-XSRF" class="headerlink" title="6.2 XSRF"></a>6.2 XSRF</h1><h2 id="跨站请求伪造"><a href="#跨站请求伪造" class="headerlink" title="跨站请求伪造"></a>跨站请求伪造</h2><p>先建立一个网站127.0.0.1:8000，使用上一节中的Cookie计数器：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">class IndexHandler(RequestHandler):</span><br><span class="line">    def get(self):</span><br><span class="line">        cookie = self.get_secure_cookie(&quot;count&quot;)</span><br><span class="line">        count = int(cookie) + 1 if cookie else 1</span><br><span class="line">        self.set_secure_cookie(&quot;count&quot;, str(count))</span><br><span class="line">        self.write(</span><br><span class="line">            &apos;&lt;html&gt;&lt;head&gt;&lt;title&gt;Cookie计数器&lt;/title&gt;&lt;/head&gt;&apos;</span><br><span class="line">            &apos;&lt;body&gt;&lt;h1&gt;您已访问本页%d次。&lt;/h1&gt;&apos; % count +</span><br><span class="line">            &apos;&lt;/body&gt;&lt;/html&gt;&apos;</span><br><span class="line">        )</span><br></pre></td></tr></table></figure>
+
+<p>再建立一个网站127.0.0.1:9000，</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">class IndexHandler(RequestHandler):</span><br><span class="line">    def get(self):</span><br><span class="line">        self.write(&apos;&lt;html&gt;&lt;head&gt;&lt;title&gt;被攻击的网站&lt;/title&gt;&lt;/head&gt;&apos;</span><br><span class="line">        &apos;&lt;body&gt;&lt;h1&gt;此网站的图片链接被修改了&lt;/h1&gt;&apos;</span><br><span class="line">        &apos;&lt;img alt=&quot;这应该是图片&quot; src=&quot;http://127.0.0.1:8000/?f=9000/&quot;&gt;&apos;</span><br><span class="line">        &apos;&lt;/body&gt;&lt;/html&gt;&apos;</span><br><span class="line">        )</span><br></pre></td></tr></table></figure>
+
+<p>在9000网站我们模拟攻击者修改了我们的图片源地址为8000网站的Cookie计数器页面网址。当我们访问9000网站的时候，在我们不知道、未授权的情况下8000网站的Cookie被使用了，以至于让8000网址认为是我们自己调用了8000网站的逻辑。这就是CSRF（Cross-<br>site request forgery）跨站请求伪造（跨站攻击或跨域攻击的一种），通常缩写为CSRF或者XSRF。</p>
+<p>我们刚刚使用的是GET方式模拟的攻击，为了防范这种方式的攻击，任何会产生副作用的HTTP请求，比如点击购买按钮、编辑账户设置、改变密码或删除文档，都应该使用HTTP<br>POST方法（或PUT、DELETE）。但是，这并不足够：一个恶意站点可能会通过其他手段来模拟发送POST请求，保护POST请求需要额外的策略。</p>
+<h1 id="XSRF保护"><a href="#XSRF保护" class="headerlink" title="XSRF保护"></a>XSRF保护</h1><p>浏览器有一个很重要的概念—— <strong>同源策略</strong> (Same-Origin Policy)。 所谓同源是指，域名，协议，端口相同。<br>不同源的客户端脚本(javascript、ActionScript)在没明确授权的情况下，不能读写对方的资源。</p>
+<p>由于第三方站点没有访问cookie数据的权限（同源策略），所以我们可以要求每个请求包括一个特定的参数值作为令牌来匹配存储在cookie中的对应值，如果两者匹配，我们的应用认定请求有效。而第三方站点无法在请求中包含令牌cookie值，这就有效地防止了不可信网站发送未授权的请求。</p>
+<h2 id="开启XSRF保护"><a href="#开启XSRF保护" class="headerlink" title="开启XSRF保护"></a>开启XSRF保护</h2><p>要开启XSRF保护，需要在Application的构造函数中添加xsrf_cookies参数：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">app = tornado.web.Application(</span><br><span class="line">        [(r&quot;/&quot;, IndexHandler),],</span><br><span class="line">        cookie_secret = &quot;2hcicVu+TqShDpfsjMWQLZ0Mkq5NPEWSk9fi0zsSt3A=&quot;,</span><br><span class="line">        xsrf_cookies = True</span><br><span class="line">    )</span><br></pre></td></tr></table></figure>
+
+<p>当这个参数被设置时，Tornado将拒绝请求参数中不包含正确的_xsrf值的POST、PUT和DELETE请求。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">class IndexHandler(RequestHandler):</span><br><span class="line">    def post(self):</span><br><span class="line">        self.write(&quot;hello itcast&quot;)</span><br></pre></td></tr></table></figure>
+
+<p>用不带_xsrf的post请求时，报出了HTTP 403: Forbidden (‘_xsrf’ argument missing from POST)的错误。</p>
+<h2 id="模板应用"><a href="#模板应用" class="headerlink" title="模板应用"></a>模板应用</h2><p>在模板中使用XSRF保护，只需在模板中添加</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#123;% module xsrf_form_html() %&#125;</span><br></pre></td></tr></table></figure>
+
+<p>如新建一个模板index.html</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">&lt;!DOCTYPE html&gt;</span><br><span class="line">&lt;html&gt;</span><br><span class="line">&lt;head&gt;</span><br><span class="line">    &lt;title&gt;测试XSRF&lt;/title&gt;</span><br><span class="line">&lt;/head&gt;</span><br><span class="line">&lt;body&gt;</span><br><span class="line">    &lt;form method=&quot;post&quot;&gt;</span><br><span class="line">      &#123;% module xsrf_form_html() %&#125;</span><br><span class="line">      &lt;input type=&quot;text&quot; name=&quot;message&quot;/&gt;</span><br><span class="line">      &lt;input type=&quot;submit&quot; value=&quot;Post&quot;/&gt;</span><br><span class="line">    &lt;/form&gt;</span><br><span class="line">&lt;/body&gt;</span><br><span class="line">&lt;/html&gt;</span><br></pre></td></tr></table></figure>
+
+<p>后端</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">class IndexHandler(RequestHandler):</span><br><span class="line">    def get(self):</span><br><span class="line">        self.render(&quot;index.html&quot;)</span><br><span class="line"></span><br><span class="line">    def post(self):</span><br><span class="line">        self.write(&quot;hello itcast&quot;)</span><br></pre></td></tr></table></figure>
+
+<p>模板中添加的语句帮我们做了两件事：</p>
+<ul>
+<li>为浏览器设置了_xsrf的Cookie（注意此Cookie浏览器关闭时就会失效）</li>
+<li>为模板的表单中添加了一个隐藏的输入名为_xsrf，其值为_xsrf的Cookie值<br>渲染后的页面原码如下：<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">&lt;!DOCTYPE html&gt;</span><br><span class="line">&lt;html&gt;</span><br><span class="line">    &lt;head&gt;</span><br><span class="line">        &lt;title&gt;测试XSRF&lt;/title&gt;</span><br><span class="line">    &lt;/head&gt;</span><br><span class="line">    &lt;body&gt;</span><br><span class="line">        &lt;form method=&quot;post&quot;&gt;</span><br><span class="line">            &lt;input type=&quot;hidden&quot; name=&quot;_xsrf&quot; value=&quot;2|543c2206|a056ff9e49df23eaffde0a694cde2b02|1476443353&quot;/&gt;</span><br><span class="line">            &lt;input type=&quot;text&quot; name=&quot;message&quot;/&gt;</span><br><span class="line">            &lt;input type=&quot;submit&quot; value=&quot;Post&quot;/&gt;</span><br><span class="line">        &lt;/form&gt;</span><br><span class="line">    &lt;/body&gt;</span><br><span class="line">&lt;/html&gt;</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h2 id="非模板应用"><a href="#非模板应用" class="headerlink" title="非模板应用"></a>非模板应用</h2><p>对于不使用模板的应用来说，首先要设置_xsrf的Cookie值，可以在任意的Handler中通过获取self.xsrf_token的值来生成_xsrf并设置Cookie。</p>
+<p>下面两种方式都可以起到设置_xsrf Cookie的作用。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">class XSRFTokenHandler(RequestHandler):</span><br><span class="line">    &quot;&quot;&quot;专门用来设置_xsrf Cookie的接口&quot;&quot;&quot;</span><br><span class="line">    def get(self):</span><br><span class="line">        self.xsrf_token</span><br><span class="line">        self.write(&quot;Ok&quot;)</span><br><span class="line"></span><br><span class="line">class StaticFileHandler(tornado.web.StaticFileHandler):</span><br><span class="line">    &quot;&quot;&quot;重写StaticFileHandler，构造时触发设置_xsrf Cookie&quot;&quot;&quot;</span><br><span class="line">    def __init__(self, *args, **kwargs):</span><br><span class="line">        super(StaticFileHandler, self).__init__(*args, **kwargs)</span><br><span class="line">        self.xsrf_token</span><br></pre></td></tr></table></figure>
+
+
+
+<p>对于请求携带_xsrf参数，有两种方式：</p>
+<ul>
+<li>若请求体是表单编码格式的，可以在请求体中添加_xsrf参数</li>
+<li>若请求体是其他格式的（如json或xml等），可以通过设置HTTP头X-XSRFToken来传递_xsrf值</li>
+</ul>
+<h2 id="1-请求体携带-xsrf参数"><a href="#1-请求体携带-xsrf参数" class="headerlink" title="1. 请求体携带_xsrf参数"></a>1. 请求体携带_xsrf参数</h2><p>新建一个页面xsrf.html：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">&lt;!DOCTYPE html&gt;</span><br><span class="line">&lt;html&gt;</span><br><span class="line">&lt;head&gt;</span><br><span class="line">    &lt;meta charset=&quot;utf-8&quot;&gt;</span><br><span class="line">    &lt;title&gt;测试XSRF&lt;/title&gt;</span><br><span class="line">&lt;/head&gt;</span><br><span class="line">&lt;body&gt;</span><br><span class="line">    &lt;a href=&quot;javascript:;&quot; onclick=&quot;xsrfPost()&quot;&gt;发送POST请求&lt;/a&gt;</span><br><span class="line">    &lt;script src=&quot;http://cdn.bootcss.com/jquery/3.1.1/jquery.min.js&quot;&gt;&lt;/script&gt;</span><br><span class="line">    &lt;script type=&quot;text/javascript&quot;&gt;</span><br><span class="line">        //获取指定Cookie的函数</span><br><span class="line">        function getCookie(name) &#123;</span><br><span class="line">            var r = document.cookie.match(&quot;\\b&quot; + name + &quot;=([^;]*)\\b&quot;);</span><br><span class="line">            return r ? r[1] : undefined;</span><br><span class="line">        &#125;</span><br><span class="line">        //AJAX发送post请求，表单格式数据</span><br><span class="line">        function xsrfPost() &#123;</span><br><span class="line">            var xsrf = getCookie(&quot;_xsrf&quot;);</span><br><span class="line">            $.post(&quot;/new&quot;, &quot;_xsrf=&quot;+xsrf+&quot;&amp;key1=value1&quot;, function(data) &#123;</span><br><span class="line">                alert(&quot;OK&quot;);</span><br><span class="line">            &#125;);</span><br><span class="line">        &#125;</span><br><span class="line">    &lt;/script&gt;</span><br><span class="line">&lt;/body&gt;</span><br><span class="line">&lt;/html&gt;</span><br></pre></td></tr></table></figure>
+
+<h2 id="2-HTTP头X-XSRFToken"><a href="#2-HTTP头X-XSRFToken" class="headerlink" title="2. HTTP头X-XSRFToken"></a>2. HTTP头X-XSRFToken</h2><p>新建一个页面json.html：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br></pre></td><td class="code"><pre><span class="line">&lt;!DOCTYPE html&gt;</span><br><span class="line">&lt;html&gt;</span><br><span class="line">&lt;head&gt;</span><br><span class="line">    &lt;meta charset=&quot;utf-8&quot;&gt;</span><br><span class="line">    &lt;title&gt;测试XSRF&lt;/title&gt;</span><br><span class="line">&lt;/head&gt;</span><br><span class="line">&lt;body&gt;</span><br><span class="line">    &lt;a href=&quot;javascript:;&quot; onclick=&quot;xsrfPost()&quot;&gt;发送POST请求&lt;/a&gt;</span><br><span class="line">    &lt;script src=&quot;http://cdn.bootcss.com/jquery/3.1.1/jquery.min.js&quot;&gt;&lt;/script&gt;</span><br><span class="line">    &lt;script type=&quot;text/javascript&quot;&gt;</span><br><span class="line">        //获取指定Cookie的函数</span><br><span class="line">        function getCookie(name) &#123;</span><br><span class="line">            var r = document.cookie.match(&quot;\\b&quot; + name + &quot;=([^;]*)\\b&quot;);</span><br><span class="line">            return r ? r[1] : undefined;</span><br><span class="line">        &#125;</span><br><span class="line">        //AJAX发送post请求，json格式数据</span><br><span class="line">        function xsrfPost() &#123;</span><br><span class="line">            var xsrf = getCookie(&quot;_xsrf&quot;);</span><br><span class="line">            var data = &#123;</span><br><span class="line">                key1:1,</span><br><span class="line">                key1:2</span><br><span class="line">            &#125;;</span><br><span class="line">            var json_data = JSON.stringify(data);</span><br><span class="line">            $.ajax(&#123;</span><br><span class="line">                url: &quot;/new&quot;,</span><br><span class="line">                method: &quot;POST&quot;,</span><br><span class="line">                headers: &#123;</span><br><span class="line">                    &quot;X-XSRFToken&quot;:xsrf,</span><br><span class="line">                &#125;,</span><br><span class="line">                data:json_data,</span><br><span class="line">                success:function(data) &#123;</span><br><span class="line">                    alert(&quot;OK&quot;);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;)</span><br><span class="line">        &#125;</span><br><span class="line">    &lt;/script&gt;</span><br><span class="line">&lt;/body&gt;</span><br><span class="line">&lt;/html&gt;</span><br></pre></td></tr></table></figure>
+
+<h1 id="6-3-用户验证"><a href="#6-3-用户验证" class="headerlink" title="6.3 用户验证"></a>6.3 用户验证</h1><p>用户验证是指在收到用户请求后进行处理前先判断用户的认证状态（如登陆状态），若通过验证则正常处理，否则强制用户跳转至认证页面（如登陆页面）。</p>
+<h2 id="authenticated装饰器"><a href="#authenticated装饰器" class="headerlink" title="authenticated装饰器"></a>authenticated装饰器</h2><p>为了使用Tornado的认证功能，我们需要对登录用户标记具体的处理函数。我们可以使用@tornado.web.authenticated装饰器完成它。当我们使用这个装饰器包裹一个处理方法时，Tornado将确保这个方法的主体只有在合法的用户被发现时才会调用。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">class ProfileHandler(RequestHandler):</span><br><span class="line">    @tornado.web.authenticated</span><br><span class="line">    def get(self):</span><br><span class="line">        self.write(&quot;这是我的个人主页。&quot;)</span><br></pre></td></tr></table></figure>
+
+<h2 id="get-current-user-方法"><a href="#get-current-user-方法" class="headerlink" title="get_current_user()方法"></a>get_current_user()方法</h2><p>装饰器@tornado.web.authenticated的判断执行依赖于请求处理类中的self.current_user属性，如果current_user值为假（None、False、0、””等），任何GET或HEAD请求都将把访客重定向到应用设置中login_url指定的URL，而非法用户的POST请求将返回一个带有403（Forbidden）状态的HTTP响应。</p>
+<p>在获取self.current_user属性的时候，tornado会调用get_current_user()方法来返回current_user的值。也就是说，<br><strong>我们验证用户的逻辑应写在get_current_user()方法中，若该方法返回非假值则验证通过，否则验证失败。</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">class ProfileHandler(RequestHandler):</span><br><span class="line">    def get_current_user(self):</span><br><span class="line">        &quot;&quot;&quot;在此完成用户的认证逻辑&quot;&quot;&quot;</span><br><span class="line">        user_name = self.get_argument(&quot;name&quot;, None)</span><br><span class="line">        return user_name </span><br><span class="line"></span><br><span class="line">    @tornado.web.authenticated</span><br><span class="line">    def get(self):</span><br><span class="line">        self.write(&quot;这是我的个人主页。&quot;)</span><br></pre></td></tr></table></figure>
+
+<h2 id="login-url设置"><a href="#login-url设置" class="headerlink" title="login_url设置"></a>login_url设置</h2><p>当用户验证失败时，将用户重定向到login_url上，所以我们还需要在Application中配置login_url,并且会传送next参数，指向上一个网址，用于回到上一个网址。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">class LoginHandler(RequestHandler):</span><br><span class="line">    def get(self):</span><br><span class="line">        &quot;&quot;&quot;在此返回登陆页面&quot;&quot;&quot;</span><br><span class="line">        self.write(&quot;登陆页面&quot;)</span><br><span class="line"></span><br><span class="line">class LoginHandler(RequestHandler):</span><br><span class="line">    def get(self):</span><br><span class="line">        &quot;&quot;&quot;登陆处理，完成登陆后跳转回前一页面&quot;&quot;&quot;</span><br><span class="line">        next = self.get_argument(&quot;next&quot;, &quot;/&quot;)</span><br><span class="line">        self.redirect(next+&quot;?name=logined&quot;)</span><br><span class="line"></span><br><span class="line">app = tornado.web.Application(</span><br><span class="line">    [</span><br><span class="line">        (r&quot;/&quot;, IndexHandler),</span><br><span class="line">        (r&quot;/profile&quot;, ProfileHandler),</span><br><span class="line">        (r&quot;/login&quot;, LoginHandler),</span><br><span class="line">    ],</span><br><span class="line">    &quot;login_url&quot;:&quot;/login&quot;</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+
+<p><img src="https://upload-images.jianshu.io/upload_images/10103251-82a9c765875cced7.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/822/format/webp" alt="用户访问的网址顺序："></p>
+
+    </div>
+
+    
+    
+    
+        
+      
+
+      <footer class="post-footer">
+          
+            
+          
+          <div class="post-tags">
+            
+              <a href="/tags/python/" rel="tag"># python</a>
+            
+          </div>
+        
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-next post-nav-item">
+              
+                <a href="/2019/09/08/tornado/异步与WebSockets/" rel="next" title="异步与WebSockets">
+                  <i class="fa fa-chevron-left"></i> 异步与WebSockets
+                </a>
+              
+            </div>
+
+            <span class="post-nav-divider"></span>
+
+            <div class="post-nav-prev post-nav-item">
+              
+                <a href="/2019/09/08/python进阶/8元类编程/" rel="prev" title="八、元类编程">
+                  八、元类编程 <i class="fa fa-chevron-right"></i>
+                </a>
+              
+            </div>
+          </div>
+        
+      </footer>
+    
+  </div>
+  
+  
+  
+  </article>
+
+  </div>
+
+
+          </div>
+          
+
+        </div>
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+        
+        
+        
+        
+      
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#6-安全应用"><span class="nav-number">1.</span> <span class="nav-text">6 安全应用</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#知识点"><span class="nav-number">1.1.</span> <span class="nav-text">知识点</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#6-1-Cookie"><span class="nav-number">2.</span> <span class="nav-text">6.1 Cookie</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#设置"><span class="nav-number">2.1.</span> <span class="nav-text">设置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#获取"><span class="nav-number">2.2.</span> <span class="nav-text">获取</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#清除"><span class="nav-number">2.3.</span> <span class="nav-text">清除</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#安全Cookie"><span class="nav-number">2.4.</span> <span class="nav-text">安全Cookie</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#获取和设置"><span class="nav-number">2.4.1.</span> <span class="nav-text">获取和设置</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#set-secure-cookie-name-value-expires-days-30"><span class="nav-number">2.4.1.1.</span> <span class="nav-text">set_secure_cookie(name, value, expires_days=30)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#get-secure-cookie-name-value-None-max-age-days-31"><span class="nav-number">2.4.1.2.</span> <span class="nav-text">get_secure_cookie(name, value=None, max_age_days=31)</span></a></li></ol></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#6-2-XSRF"><span class="nav-number">3.</span> <span class="nav-text">6.2 XSRF</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#跨站请求伪造"><span class="nav-number">3.1.</span> <span class="nav-text">跨站请求伪造</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#XSRF保护"><span class="nav-number">4.</span> <span class="nav-text">XSRF保护</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#开启XSRF保护"><span class="nav-number">4.1.</span> <span class="nav-text">开启XSRF保护</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#模板应用"><span class="nav-number">4.2.</span> <span class="nav-text">模板应用</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#非模板应用"><span class="nav-number">4.3.</span> <span class="nav-text">非模板应用</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-请求体携带-xsrf参数"><span class="nav-number">4.4.</span> <span class="nav-text">1. 请求体携带_xsrf参数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-HTTP头X-XSRFToken"><span class="nav-number">4.5.</span> <span class="nav-text">2. HTTP头X-XSRFToken</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#6-3-用户验证"><span class="nav-number">5.</span> <span class="nav-text">6.3 用户验证</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#authenticated装饰器"><span class="nav-number">5.1.</span> <span class="nav-text">authenticated装饰器</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#get-current-user-方法"><span class="nav-number">5.2.</span> <span class="nav-text">get_current_user()方法</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#login-url设置"><span class="nav-number">5.3.</span> <span class="nav-text">login_url设置</span></a></li></ol></li></ol></div>
+        
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">zzt</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+  <nav class="site-state motion-element">
+      <div class="site-state-item site-state-posts">
+        
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">40</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-categories">
+        
+          
+            <a href="/categories/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">7</span>
+        <span class="site-state-item-name">分类</span>
+        </a>
+      </div>
+    
+      
+      
+      <div class="site-state-item site-state-tags">
+        
+          
+            <a href="/tags/">
+          
+        
+        
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+        <span class="site-state-item-count">10</span>
+        <span class="site-state-item-name">标签</span>
+        </a>
+      </div>
+    
+  </nav>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2019</span>
+  <span class="with-love" id="animate">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">zzt</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io" class="theme-link" rel="noopener" target="_blank">Hexo</a> 强力驱动 v3.9.0</div>
+  <span class="post-meta-divider">|</span>
+  <div class="theme-info">主题 – <a href="https://theme-next.org" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> v7.4.0</div>
+
+        
+
+
+
+
+
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+  </div>
+
+  
+
+
+  <script src="/lib/anime.min.js?v=3.1.0"></script>
+  <script src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  <script src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+<script src="/js/utils.js?v=7.4.0"></script><script src="/js/motion.js?v=7.4.0"></script>
+<script src="/js/schemes/pisces.js?v=7.4.0"></script>
+<script src="/js/next-boot.js?v=7.4.0"></script>
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+</body>
+</html>

@@ -224,6 +224,110 @@
   
   
   <div class="post-block home">
+    <link itemprop="mainEntityOfPage" href="https://ztzheng100.github.io.git/2019/09/08/c语言/4多线程编程/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="zzt">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="ZZT_blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+            
+            <a href="/2019/09/08/c语言/4多线程编程/" class="post-title-link" itemprop="url">多线程编程</a>
+          
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              
+                
+              
+
+              <time title="创建时间：2019-09-08 20:24:35 / 修改时间：22:07:09" itemprop="dateCreated datePublished" datetime="2019-09-08T20:24:35+08:00">2019-09-08</time>
+            </span>
+          
+            
+
+            
+          
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-folder-o"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+              
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/c语言/" itemprop="url" rel="index"><span itemprop="name">c语言</span></a></span>
+
+                
+                
+              
+            </span>
+          
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="多线程编程"><a href="#多线程编程" class="headerlink" title="多线程编程"></a>多线程编程</h1><h2 id="1-线程库"><a href="#1-线程库" class="headerlink" title="1. 线程库"></a>1. 线程库</h2><ul>
+<li>目前使用的三种主要线程库是：POSIX Pthreads、Windows 和 Java：<ul>
+<li>++Pthreads++ 作为 POSIX 标准的扩展，可以提供用户级或内核级的库；</li>
+<li>++Windows++ 线程库是用于 Windows 操作系统的内核级线程库；</li>
+<li>++Java++ 线程 API 允许线程在 Java 程序中直接创建和管理。然而，由于大多数 JVM 实例运行在宿主操作系统之上，Java 线程 API 通常采用宿主系统的线程库来实现。这意味着在 Windows 系统上，Java 线程通常采用 Windows API 来实现，而在 UNIX 和 Linux 系统中采用 Pthreads 来实现。<blockquote>
+<p>++对于 POSIX 和 Windows 线程，全局声明（即在函数之外声明的）的任何数据，可为同一进程的所有线程共享++。因为 Java 没有全局数据的概念，所以线程对共享数据的访问必须加以显式安排。属于某个函数的本地数据通常位于堆栈。由于每个线程都有自己的堆栈，每个线程都有自己的本地数据。</p>
+</blockquote>
+</li>
+</ul>
+</li>
+</ul>
+          <!--noindex-->
+          
+            <div class="post-button text-center">
+              <a class="btn" href="/2019/09/08/c语言/4多线程编程/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+          <div class="post-eof"></div>
+        
+      </footer>
+  </div>
+  
+  
+  
+  </article>
+
+    
+        <article itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block home">
     <link itemprop="mainEntityOfPage" href="https://ztzheng100.github.io.git/2019/09/08/c语言/1 指针/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -384,110 +488,6 @@
           
             <div class="post-button text-center">
               <a class="btn" href="/2019/09/08/c语言/3C语言DLL开发/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-          <div class="post-eof"></div>
-        
-      </footer>
-  </div>
-  
-  
-  
-  </article>
-
-    
-        <article itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block home">
-    <link itemprop="mainEntityOfPage" href="https://ztzheng100.github.io.git/2019/09/08/c语言/4多线程编程/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="zzt">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="ZZT_blog">
-    </span>
-      <header class="post-header">
-        <h1 class="post-title" itemprop="name headline">
-            
-            <a href="/2019/09/08/c语言/4多线程编程/" class="post-title-link" itemprop="url">多线程编程</a>
-          
-        </h1>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              
-                
-              
-
-              <time title="创建时间：2019-09-08 20:24:35 / 修改时间：22:07:09" itemprop="dateCreated datePublished" datetime="2019-09-08T20:24:35+08:00">2019-09-08</time>
-            </span>
-          
-            
-
-            
-          
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="fa fa-folder-o"></i>
-              </span>
-              <span class="post-meta-item-text">分类于</span>
-              
-                <span itemprop="about" itemscope itemtype="http://schema.org/Thing"><a href="/categories/c语言/" itemprop="url" rel="index"><span itemprop="name">c语言</span></a></span>
-
-                
-                
-              
-            </span>
-          
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="多线程编程"><a href="#多线程编程" class="headerlink" title="多线程编程"></a>多线程编程</h1><h2 id="1-线程库"><a href="#1-线程库" class="headerlink" title="1. 线程库"></a>1. 线程库</h2><ul>
-<li>目前使用的三种主要线程库是：POSIX Pthreads、Windows 和 Java：<ul>
-<li>++Pthreads++ 作为 POSIX 标准的扩展，可以提供用户级或内核级的库；</li>
-<li>++Windows++ 线程库是用于 Windows 操作系统的内核级线程库；</li>
-<li>++Java++ 线程 API 允许线程在 Java 程序中直接创建和管理。然而，由于大多数 JVM 实例运行在宿主操作系统之上，Java 线程 API 通常采用宿主系统的线程库来实现。这意味着在 Windows 系统上，Java 线程通常采用 Windows API 来实现，而在 UNIX 和 Linux 系统中采用 Pthreads 来实现。<blockquote>
-<p>++对于 POSIX 和 Windows 线程，全局声明（即在函数之外声明的）的任何数据，可为同一进程的所有线程共享++。因为 Java 没有全局数据的概念，所以线程对共享数据的访问必须加以显式安排。属于某个函数的本地数据通常位于堆栈。由于每个线程都有自己的堆栈，每个线程都有自己的本地数据。</p>
-</blockquote>
-</li>
-</ul>
-</li>
-</ul>
-          <!--noindex-->
-          
-            <div class="post-button text-center">
-              <a class="btn" href="/2019/09/08/c语言/4多线程编程/#more" rel="contents">
                 阅读全文 &raquo;
               </a>
             </div>
@@ -1234,7 +1234,7 @@
         
           <a href="/archives/">
         
-          <span class="site-state-item-count">37</span>
+          <span class="site-state-item-count">40</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
@@ -1261,7 +1261,9 @@
         
           
         
-        <span class="site-state-item-count">6</span>
+          
+        
+        <span class="site-state-item-count">7</span>
         <span class="site-state-item-name">分类</span>
         </a>
       </div>
@@ -1294,7 +1296,9 @@
         
           
         
-        <span class="site-state-item-count">9</span>
+          
+        
+        <span class="site-state-item-count">10</span>
         <span class="site-state-item-name">标签</span>
         </a>
       </div>
